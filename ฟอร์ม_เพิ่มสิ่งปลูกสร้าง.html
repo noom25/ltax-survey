@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เพิ่มสิ่งปลูกสร้าง</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tahoma', 'Segoe UI', sans-serif; background: #f2f2f2; font-size: 14px; }
+
+  header {
+    background: linear-gradient(#1b4f8a, #153d6b);
+    color: #fff; padding: 8px 20px; font-size: 15px; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  header .org { font-weight: normal; font-size: 12px; }
+  header .org b { color: #ffd75e; }
+
+  .container { max-width: 1060px; margin: 15px auto; padding: 0 10px; }
+  .panel { background: #fff; border: 1px solid #c8c8c8; border-radius: 4px; margin-bottom: 12px; }
+  .panel-head {
+    background: #2b6cb0; color: #fff; font-weight: bold;
+    padding: 8px 14px; border-radius: 4px 4px 0 0; font-size: 15px;
+  }
+  .panel-body { padding: 14px; }
+  .section-title {
+    background: #e8f0f8; color: #1b4f8a; font-weight: bold;
+    padding: 6px 10px; border-left: 4px solid #2b6cb0;
+    margin: 16px 0 8px 0; font-size: 14px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .row { display: flex; align-items: flex-start; margin-bottom: 8px; }
+  .row label { width: 220px; padding: 6px 8px; text-align: right; flex-shrink: 0; }
+  .row label .req { color: #d33; font-weight: bold; }
+  .row .field { flex: 1; padding: 0 4px; }
+  .row .field input[type=text], .row .field select, .row .field textarea {
+    width: 100%; padding: 5px 8px; border: 1px solid #b0b0b0; border-radius: 3px;
+    font-size: 14px; font-family: inherit;
+  }
+  .row .field input[readonly] { background: #f5f5f5; }
+  .row .field .inline { display: inline-flex; gap: 8px; width: 100%; }
+  .row .field .inline input, .row .field .inline select { flex: 1; }
+  .row .field .small { max-width: 160px; }
+  .hint { color: #888; font-size: 12px; padding: 4px 6px 0 6px; }
+
+  table.list { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  table.list th { background: #dbe9f7; border: 1px solid #b8c9dd; padding: 5px 8px; text-align: left; }
+  table.list td { border: 1px solid #cfd6e0; padding: 5px 8px; }
+  .empty { text-align: center; color: #999; padding: 8px; }
+  a.icon-danger { color: #d33; text-decoration: none; font-weight: bold; cursor: pointer; }
+
+  .btn-bar { text-align: center; margin: 10px 0 20px 0; }
+  .btn {
+    padding: 7px 26px; font-size: 14px; border-radius: 4px; border: 1px solid;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+  .btn-save { background: #2e7d32; border-color: #1b5e20; color: #fff; }
+  .btn-save:hover { background: #1b5e20; }
+  .btn-back { background: #f5f5f5; border-color: #b0b0b0; color: #333; }
+  .btn-back:hover { background: #e0e0e0; }
+  .btn-add { background: #2e7d32; border-color: #1b5e20; color: #fff; font-weight: normal; }
+  .btn-add:hover { background: #1b5e20; }
+
+  #preview { margin-top: 10px; }
+  #preview textarea { width: 100%; height: 150px; font-size: 12px; font-family: Consolas, monospace; }
+  .preview-head {
+    background: #fff3cd; border: 1px solid #e6c65a; color: #7a5c00;
+    padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Offline) :: แก้ไขข้อมูลสิ่งปลูกสร้าง</div>
+  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ / ปีภาษี 2569</div>
+</header>
+
+<div class="container">
+  <div class="panel">
+    <div class="panel-head">แก้ไขข้อมูลสิ่งปลูกสร้าง</div>
+    <div class="panel-body">
+
+      <div class="section-title">เจ้าของ / ที่ดิน</div>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <button type="button" class="btn btn-add" onclick="addOwner()"> + เพิ่มเจ้าของกรรมสิทธิ์ </button>
+          <button type="button" class="btn btn-add" onclick="addLand()"> + เพิ่มที่ดิน </button>
+        </div>
+      </div>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <table class="list">
+            <thead><tr><th width="10%">ลำดับ</th><th>ชื่อ - นามสกุล</th><th>เลขประจำตัวประชาชน</th><th>ที่อยู่</th><th width="6%"></th></tr></thead>
+            <tbody id="ownerTable"><tr><td colspan="5" class="empty">ยังไม่พบข้อมูล</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <table class="list">
+            <thead><tr><th width="10%">ลำดับ</th><th>รหัสแปลงที่ดิน</th><th>เลขที่เอกสารสิทธิ์</th><th>หน้าสำรวจ</th><th>ประเภทการใช้ประโยชน์</th><th width="6%"></th></tr></thead>
+            <tbody id="landTable"><tr><td colspan="6" class="empty">ยังไม่พบข้อมูล</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-title">ข้อมูลสิ่งปลูกสร้าง</div>
+
+      <div class="row">
+        <label>รหัสแปลงที่ดิน (ผูก)</label>
+        <div class="field"><input type="text" id="landParcelCode" onblur="this.value=this.value.toUpperCase()" placeholder="ตัวอย่าง: 50A001"></div>
+      </div>
+      <div class="row">
+        <label>รหัสสิ่งปลูกสร้าง</label>
+        <div class="field">
+          <div class="inline">
+            <input type="text" id="buildingCode" name="building.buildingCode" onblur="this.value=this.value.toUpperCase()">
+            <button type="button" class="btn btn-add" style="padding:5px 14px;" onclick="genBuildingCode()">สร้างรหัส (แปลง-Bxxx)</button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <label>เลขที่</label>
+        <div class="field" style="max-width:120px;"><input type="text" id="addrNo" name="building.addrNo"></div>
+      </div>
+      <div class="row">
+        <label>หมู่ที่</label>
+        <div class="field" style="max-width:120px;"><input type="text" id="villageNo" name="building.villageNo"></div>
+      </div>
+      <div class="row">
+        <label>หมู่บ้าน / ชุมชน</label>
+        <div class="field"><input type="text" id="villageName" name="building.villageName"></div>
+      </div>
+      <div class="row">
+        <label>ถนน</label>
+        <div class="field"><input type="text" id="road" name="building.road"></div>
+      </div>
+      <div class="row">
+        <label>ซอย</label>
+        <div class="field"><input type="text" id="alley" name="building.alley"></div>
+      </div>
+
+      <div class="row">
+        <label>ประเภทสิ่งปลูกสร้าง <span class="req">*</span></label>
+        <div class="field">
+          <div class="inline">
+            <select id="buildingType" name="building.buildingType" onchange="changeBuildingType()"></select>
+            <button type="button" class="btn btn-add" style="padding:5px 14px;" onclick="changeBuildingType()">ดึงราคาประเมิน</button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <label>ลักษณะสิ่งปลูกสร้าง <span class="req">*</span></label>
+        <div class="field">
+          <select id="structure" name="building.structure">
+            <option value="">กรุณาเลือก</option>
+            <option value="1">ไม้</option>
+            <option value="2">ตึก</option>
+            <option value="3">ครึ่งตึกครึ่งไม้</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>จำนวนชั้น</label>
+        <div class="field" style="max-width:120px;"><input type="text" id="noFloor" name="building.noFloor" oninput="calTotalArea()"></div>
+      </div>
+      <div class="row">
+        <label>ขนาดพื้นที่ (กว้าง x ยาว เมตร)</label>
+        <div class="field">
+          <div class="inline">
+            <input type="text" id="widthStr" name="building.widthStr" placeholder="กว้าง" oninput="calTotalArea()">
+            <input type="text" id="heightStr" name="building.heightStr" placeholder="ยาว" oninput="calTotalArea()">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <label>ขนาดพื้นที่ทั้งอาคาร (ตร.ม.) <span class="req">*</span></label>
+        <div class="field"><input type="text" id="totalAreaStr" name="building.totalAreaStr" readonly></div>
+      </div>
+
+      <div class="row">
+        <label>เนื้อที่ที่ดิน (ไร่-งาน-ตร.ว.)</label>
+        <div class="field">
+          <input type="text" id="landAreaStr" placeholder="ตัวอย่าง: 1-1-0" style="max-width:220px;">
+          <div class="hint">เนื้อที่แปลงที่ดินที่สิ่งปลูกสร้างตั้งอยู่ (ใช้เลือกประเภทการใช้ประโยชน์ที่ดินในระบบ)</div>
+        </div>
+      </div>
+      <div class="row">
+        <label>อายุสิ่งปลูกสร้าง (ปี) <span class="req">*</span></label>
+        <div class="field" style="max-width:120px;"><input type="text" id="ageStr" name="building.ageStr" oninput="calYear();recalcPrice()"></div>
+      </div>
+      <div class="row">
+        <label>ก่อสร้างแล้วเสร็จ ปี พ.ศ.</label>
+        <div class="field" style="max-width:120px;"><input type="text" id="since" name="building.since" oninput="calAge();recalcPrice()"></div>
+      </div>
+
+      <div class="section-title">ราคาประเมิน</div>
+      <div class="row">
+        <label>ราคาประเมินต่อ ตร.ม. (บาท)</label>
+        <div class="field" style="max-width:200px;"><input type="text" id="pricePerMeterStr" name="building.pricePerMeterStr" oninput="recalcPrice()"></div>
+        <div class="hint" style="margin-left:228px;">ระบบจริงดึงจาก getBuildingPrice ตามประเภทอาคาร</div>
+      </div>
+      <div class="row">
+        <label>ราคาประเมินทุนทรัพย์ (บาท)</label>
+        <div class="field" style="max-width:200px;"><input type="text" id="totalPriceStr" name="building.totalPriceStr" readonly></div>
+      </div>
+      <div class="row">
+        <label>หักค่าเสื่อม <span id="d_rate">0</span> % (บาท)</label>
+        <div class="field" style="max-width:200px;"><input type="text" id="depreciationPriceStr" name="building.depreciationPriceStr" readonly></div>
+      </div>
+      <div class="row">
+        <label>คงเหลือราคาประเมิน (บาท)</label>
+        <div class="field" style="max-width:200px;"><input type="text" id="netPriceStr" name="building.netPriceStr" readonly></div>
+      </div>
+
+      <div class="section-title">การใช้ประโยชน์ในสิ่งปลูกสร้าง</div>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <button type="button" class="btn btn-add" onclick="goForm('ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html')"> + เพิ่มการใช้ประโยชน์ในสิ่งปลูกสร้าง </button>
+        </div>
+      </div>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <table class="list">
+            <thead>
+              <tr><th width="10%">ลำดับ</th><th>ประเภทการใช้ประโยชน์</th><th>ลักษณะการใช้</th><th>ชั้นที่</th><th>ขนาดพื้นที่รวม (ตร.ม.)</th><th>หมายเหตุ</th><th width="6%"></th></tr>
+            </thead>
+            <tbody><tr><td colspan="7" class="empty">ยังไม่พบข้อมูล</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>รูปภาพ</label>
+        <div class="field">
+          <input type="file" id="formFile" name="formFile" accept="image/*" style="padding:3px;" onchange="onPhotoPick()">
+          <div class="hint">เลือกรูปแล้วจะฝังลงใน JSON เอง (ใช้ได้ทุกเครื่อง — iPhone/iPad/Android/Windows/Mac)</div>
+          <div id="photoStatus" style="font-size:12px; color:#2e7d32; margin-top:4px;"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>หมายเหตุ</label>
+        <div class="field"><textarea id="note" name="building.note" rows="2"></textarea></div>
+      </div>
+      <div class="row">
+        <label>หมายเหตุเจ้าหน้าที่</label>
+        <div class="field"><textarea id="ltaxRemark" name="building.ltaxRemark" rows="2"></textarea></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="btn-bar">
+    <button type="button" class="btn btn-save" onclick="saveBuilding()"> บันทึก </button>
+    <button type="button" class="btn btn-back" onclick="goBack()"> กลับไป </button>
+  </div>
+
+  <div id="preview" style="display:none;">
+    <div class="preview-head">ผลลัพธ์ (JSON สำหรับเก็บ — นำไปรวมกับข้อมูลอื่นที่ index.html)</div>
+    <textarea id="previewBox" readonly></textarea>
+  </div>
+</div>
+
+<script>
+/* ประเภทสิ่งปลูกสร้าง (รหัสจริงจากระบบ 101-614) */
+var BUILDING_TYPES = [
+  ['101','101 - บ้านพักอาศัยไม้ชั้นเดียว'],['102','102 - บ้านพักอาศัยไม้ชั้นเดียวใต้ถุนสูง'],
+  ['103','103 - บ้านพักอาศัยตึกชั้นเดียว'],['104','104 - บ้านพักอาศัยไม้สองชั้น'],
+  ['105','105 - บ้านพักอาศัยตึกสองชั้น'],['106','106 - บ้านพักอาศัยครึ่งตึกครึ่งไม้สองชั้น'],
+  ['107','107 - บ้านพักอาศัยตึกสามชั้น'],['108','108 - บ้านพักอาศัยแฝดตึกสองชั้น'],
+  ['109','109 - บ้านพักอาศัยแฝดตึกสามชั้น'],['110','110 - บ้านทรงไทยไม้ชั้นเดียวใต้ถุนสูง'],
+  ['111','111 - บ้านทรงไทยครึ่งตึกครึ่งไม้สองชั้น'],['112','112 - บ้านพักอาศัยแฝดตึกชั้นเดียว'],
+  ['201','201 - บ้านแถว (ทาวน์เฮาส์) ชั้นเดียว'],['202','202 - บ้านแถว (ทาวน์เฮาส์) สองชั้น'],
+  ['203','203 - บ้านแถว (ทาวน์เฮาส์) สามชั้น'],['204','204 - บ้านแถว (ทาวน์เฮาส์) สี่ชั้น'],
+  ['301','301 - ห้องแถวไม้ชั้นเดียว'],['302','302 - ห้องแถวไม้สองชั้น'],
+  ['303','303 - ห้องแถวครึ่งตึกครึ่งไม้สองชั้น'],
+  ['401','401 - ตึกแถวชั้นเดียว'],['402','402 - ตึกแถวสองชั้น'],['403','403 - ตึกแถวสองชั้นครึ่ง'],
+  ['404','404 - ตึกแถวสามชั้น'],['405','405 - ตึกแถวสามชั้นครึ่ง'],['406','406 - ตึกแถวสี่ชั้น'],
+  ['407','407 - ตึกแถวสี่ชั้นครึ่ง'],['408','408 - ตึกแถวห้าชั้น'],['409','409 - ตึกแถวหกชั้น'],
+  ['501','501 - คลังสินค้า พื้นที่ไม่เกิน 300 ตารางเมตร'],
+  ['502','502 - คลังสินค้า พื้นที่เกินกว่า 300 ตารางเมตรขึ้นไป'],
+  ['503','503 - เรือนคนใช้/ครัว'],['504','504 - โรงจอดรถ'],['505','505 - สถานศึกษา'],
+  ['506/1','506/1 - โรงแรม ความสูงไม่เกิน 5 ชั้น'],['506/2','506/2 - โรงแรม ความสูงเกินกว่า 5 ชั้นขึ้นไป'],
+  ['507','507 - โรงมหรสพ'],['508','508 - สถานพยาบาล'],
+  ['509/1','509/1 - สํานักงาน ความสูงไม่เกิน 5 ชั้น'],['509/2','509/2 - สํานักงาน ความสูงเกินกว่า 5 ชั้นขึ้นไป'],
+  ['510','510 - ภัตตาคาร'],['511/1','511/1 - ห้างสรรพสินค้า'],['511/2','511/2 - อาคารพาณิชยกรรม ประเภทค้าปลีก ค้าส่ง'],
+  ['512','512 - สถานีบริการน้ำมันเชื้อเพลิง'],['513','513 - โรงงาน'],
+  ['514','514 - ตลาด พื้นที่ไม่เกิน 1,000 ตารางเมตร'],['515','515 - ตลาด พื้นที่เกินกว่า 1,000 ตารางเมตรขึ้นไป'],
+  ['516','516 - อาคารพาณิชย์ ประเภทโฮมออฟฟิศ'],['517','517 - โรงเลี้ยงสัตว์'],['518','518 - โรงงานซ่อมรถยนต์'],
+  ['519','519 - อาคารจอดรถ'],['520/1','520/1 - อาคารอยู่อาศัยรวม ความสูงไม่เกิน 5 ชั้น'],
+  ['520/2','520/2 - อาคารอยู่อาศัยรวม ความสูงเกินกว่า 5 ชั้นขึ้นไป'],
+  ['521','521 - ป้อมยาม'],['522','522 - อาคารพาณิชย์ ประเภทโชว์รูมรถยนต์'],['523','523 - ห้องน้ำรวม'],
+  ['601','601 - รั้วคอนกรีต'],['602','602 - รั้วลวดหนาม'],['603','603 - รั้วสังกะสี'],['604','604 - รั้วลวดถัก'],
+  ['605','605 - รั้วไม้'],['606','606 - รั้วเหล็กดัด'],['607','607 - รั้วอัลลอยด์'],['608','608 - สระว่ายน้ำ'],
+  ['609','609 - ลานกีฬาอเนกประสงค์'],['610','610 - ถนนคอนกรีต'],['611','611 - ลานคอนกรีต'],
+  ['612','612 - ถนนลาดยาง'],['613','613 - ป้ายโฆษณา'],['614','614 - ท่าเทียบเรือ']
+];
+
+/* ราคาประเมินต่อ ตร.ม. ตามประเภทอาคาร (ปี 2569) - ตัวอย่างบางส่วน จะเติมเต็มให้ตรงระบบ */
+var BUILDING_PRICE = {
+  '101':5000,'102':5600,'103':8000,'104':5200,'105':8500,'106':6800,'107':9000,
+  '108':8800,'109':9400,'110':7500,'111':7900,'112':8200,
+  '201':9000,'202':9500,'203':10000,'204':10500,
+  '301':6000,'302':6500,'303':7200,
+  '401':10000,'402':11000,'403':11500,'404':12000,'405':12500,'406':13000,'407':13500,'408':14000,'409':14500,
+  '501':9000,'502':8500,'503':5000,'504':6000,'505':9000,
+  '506/1':9500,'506/2':10500,'507':9000,'508':9000,'509/1':9000,'509/2':10000,
+  '510':9500,'511/1':11000,'511/2':10500,'512':9000,'513':9000,
+  '514':9000,'515':8500,'516':9500,'517':7000,'518':8500,'519':9000,
+  '520/1':9500,'520/2':10500,'521':5000,'522':9000,'523':6000,
+  '601':1500,'602':500,'603':800,'604':800,'605':1200,'606':2500,'607':2000,
+  '608':6000,'609':2500,'610':2500,'611':2000,'612':3000,'613':3000,'614':8000
+};
+
+var TAX_YEAR = 2569;
+var REQUIRED = ['landParcelCode','buildingCode','buildingType','structure','totalAreaStr','ageStr'];
+var owners = [], lands = [];
+
+function $(id) { return document.getElementById(id); }
+function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+function fmt(n, dec) { return n.toLocaleString('en-US', { minimumFractionDigits: (dec ? 2 : 0), maximumFractionDigits: (dec ? 2 : 0) }); }
+
+var photoData = '';
+function onPhotoPick() {
+  var input = $('formFile');
+  var file = input.files && input.files[0];
+  if (!file) { photoData = ''; $('photoStatus').textContent = ''; return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var rawUrl = e.target.result;
+    var img = new Image();
+    img.onload = function() {
+      var maxW = 1600, scale = Math.min(1, maxW / Math.max(img.width, img.height));
+      var c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      var out = c.toDataURL('image/jpeg', 0.8);
+      photoData = out;
+      $('photoStatus').textContent = '✓ ' + file.name + ' (' + (out.length / 1024 / 1.33 / 1024).toFixed(1) + ' MB)';
+    };
+    img.onerror = function() {
+      photoData = rawUrl;
+      $('photoStatus').textContent = '✓ ' + file.name + ' (ไม่บีบอัด — ใช้ต้นฉบับ)';
+    };
+    img.src = rawUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- เจ้าของ / ที่ดิน ---------- */
+function addOwner() {
+  var psn = prompt('เลขประจำตัวประชาชน (13 หลัก):', '');
+  if (!psn || !/^\d{13}$/.test(psn.trim())) { alert('กรอกเลขบัตร 13 หลัก'); return; }
+  var name = prompt('ชื่อ - นามสกุล:', '');
+  if (!name) { alert('กรอกชื่อ - นามสกุล'); return; }
+  owners.push({ psnId: psn.trim(), fullName: name.trim() });
+  window.__dirty = true;
+  renderOwners();
+}
+function removeOwner(i) { owners.splice(i, 1); window.__dirty = true; renderOwners(); }
+function renderOwners() {
+  var tb = $('ownerTable');
+  if (!owners.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">ยังไม่พบข้อมูล</td></tr>'; return; }
+  var h = '';
+  owners.forEach(function(o, i) {
+    h += '<tr><td align="center">' + (i + 1) + '</td><td>' + o.fullName + '</td><td>' + o.psnId +
+         '</td><td>-</td><td align="center"><a class="icon-danger" onclick="removeOwner(' + i + ')">&#10008;</a></td></tr>';
+  });
+  tb.innerHTML = h;
+}
+function addLand() {
+  var code = prompt('รหัสแปลงที่ดิน:', '');
+  if (!code) return;
+  lands.push({ code: code.trim().toUpperCase() });
+  window.__dirty = true;
+  renderLands();
+}
+function removeLand(i) { lands.splice(i, 1); window.__dirty = true; renderLands(); }
+function renderLands() {
+  var tb = $('landTable');
+  if (!lands.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">ยังไม่พบข้อมูล</td></tr>'; return; }
+  var h = '';
+  lands.forEach(function(l, i) {
+    h += '<tr><td align="center">' + (i + 1) + '</td><td>' + l.code +
+         '</td><td>-</td><td>-</td><td>-</td><td align="center"><a class="icon-danger" onclick="removeLand(' + i + ')">&#10008;</a></td></tr>';
+  });
+  tb.innerHTML = h;
+}
+
+/* ---------- รหัสสิ่งปลูกสร้าง ---------- */
+function genBuildingCode() {
+  var base = $('landParcelCode').value.trim().toUpperCase();
+  if (!base) { alert('กรอกรหัสแปลงที่ดินก่อน'); return; }
+  var n = prompt('ลำดับอาคาร (Bxxx):', '1');
+  if (n === null) return;
+  $('buildingCode').value = base + '-B' + (parseInt(n) || 1);
+  window.__dirty = true;
+}
+
+/* ---------- คำนวณ ---------- */
+function calTotalArea() {
+  $('totalAreaStr').value = fmt(num($('widthStr').value) * num($('heightStr').value) * num($('noFloor').value), true);
+  recalcPrice();
+}
+function changeBuildingType() {
+  var code = $('buildingType').value;
+  var price = BUILDING_PRICE[code];
+  if (price) $('pricePerMeterStr').value = price;
+  recalcPrice();
+}
+function calcDrate() {
+  /* ค่าเสื่อมโดยประมาณตามโครงสร้าง/อายุ (ระบบจริงอยู่ใน ltax.js) */
+  var age = num($('ageStr').value);
+  var s = $('structure').value;
+  var rate = 0;
+  if (s === '1') rate = age * 4;      /* ไม้ */
+  else if (s === '2') rate = age * 2; /* ตึก */
+  else if (s === '3') rate = age * 3; /* ครึ่งตึกครึ่งไม้ */
+  rate = Math.min(rate, 90);
+  $('d_rate').innerHTML = rate;
+  return rate;
+}
+function recalcPrice() {
+  var area = num($('totalAreaStr').value);
+  var price = num($('pricePerMeterStr').value);
+  var drate = calcDrate();
+  var tprice = area * price;
+  var dprice = tprice * drate / 100;
+  $('totalPriceStr').value = fmt(tprice, true);
+  $('depreciationPriceStr').value = fmt(dprice, true);
+  $('netPriceStr').value = fmt(tprice - dprice, true);
+}
+function calYear() { /* age -> since */
+  var age = num($('ageStr').value);
+  $('since').value = age > 0 ? (TAX_YEAR - age + 1) : '';
+}
+function calAge() { /* since -> age */
+  var since = $('since').value;
+  $('ageStr').value = since ? (TAX_YEAR - num(since) + 1) : '';
+}
+
+/* ---------- บันทึก ---------- */
+/* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
+window.__editKey = null;
+window.__editIdx = -1;
+function LTAX_store(key, record) {
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+    list[window.__editIdx] = record;
+  } else {
+    list.push(record);
+  }
+  try {
+    localStorage.setItem(key, JSON.stringify(list));
+  } catch(e) {
+    alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
+  }
+  window.__editKey = null;
+  window.__editIdx = -1;
+}
+function LTAX_download(filename, record) {
+  var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+/* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
+function loadEditRecord() {
+  var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
+  var key = params.get('editKey');
+  var idx = parseInt(params.get('editIdx') || '-1', 10);
+  if (!key || idx < 0) return false;
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (!list[idx]) return false;
+  var r = list[idx];
+
+  owners = String(r['เลขบัตรเจ้าของสิ่งปลูกสร้าง'] || r['เลขบัตรเจ้าของที่ดิน'] || '').split(';').filter(Boolean).map(function(p) { return { psnId: p, fullName: '' }; });
+  lands = String(r['รหัสแปลงที่ดิน'] || '').split(';').filter(Boolean).map(function(c) { return { code: c }; });
+  renderOwners(); renderLands();
+  if (r['รหัสแปลงที่ดิน']) $('landParcelCode').value = String(r['รหัสแปลงที่ดิน']).split(';')[0] || '';
+  if (r['รหัสสิ่งปลูกสร้าง']) $('buildingCode').value = r['รหัสสิ่งปลูกสร้าง'];
+  if (r['เลขที่บ้าน']) $('addrNo').value = r['เลขที่บ้าน'];
+  if (r['หมู่ที่']) $('villageNo').value = r['หมู่ที่'];
+  if (r['ซอย']) $('alley').value = r['ซอย'];
+  if (r['ถนน']) $('road').value = r['ถนน'];
+  if (r['ประเภทอาคาร']) $('buildingType').value = r['ประเภทอาคาร'];
+  if (r['โครงสร้าง']) $('structure').value = r['โครงสร้าง'];
+  if (r['จำนวนชั้น']) $('noFloor').value = r['จำนวนชั้น'];
+  if (r['กว้าง(ม.)']) $('widthStr').value = r['กว้าง(ม.)'];
+  if (r['ยาว(ม.)']) $('heightStr').value = r['ยาว(ม.)'];
+  if (r['เนื้อที่ที่ดิน']) $('landAreaStr').value = r['เนื้อที่ที่ดิน'];
+  if (r['ปีที่สร้าง']) $('since').value = r['ปีที่สร้าง'];
+  photoData = r['รูปภาพ_data'] || '';
+
+  window.__editKey = key;
+  window.__editIdx = idx;
+  window.__saved = true;
+  $('previewBox').value = JSON.stringify(r, null, 2);
+  $('preview').style.display = 'block';
+  return true;
+}
+
+function collect() {
+  var sel = function(id) { var el = $(id); return el ? el.value : ''; };
+  return {
+    'เลขบัตรเจ้าของที่ดิน': owners.map(function(o) { return o.psnId; }).join(';'),
+    'เลขบัตรเจ้าของสิ่งปลูกสร้าง': owners.map(function(o) { return o.psnId; }).join(';'),
+    'รหัสแปลงที่ดิน': lands.map(function(l) { return l.code; }).join(';'),
+    'รหัสสิ่งปลูกสร้าง': $('buildingCode').value.toUpperCase(),
+    'รหัสอาคาร': '',
+    'เลขที่บ้าน': sel('addrNo'),
+    'หมู่ที่': sel('villageNo'),
+    'ซอย': sel('alley'),
+    'ถนน': sel('road'),
+    'ประเภทอาคาร': sel('buildingType'),
+    'โครงสร้าง': sel('structure'),
+    'จำนวนชั้น': sel('noFloor'),
+    'กว้าง(ม.)': sel('widthStr'),
+    'ยาว(ม.)': sel('heightStr'),
+    'เนื้อที่ที่ดิน': sel('landAreaStr'),
+    'ปีที่สร้าง': sel('since'),
+    'ประเภทการใช้งาน': '',
+    'พื้นที่พาณิชย์': '',
+    'สัดส่วนกรรมสิทธิ์': '',
+    'Path รูปภาพ': $('formFile').files.length ? $('formFile').files[0].name : '',
+    'รูปภาพ_data': photoData
+  };
+}
+
+function saveBuilding() {
+  var missing = [];
+  REQUIRED.forEach(function(r) {
+    var el = $(r);
+    if (!el || el.value === '') missing.push(el ? el.id : r);
+  });
+  if (missing.length) { alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', ')); return; }
+  if (num($('totalAreaStr').value) <= 0) { alert('ขนาดพื้นที่ทั้งอาคาร (ตร.ม.) ห้ามเท่ากับ 0'); return; }
+  var data = collect();
+  var code = data['รหัสสิ่งปลูกสร้าง'];
+  LTAX_store('ltax_building', data);
+  LTAX_download('สิ่งปลูกสร้าง_' + code + '.json', data);
+  $('previewBox').value = JSON.stringify(data, null, 2);
+  $('preview').style.display = 'block';
+  window.__saved = true;
+}
+
+window.__dirty = false;
+document.addEventListener('input', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+document.addEventListener('change', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+
+function goBack() {
+  if (window.__dirty && !window.__saved) { alert('กรุณาบันทึกข้อมูลก่อน'); return; }
+  if (window.__goHome) { window.__goHome(); return; }
+  window.location.href = 'index.html';
+}
+
+function goForm(url) {
+  if (window.__dirty && !window.__saved) { alert('กรุณาบันทึกข้อมูลก่อน'); return; }
+  window.location.href = url;
+}
+
+function resetForm() {
+  if (!confirm('ล้างข้อมูลในฟอร์ม?')) return;
+  ['landParcelCode','buildingCode','addrNo','villageNo','villageName','road','alley','noFloor',
+   'widthStr','heightStr','totalAreaStr','ageStr','since','pricePerMeterStr','totalPriceStr',
+   'depreciationPriceStr','netPriceStr','note','ltaxRemark'].forEach(function(f) { $(f).value = ''; });
+  $('buildingType').value = ''; $('structure').value = '';
+  $('d_rate').innerHTML = '0';
+  photoData = ''; $('photoStatus').textContent = '';
+  owners = []; lands = []; renderOwners(); renderLands();
+  $('preview').style.display = 'none';
+}
+
+/* init */
+(function() {
+  var box = $('buildingType');
+  box.innerHTML = '<option value="">กรุณาเลือก</option>';
+  BUILDING_TYPES.forEach(function(t) {
+    var opt = document.createElement('option');
+    opt.value = t[0]; opt.text = t[1];
+    box.appendChild(opt);
+  });
+  loadEditRecord();
+})();
+</script>
+</body>
+</html>

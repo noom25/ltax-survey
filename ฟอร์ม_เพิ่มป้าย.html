@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เพิ่มป้าย</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tahoma', 'Segoe UI', sans-serif; background: #f2f2f2; font-size: 14px; }
+
+  header {
+    background: linear-gradient(#1b4f8a, #153d6b);
+    color: #fff; padding: 8px 20px; font-size: 15px; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  header .org { font-weight: normal; font-size: 12px; }
+  header .org b { color: #ffd75e; }
+
+  .container { max-width: 1060px; margin: 15px auto; padding: 0 10px; }
+  .panel { background: #fff; border: 1px solid #c8c8c8; border-radius: 4px; margin-bottom: 12px; }
+  .panel-head {
+    background: #2b6cb0; color: #fff; font-weight: bold;
+    padding: 8px 14px; border-radius: 4px 4px 0 0; font-size: 15px;
+  }
+  .panel-body { padding: 14px; }
+  .section-title {
+    background: #e8f0f8; color: #1b4f8a; font-weight: bold;
+    padding: 6px 10px; border-left: 4px solid #2b6cb0;
+    margin: 16px 0 8px 0; font-size: 14px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .row { display: flex; align-items: flex-start; margin-bottom: 8px; }
+  .row label { width: 210px; padding: 6px 8px; text-align: right; flex-shrink: 0; }
+  .row label .req { color: #d33; font-weight: bold; }
+  .row .field { flex: 1; padding: 0 4px; }
+  .row .field input[type=text], .row .field select, .row .field textarea {
+    width: 100%; padding: 5px 8px; border: 1px solid #b0b0b0; border-radius: 3px;
+    font-size: 14px; font-family: inherit;
+  }
+  .row .field input[readonly] { background: #f5f5f5; }
+  .row .field .inline { display: inline-flex; gap: 8px; width: 100%; }
+  .row .field .inline input, .row .field .inline select { flex: 1; }
+  .row .field .small { max-width: 160px; }
+  .hint { color: #888; font-size: 12px; padding: 4px 6px 0 6px; }
+
+  table.list { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  table.list th { background: #dbe9f7; border: 1px solid #b8c9dd; padding: 5px 8px; text-align: left; }
+  table.list td { border: 1px solid #cfd6e0; padding: 5px 8px; }
+  .empty { text-align: center; color: #999; padding: 8px; }
+  a.icon-danger { color: #d33; text-decoration: none; font-weight: bold; cursor: pointer; }
+
+  .btn-bar { text-align: center; margin: 10px 0 20px 0; }
+  .btn {
+    padding: 7px 26px; font-size: 14px; border-radius: 4px; border: 1px solid;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+  .btn-save { background: #2e7d32; border-color: #1b5e20; color: #fff; }
+  .btn-save:hover { background: #1b5e20; }
+  .btn-back { background: #f5f5f5; border-color: #b0b0b0; color: #333; }
+  .btn-back:hover { background: #e0e0e0; }
+  .btn-add { background: #2e7d32; border-color: #1b5e20; color: #fff; font-weight: normal; }
+  .btn-add:hover { background: #1b5e20; }
+
+  #preview { margin-top: 10px; }
+  #preview textarea { width: 100%; height: 150px; font-size: 12px; font-family: Consolas, monospace; }
+  .preview-head {
+    background: #fff3cd; border: 1px solid #e6c65a; color: #7a5c00;
+    padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Offline) :: แก้ไขข้อมูลป้าย</div>
+  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ / ปีภาษี 2569</div>
+</header>
+
+<div class="container">
+  <div class="panel">
+    <div class="panel-head">แก้ไขข้อมูลป้าย</div>
+    <div class="panel-body">
+
+      <div class="section-title">เจ้าของป้าย</div>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <button type="button" class="btn btn-add" onclick="addOwner()"> + เพิ่มเจ้าของป้าย </button>
+        </div>
+      </div>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <table class="list">
+            <thead><tr><th width="10%">ลำดับ</th><th>ชื่อ - นามสกุล</th><th>เลขประจำตัวประชาชน</th><th>ที่อยู่</th><th width="6%"></th></tr></thead>
+            <tbody id="ownerTable"><tr><td colspan="5" class="empty">ยังไม่พบข้อมูล</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-title">สถานที่ติดตั้งป้าย</div>
+      <div class="row">
+        <label>รหัสป้าย</label>
+        <div class="field"><input type="text" id="signboardCode" name="signboard.signboardCode" onblur="this.value=this.value.toUpperCase()"></div>
+      </div>
+      <div class="row">
+        <label>รหัสแปลงที่ดิน</label>
+        <div class="field">
+          <div class="inline">
+            <input type="text" id="landParcelCode" readonly>
+            <button type="button" class="btn btn-add" style="padding:5px 14px;" onclick="addLand()">เลือกข้อมูลที่ดิน</button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <label>ชื่อสถานประกอบการค้า/กิจการ</label>
+        <div class="field"><textarea id="signboardName" name="signboard.signboardName" rows="2"></textarea></div>
+      </div>
+      <div class="row">
+        <label>วันที่ติดตั้งป้าย</label>
+        <div class="field small"><input type="text" id="setupDateStr" name="signboard.setupDateStr" placeholder="dd/mm/yyyy"></div>
+      </div>
+      <div class="row">
+        <label>บ้านเลขที่</label>
+        <div class="field small"><input type="text" id="addrNo" name="signboard.addrNo"></div>
+        <div class="hint" style="margin-left:218px; margin-top:-24px;">&nbsp;</div>
+      </div>
+      <div class="row">
+        <label>หมู่</label>
+        <div class="field small"><input type="text" id="villageNo" name="signboard.villageNo"></div>
+      </div>
+      <div class="row">
+        <label>ตรอก/ซอย</label>
+        <div class="field small"><input type="text" id="alley" name="signboard.alley"></div>
+      </div>
+      <div class="row">
+        <label>ถนน</label>
+        <div class="field small"><input type="text" id="road" name="signboard.road"></div>
+      </div>
+      <div class="row">
+        <label>ชุมชน</label>
+        <div class="field"><input type="text" id="villageName" name="signboard.villageName"></div>
+      </div>
+      <div class="row">
+        <label>อำเภอ <span class="req">*</span></label>
+        <div class="field" style="max-width:260px;">
+          <select id="amphurId">
+            <option value="3305" selected>ขุขันธ์</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>ตำบล <span class="req">*</span></label>
+        <div class="field" style="max-width:260px;">
+          <select id="districtId"></select>
+        </div>
+      </div>
+
+      <div class="section-title">รายการคิดคำนวณภาษีป้าย</div>
+      <div class="row">
+        <label>ป้ายแสดง</label>
+        <div class="field" style="max-width:360px;">
+          <select id="signboardType" name="signboard.signboardType">
+            <option value="">กรุณาเลือก</option>
+            <option value="1">ป้าย/แสดงโฆษณาทั่วไป</option>
+            <option value="2">ป้าย/ป้ายภายในอาคาร 3 ตร.ม ขึ้นไป</option>
+            <option value="3">ป้ายตามกฏหมายทะเบียนพาณิชย์</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>ประเภทป้าย <span class="req">*</span></label>
+        <div class="field">
+          <select id="character" name="signboard.character" onchange="changeChar()">
+            <option value="">กรุณาเลือก</option>
+            <option value="5">ป้ายประเภทที่ 1 (ก) ป้ายที่มีอักษรไทยล้วน (ข้อความเคลื่อนที่/เปลี่ยนข้อความได้)</option>
+            <option value="1">ป้ายประเภทที่ 1 (ข) ป้ายที่มีอักษรไทยล้วน (ข้อความไม่เคลื่อนที่/เปลี่ยนข้อความไม่ได้)</option>
+            <option value="6">ป้ายประเภทที่ 2 (ก) ป้ายที่มีอักษรไทยปนกับอักษรต่างประเทศ /ภาพ/เครื่องหมายอื่น (ข้อความเคลื่อนที่/เปลี่ยนข้อความได้)</option>
+            <option value="2">ป้ายประเภทที่ 2 (ข) ป้ายที่มีอักษรไทยปนกับอักษรต่างประเทศ /ภาพ/เครื่องหมายอื่น (ข้อความไม่เคลื่อนที่/เปลี่ยนข้อความไม่ได้)</option>
+            <option value="7">ป้ายประเภทที่ 3 (ก) ป้ายที่ไม่มีอักษรไทย ... (ข้อความเคลื่อนที่/เปลี่ยนข้อความได้)</option>
+            <option value="3">ป้ายประเภทที่ 3 (ข) ป้ายที่ไม่มีอักษรไทย ... (ข้อความไม่เคลื่อนที่/เปลี่ยนข้อความไม่ได้)</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>ขนาดของป้าย (ซม.) <span class="req">*</span></label>
+        <div class="field">
+          <div class="inline">
+            <input type="text" id="widthStr" name="signboard.widthStr" placeholder="กว้าง" oninput="calcTotalArea()">
+            <input type="text" id="heightStr" name="signboard.heightStr" placeholder="สูง" oninput="calcTotalArea()">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <label>เนื้อที่ป้าย (ตร.ซม.)</label>
+        <div class="field small"><input type="text" id="totalAreaStr" name="signboard.totalAreaStr" readonly></div>
+      </div>
+      <div class="row">
+        <label>จำนวนด้าน <span class="req">*</span></label>
+        <div class="field small"><input type="text" id="noSideStr" name="signboard.noSideStr" oninput="recalcTax()"></div>
+      </div>
+      <div class="row">
+        <label>จำนวนหน่วย</label>
+        <div class="field small"><input type="text" id="unitStr" name="signboard.unitStr" readonly></div>
+        <div class="hint" style="margin-left:218px;">ปัดขึ้นเป็น 500 ตร.ซม. ต่อหน่วย</div>
+      </div>
+      <div class="row">
+        <label>ข้อความภายในป้าย <span class="req">*</span></label>
+        <div class="field"><textarea id="signboardDesc" name="signboard.signboardDesc" rows="2"></textarea></div>
+      </div>
+      <div class="row">
+        <label>งวดที่ติดตั้งป้าย <span class="req">*</span></label>
+        <div class="field" style="max-width:300px;">
+          <select id="period" name="signboard.period" onchange="recalcTax()">
+            <option value="">กรุณาเลือก</option>
+            <option value="1">งวด 1 (มกราคม - มีนาคม)</option>
+            <option value="2">งวด 2 (เมษายน - มิถุนายน)</option>
+            <option value="3">งวด 3 (กรกฎาคม - กันยายน)</option>
+            <option value="4">งวด 4 (ตุลาคม - ธันวาคม)</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>อัตราภาษีป้าย</label>
+        <div class="field small"><input type="text" id="taxRateStr" name="signboard.taxRateStr" readonly></div>
+      </div>
+      <div class="row">
+        <label>รวมเงินภาษี (บาท)</label>
+        <div class="field small"><input type="text" id="taxAmountStr" name="signboard.taxAmountStr" readonly></div>
+      </div>
+
+      <div class="row">
+        <label>หมายเหตุ</label>
+        <div class="field"><textarea id="note" name="signboard.note" rows="2"></textarea></div>
+      </div>
+      <div class="row">
+        <label>หมายเหตุเจ้าหน้าที่</label>
+        <div class="field"><textarea id="ltaxRemark" name="signboard.ltaxRemark" rows="2"></textarea></div>
+      </div>
+      <div class="row">
+        <label>ภาพป้าย</label>
+        <div class="field">
+          <input type="file" id="formFile" name="formFile" accept="image/*" style="border:none; padding:4px 0;" onchange="onPhotoPick()">
+          <div class="hint">เลือกรูปแล้วจะฝังลงใน JSON เอง (ใช้ได้ทุกเครื่อง) — ไม่ต้องตามหาไฟล์รูปแยก</div>
+          <div id="photoStatus" style="font-size:12px; color:#2e7d32; margin-top:4px;"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="btn-bar">
+    <button type="button" class="btn btn-save" onclick="saveSign()"> บันทึก </button>
+    <button type="button" class="btn btn-back" onclick="goBack()"> กลับไป </button>
+  </div>
+
+  <div id="preview" style="display:none;">
+    <div class="preview-head">ผลลัพธ์ (JSON สำหรับเก็บ — นำไปรวมกับข้อมูลอื่นที่ index.html)</div>
+    <textarea id="previewBox" readonly></textarea>
+  </div>
+</div>
+
+<script>
+/* อัตราภาษีป้าย (ตามระบบจริง) */
+var RATES = { '5': 10, '6': 52, '7': 52, '1': 5, '2': 26, '3': 50 };
+
+var DISTRICTS = [
+  ['330524','กฤษณา'],['330501','กันทรารมย์'],['330514','โคกตาล*'],['330517','โคกเพชร'],
+  ['330502','จะกง'],['330503','ใจดี'],['330523','ดงรัก*'],['330504','ดองกำเม็ด'],
+  ['330513','ตะเคียน'],['330519','ตะเคียนราม*'],['330508','ตาอุด'],['330515','นิคมพัฒนา'],
+  ['330518','ปราสาท'],['330506','ปรือใหญ่'],['330525','ลมศักดิ์'],['330512','ละลม*'],
+  ['330527','ศรีตระกูล'],['330528','ศรีสะอาด'],['330507','สะเดาใหญ่'],['330521','สำโรงตาเจ็น'],
+  ['330505','โสน'],['330526','หนองฉลอง'],['330516','ห้วยตามอญ*'],['330520','ห้วยติ๊กชู*'],
+  ['330510','ห้วยใต้'],['330522','ห้วยสำราญ'],['330509','ห้วยเหนือ'],['330511','หัวเสือ']
+];
+
+var owners = [];
+var landCode = '';
+
+function $(id) { return document.getElementById(id); }
+function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+function fmt(n, dec) { return n.toLocaleString('en-US', { minimumFractionDigits: (dec ? 2 : 0), maximumFractionDigits: (dec ? 2 : 0) }); }
+
+var photoData = '';
+function onPhotoPick() {
+  var input = $('formFile');
+  var file = input.files && input.files[0];
+  if (!file) { photoData = ''; $('photoStatus').textContent = ''; return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var rawUrl = e.target.result;
+    var img = new Image();
+    img.onload = function() {
+      var maxW = 1600, scale = Math.min(1, maxW / Math.max(img.width, img.height));
+      var c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      var out = c.toDataURL('image/jpeg', 0.8);
+      photoData = out;
+      $('photoStatus').textContent = '✓ ' + file.name + ' (' + (out.length / 1024 / 1.33 / 1024).toFixed(1) + ' MB)';
+    };
+    img.onerror = function() {
+      photoData = rawUrl;
+      $('photoStatus').textContent = '✓ ' + file.name + ' (ไม่บีบอัด — ใช้ต้นฉบับ)';
+    };
+    img.src = rawUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ---------- เจ้าของ / ที่ดิน ---------- */
+function addOwner() {
+  var psn = prompt('เลขประจำตัวประชาชน (13 หลัก):', '');
+  if (!psn || !/^\d{13}$/.test(psn.trim())) { alert('กรอกเลขบัตร 13 หลัก'); return; }
+  var name = prompt('ชื่อ - นามสกุล:', '');
+  if (!name) { alert('กรอกชื่อ - นามสกุล'); return; }
+  owners.push({ psnId: psn.trim(), fullName: name.trim() });
+  window.__dirty = true;
+  renderOwners();
+}
+function removeOwner(i) { owners.splice(i, 1); window.__dirty = true; renderOwners(); }
+function renderOwners() {
+  var tb = $('ownerTable');
+  if (!owners.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">ยังไม่พบข้อมูล</td></tr>'; return; }
+  var h = '';
+  owners.forEach(function(o, i) {
+    h += '<tr><td align="center">' + (i + 1) + '</td><td>' + o.fullName + '</td><td>' + o.psnId +
+         '</td><td>-</td><td align="center"><a class="icon-danger" onclick="removeOwner(' + i + ')">&#10008;</a></td></tr>';
+  });
+  tb.innerHTML = h;
+}
+function addLand() {
+  var code = prompt('รหัสแปลงที่ดิน:', '');
+  if (!code) return;
+  landCode = code.trim().toUpperCase();
+  $('landParcelCode').value = landCode;
+  window.__dirty = true;
+}
+
+/* ---------- คำนวณภาษีป้าย ---------- */
+function calcTotalArea() {
+  var w = num($('widthStr').value);
+  var h = num($('heightStr').value);
+  var totalArea = w * h;
+  var roundedArea;
+  var remainder = totalArea % 500;
+  if (remainder <= 250) { roundedArea = totalArea - remainder; }
+  else { roundedArea = totalArea - remainder + 500; }
+  var total = roundedArea / 500;
+  $('totalAreaStr').value = fmt(totalArea, true);
+  $('unitStr').value = fmt(total, false);
+  recalcTax();
+}
+function changeCharRate() {
+  var c = $('character').value;
+  if (RATES[c]) $('taxRateStr').value = RATES[c];
+}
+function changeChar() {
+  changeCharRate();
+  calcTotalArea();
+}
+function recalcTax() {
+  var unit = num($('unitStr').value);
+  var rate = num($('taxRateStr').value);
+  var side = num($('noSideStr').value);
+  var tri = $('period').value;
+  var tax = (rate * unit >= 200) ? rate * unit : 200;
+  if (tri == 2) tax = tax * 0.75;
+  else if (tri == 3) tax = tax * 0.5;
+  else if (tri == 4) tax = tax * 0.25;
+  if (tax < 200) tax = 200;
+  tax = tax * (side > 0 ? side : 1);
+  $('taxAmountStr').value = fmt(tax, true);
+}
+
+/* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
+window.__editKey = null;
+window.__editIdx = -1;
+function LTAX_store(key, record) {
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+    list[window.__editIdx] = record;
+  } else {
+    list.push(record);
+  }
+  try {
+    localStorage.setItem(key, JSON.stringify(list));
+  } catch(e) {
+    alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
+  }
+  window.__editKey = null;
+  window.__editIdx = -1;
+}
+function LTAX_download(filename, record) {
+  var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+/* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
+function loadEditRecord() {
+  var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
+  var key = params.get('editKey');
+  var idx = parseInt(params.get('editIdx') || '-1', 10);
+  if (!key || idx < 0) return false;
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (!list[idx]) return false;
+  var r = list[idx];
+
+  owners = String(r['เลขบัตรเจ้าของป้าย'] || '').split(';').filter(Boolean).map(function(p) { return { psnId: p, fullName: '' }; });
+  renderOwners();
+  if (r['รหัสป้าย']) $('signboardCode').value = r['รหัสป้าย'];
+  if (r['ชื่อสถานประกอบการค้า/กิจการ']) $('signboardName').value = r['ชื่อสถานประกอบการค้า/กิจการ'];
+  if (r['วันที่ติดตั้งป้าย']) $('setupDateStr').value = r['วันที่ติดตั้งป้าย'];
+  if (r['บ้านเลขที่']) $('addrNo').value = r['บ้านเลขที่'];
+  if (r['หมู่']) $('villageNo').value = r['หมู่'];
+  if (r['ตรอก/ซอย']) $('alley').value = r['ตรอก/ซอย'];
+  if (r['ถนน']) $('road').value = r['ถนน'];
+  if (r['ชุมชน']) $('villageName').value = r['ชุมชน'];
+  if (r['ตำบล']) {
+    var dSel = $('districtId');
+    for (var i = 0; i < dSel.options.length; i++) {
+      if (dSel.options[i].text === r['ตำบล']) { dSel.selectedIndex = i; break; }
+    }
+  }
+  if (r['ป้ายแสดง']) $('signboardType').value = r['ป้ายแสดง'];
+  if (r['ประเภทป้าย']) $('character').value = r['ประเภทป้าย'];
+  if (r['กว้าง (ซม.)']) $('widthStr').value = r['กว้าง (ซม.)'];
+  if (r['ยาว (ซม.)']) $('heightStr').value = r['ยาว (ซม.)'];
+  if (r['จำนวนด้าน']) $('noSideStr').value = r['จำนวนด้าน'];
+  if (r['ข้อความภายในป้าย']) $('signboardDesc').value = r['ข้อความภายในป้าย'];
+  if (r['งวดที่ติดตั้งป้าย']) $('period').value = r['งวดที่ติดตั้งป้าย'];
+  photoData = r['รูปภาพ_data'] || '';
+
+  window.__editKey = key;
+  window.__editIdx = idx;
+  window.__saved = true;
+  $('previewBox').value = JSON.stringify(r, null, 2);
+  $('preview').style.display = 'block';
+  return true;
+}
+
+/* ---------- บันทึก ---------- */
+function saveSign() {
+  var missing = [];
+  ['signboardCode','character','widthStr','heightStr','noSideStr','signboardDesc','period','districtId'].forEach(function(r) {
+    var el = $(r);
+    if (!el || el.value === '') missing.push(r);
+  });
+  if (missing.length) { alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', ')); return; }
+  if (num($('widthStr').value) <= 0 || num($('heightStr').value) <= 0) { alert('กรอกขนาดป้ายให้ถูกต้อง'); return; }
+
+  var data = {
+    'รหัสป้าย': $('signboardCode').value.trim().toUpperCase(),
+    'เลขบัตรเจ้าของป้าย': owners.map(function(o) { return o.psnId; }).join(';'),
+    'ชื่อสถานประกอบการค้า/กิจการ': $('signboardName').value,
+    'วันที่ติดตั้งป้าย': $('setupDateStr').value,
+    'บ้านเลขที่': $('addrNo').value,
+    'หมู่': $('villageNo').value,
+    'ตรอก/ซอย': $('alley').value,
+    'ถนน': $('road').value,
+    'ชุมชน': $('villageName').value,
+    'อำเภอ': 'ขุขันธ์',
+    'ตำบล': $('districtId').selectedOptions[0].text,
+    'ป้ายแสดง': $('signboardType').value,
+    'ประเภทป้าย': $('character').value,
+    'กว้าง (ซม.)': $('widthStr').value,
+    'ยาว (ซม.)': $('heightStr').value,
+    'จำนวนด้าน': $('noSideStr').value,
+    'ข้อความภายในป้าย': $('signboardDesc').value,
+    'งวดที่ติดตั้งป้าย': $('period').value,
+    'จังหวัด': '33',
+    'รหัสไปรษณีย์': '',
+    'โทรศัพท์': '',
+    'Path รูปภาพ': $('formFile').files.length ? $('formFile').files[0].name : '',
+    'รูปภาพ_data': photoData
+  };
+
+  var code = data['รหัสป้าย'];
+  LTAX_store('ltax_sign', data);
+  LTAX_download('ป้าย_' + code + '.json', data);
+  $('previewBox').value = JSON.stringify(data, null, 2);
+  $('preview').style.display = 'block';
+  window.__saved = true;
+}
+
+window.__dirty = false;
+document.addEventListener('input', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+document.addEventListener('change', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+
+function goBack() {
+  if (window.__dirty && !window.__saved) { alert('กรุณาบันทึกข้อมูลก่อน'); return; }
+  if (window.__goHome) { window.__goHome(); return; }
+  window.location.href = 'index.html';
+}
+
+function resetForm() {
+  if (!confirm('ล้างข้อมูลในฟอร์ม?')) return;
+  ['signboardCode','landParcelCode','signboardName','setupDateStr','addrNo','villageNo','alley',
+   'road','villageName','widthStr','heightStr','totalAreaStr','noSideStr','unitStr','signboardDesc',
+   'taxRateStr','taxAmountStr','note','ltaxRemark','formFile'].forEach(function(f) { $(f).value = ''; });
+  $('signboardType').value = ''; $('character').value = ''; $('period').value = '';
+  $('districtId').value = '';
+  photoData = ''; $('photoStatus').textContent = '';
+  owners = []; landCode = '';
+  renderOwners();
+  $('preview').style.display = 'none';
+}
+
+/* init */
+(function() {
+  var box = $('districtId');
+  box.innerHTML = '<option value="">กรุณาเลือก</option>';
+  DISTRICTS.forEach(function(d) {
+    var opt = document.createElement('option');
+    opt.value = d[0]; opt.text = d[1];
+    box.appendChild(opt);
+  });
+  loadEditRecord();
+})();
+</script>
+</body>
+</html>
