@@ -514,9 +514,7 @@ function saveOwner() {
     return;
   }
   var data = collect();
-  var psn = data['เลขบัตรประชาชน'];
   LTAX_store('ltax_owner', data);
-  LTAX_download('เจ้าของ_' + psn + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;

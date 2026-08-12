@@ -483,9 +483,7 @@ function saveSign() {
     'รูปภาพ_data': photoData
   };
 
-  var code = data['รหัสป้าย'];
   LTAX_store('ltax_sign', data);
-  LTAX_download('ป้าย_' + code + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;

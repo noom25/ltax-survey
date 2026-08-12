@@ -350,7 +350,6 @@ function saveUsed() {
 
   var data = collect();
   LTAX_store('ltax_land_usage', data);
-  LTAX_download('ใช้ประโยชน์ที่ดิน_' + data['รหัสแปลงที่ดิน'] + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;

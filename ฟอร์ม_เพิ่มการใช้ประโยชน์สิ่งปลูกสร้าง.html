@@ -384,7 +384,6 @@ function saveUsage() {
   };
 
   LTAX_store('ltax_building_usage', data);
-  LTAX_download('ใช้ประโยชน์สิ่งปลูกสร้าง_' + code + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;

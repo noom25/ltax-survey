@@ -533,9 +533,7 @@ function saveLand() {
     return;
   }
   var data = collect();
-  var code = data['รหัสแปลงที่ดิน'];
   LTAX_store('ltax_land', data);
-  LTAX_download('ที่ดิน_' + code + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;

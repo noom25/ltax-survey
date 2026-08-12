@@ -550,9 +550,7 @@ function saveBuilding() {
   if (missing.length) { alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', ')); return; }
   if (num($('totalAreaStr').value) <= 0) { alert('ขนาดพื้นที่ทั้งอาคาร (ตร.ม.) ห้ามเท่ากับ 0'); return; }
   var data = collect();
-  var code = data['รหัสสิ่งปลูกสร้าง'];
   LTAX_store('ltax_building', data);
-  LTAX_download('สิ่งปลูกสร้าง_' + code + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;

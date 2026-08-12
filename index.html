@@ -220,7 +220,7 @@
 
   <div class="note">
     <b>ลำดับการทำงาน:</b> เพิ่มเจ้าของทรัพย์สินก่อน แล้วค่อยเพิ่ม ที่ดิน → การใช้ประโยชน์ที่ดิน / สิ่งปลูกสร้าง → การใช้ประโยชน์สิ่งปลูกสร้าง / ป้าย<br>
-    แต่ละฟอร์มปุ่ม <b>บันทึก</b> จะเก็บข้อมูลในเบราว์เซอร์ (localStorage) + ดาวน์โหลด JSON รายแปลง เมื่อกรอกครบแล้วกลับมาหน้านี้ กด <b>รวมข้อมูล</b> เพื่อรวมเป็นไฟล์ JSON เดียว จากนั้นรัน <b>json_to_excel.py</b> ต่อท้ายเพื่อสร้าง Excel template ที่บอทอ่านได้<br><br>
+    ปุ่ม <b>บันทึก</b> ของแต่ละฟอร์มจะเก็บข้อมูลไว้ในมือถือ (localStorage) เท่านั้น — ไม่สร้างไฟล์หลุดออกมา เมื่อกรอกครบแล้วกลับมาหน้านี้ กด <b>รวมข้อมูล</b> เพื่อดาวน์โหลดเป็นไฟล์ JSON ไฟล์เดียว (รวมทุกหมวด) จากนั้นรัน <b>json_to_excel.py</b> เพื่อสร้าง Excel template ที่บอทอ่านได้<br><br>
     <b>รูปภาพ:</b> เลือกรูปในฟอร์มแล้วระบบจะฝังตัวรูป (ฐาน 64) ลงในไฟล์ JSON เอง หรือจะถ่ายเป็นชุดผ่านหน้าถ่ายรูป (เลือกหมวด+รหัสก่อนถ่าย ระบบจำรหัสล่าสุดให้ — กันจับคู่ผิด) — ใช้ได้ทุกเครื่อง ไม่ต้องหอบไฟล์รูปแยกกลับมา
   </div>
 
@@ -2566,9 +2566,7 @@ function saveOwner() {
     return;
   }
   var data = collect();
-  var psn = data['เลขบัตรประชาชน'];
   LTAX_store('ltax_owner', data);
-  LTAX_download('เจ้าของ_' + psn + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -2845,9 +2843,7 @@ function saveLand() {
     return;
   }
   var data = collect();
-  var code = data['รหัสแปลงที่ดิน'];
   LTAX_store('ltax_land', data);
-  LTAX_download('ที่ดิน_' + code + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -3035,7 +3031,6 @@ function saveUsed() {
 
   var data = collect();
   LTAX_store('ltax_land_usage', data);
-  LTAX_download('ใช้ประโยชน์ที่ดิน_' + data['รหัสแปลงที่ดิน'] + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -3421,9 +3416,7 @@ function saveBuilding() {
   if (missing.length) { alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', ')); return; }
   if (num($('totalAreaStr').value) <= 0) { alert('ขนาดพื้นที่ทั้งอาคาร (ตร.ม.) ห้ามเท่ากับ 0'); return; }
   var data = collect();
-  var code = data['รหัสสิ่งปลูกสร้าง'];
   LTAX_store('ltax_building', data);
-  LTAX_download('สิ่งปลูกสร้าง_' + code + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -3678,7 +3671,6 @@ function saveUsage() {
   };
 
   LTAX_store('ltax_building_usage', data);
-  LTAX_download('ใช้ประโยชน์สิ่งปลูกสร้าง_' + code + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -3939,9 +3931,7 @@ function saveSign() {
     'รูปภาพ_data': photoData
   };
 
-  var code = data['รหัสป้าย'];
   LTAX_store('ltax_sign', data);
-  LTAX_download('ป้าย_' + code + '.json', data);
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
