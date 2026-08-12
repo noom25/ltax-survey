@@ -142,11 +142,15 @@
         <div class="field"><input type="text" id="villageName" name="signboard.villageName"></div>
       </div>
       <div class="row">
+        <label>จังหวัด <span class="req">*</span></label>
+        <div class="field" style="max-width:260px;">
+          <select id="provinceId" onchange="onProvinceChange()"></select>
+        </div>
+      </div>
+      <div class="row">
         <label>อำเภอ <span class="req">*</span></label>
         <div class="field" style="max-width:260px;">
-          <select id="amphurId">
-            <option value="3305" selected>ขุขันธ์</option>
-          </select>
+          <select id="amphurId" onchange="onAmphurChange()"></select>
         </div>
       </div>
       <div class="row">
@@ -1605,6 +1609,15 @@ function loadEditRecord() {
   if (r['ตรอก/ซอย']) $('alley').value = r['ตรอก/ซอย'];
   if (r['ถนน']) $('road').value = r['ถนน'];
   if (r['ชุมชน']) $('villageName').value = r['ชุมชน'];
+  if (r['จังหวัด']) $('provinceId').value = r['จังหวัด'];
+  onProvinceChange();
+  if (r['อำเภอ']) {
+    var aSel = $('amphurId');
+    for (var i = 0; i < aSel.options.length; i++) {
+      if (aSel.options[i].text === r['อำเภอ']) { aSel.selectedIndex = i; break; }
+    }
+  }
+  onAmphurChange();
   if (r['ตำบล']) {
     var dSel = $('districtId');
     for (var i = 0; i < dSel.options.length; i++) {
@@ -1631,7 +1644,7 @@ function loadEditRecord() {
 /* ---------- บันทึก ---------- */
 function saveSign() {
   var missing = [];
-  ['signboardCode','character','widthStr','heightStr','noSideStr','signboardDesc','period','districtId'].forEach(function(r) {
+  ['signboardCode','character','widthStr','heightStr','noSideStr','signboardDesc','period','provinceId','amphurId','districtId'].forEach(function(r) {
     var el = $(r);
     if (!el || el.value === '') missing.push(r);
   });
@@ -1648,7 +1661,7 @@ function saveSign() {
     'ตรอก/ซอย': $('alley').value,
     'ถนน': $('road').value,
     'ชุมชน': $('villageName').value,
-    'อำเภอ': 'ขุขันธ์',
+    'อำเภอ': $('amphurId').selectedOptions[0].text,
     'ตำบล': $('districtId').selectedOptions[0].text,
     'ป้ายแสดง': $('signboardType').value,
     'ประเภทป้าย': $('character').value,
@@ -1657,7 +1670,7 @@ function saveSign() {
     'จำนวนด้าน': $('noSideStr').value,
     'ข้อความภายในป้าย': $('signboardDesc').value,
     'งวดที่ติดตั้งป้าย': $('period').value,
-    'จังหวัด': '33',
+    'จังหวัด': $('provinceId').value,
     'รหัสไปรษณีย์': '',
     'โทรศัพท์': '',
     'Path รูปภาพ': $('formFile').files.length ? $('formFile').files[0].name : '',
@@ -1692,6 +1705,8 @@ function resetForm() {
    'road','villageName','widthStr','heightStr','totalAreaStr','noSideStr','unitStr','signboardDesc',
    'taxRateStr','taxAmountStr','note','ltaxRemark','formFile'].forEach(function(f) { $(f).value = ''; });
   $('signboardType').value = ''; $('character').value = ''; $('period').value = '';
+  $('provinceId').value = '';
+  onProvinceChange();
   $('districtId').value = '';
   photoData = ''; $('photoStatus').textContent = '';
   owners = []; landCode = '';
@@ -1701,13 +1716,17 @@ function resetForm() {
 
 /* init */
 (function() {
-  var box = $('districtId');
-  box.innerHTML = '<option value="">กรุณาเลือก</option>';
-  DISTRICTS.forEach(function(d) {
+  var pBox = $('provinceId');
+  PROVINCES.forEach(function(p) {
     var opt = document.createElement('option');
-    opt.value = d[0]; opt.text = d[1];
-    box.appendChild(opt);
+    opt.value = p[0]; opt.text = p[1];
+    pBox.appendChild(opt);
   });
+  $('provinceId').value = '33';
+  onProvinceChange();
+  $('amphurId').value = '3305';
+  onAmphurChange();
+  $('districtId').value = '330506'; /* ปรือใหญ่ */
   loadEditRecord();
 })();
 </script>

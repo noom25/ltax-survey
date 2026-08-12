@@ -209,6 +209,10 @@
         <div class="field" style="max-width:160px;"><input type="text" id="villageNo" name="land.villageNo"></div>
       </div>
       <div class="row">
+        <label>จังหวัด <span class="req">*</span></label>
+        <div class="field"><select id="provinceId" name="provinceId" onchange="onProvinceChange()"></select></div>
+      </div>
+      <div class="row">
         <label>อำเภอ <span class="req">*</span></label>
         <div class="field"><select id="amphurId" name="amphurId" onchange="onAmphurChange()"></select></div>
       </div>
@@ -1483,7 +1487,23 @@ var ADMIN = {
   }
 };;;
 
-var REQUIRED = ['docType','amphurId','districtId','totalWahStr','pricePerWahStr','totalPriceStr'];
+var PROVINCES = [
+  ['10','กรุงเทพมหานคร'], ['11','สมุทรปราการ'], ['12','นนทบุรี'], ['13','ปทุมธานี'], ['14','พระนครศรีอยุธยา'], ['15','อ่างทอง'],
+  ['16','ลพบุรี'], ['17','สิงห์บุรี'], ['18','ชัยนาท'], ['19','สระบุรี'], ['20','ชลบุรี'], ['21','ระยอง'],
+  ['22','จันทบุรี'], ['23','ตราด'], ['24','ฉะเชิงเทรา'], ['25','ปราจีนบุรี'], ['26','นครนายก'], ['27','สระแก้ว'],
+  ['30','นครราชสีมา'], ['31','บุรีรัมย์'], ['32','สุรินทร์'], ['33','ศรีสะเกษ'], ['34','อุบลราชธานี'], ['35','ยโสธร'],
+  ['36','ชัยภูมิ'], ['37','อำนาจเจริญ'], ['38','บึงกาฬ'], ['39','หนองบัวลำภู'], ['40','ขอนแก่น'], ['41','อุดรธานี'],
+  ['42','เลย'], ['43','หนองคาย'], ['44','มหาสารคาม'], ['45','ร้อยเอ็ด'], ['46','กาฬสินธุ์'], ['47','สกลนคร'],
+  ['48','นครพนม'], ['49','มุกดาหาร'], ['50','เชียงใหม่'], ['51','ลำพูน'], ['52','ลำปาง'], ['53','อุตรดิตถ์'],
+  ['54','แพร่'], ['55','น่าน'], ['56','พะเยา'], ['57','เชียงราย'], ['58','แม่ฮ่องสอน'], ['60','นครสวรรค์'],
+  ['61','อุทัยธานี'], ['62','กำแพงเพชร'], ['63','ตาก'], ['64','สุโขทัย'], ['65','พิษณุโลก'], ['66','พิจิตร'],
+  ['67','เพชรบูรณ์'], ['70','ราชบุรี'], ['71','กาญจนบุรี'], ['72','สุพรรณบุรี'], ['73','นครปฐม'], ['74','สมุทรสาคร'],
+  ['75','สมุทรสงคราม'], ['76','เพชรบุรี'], ['77','ประจวบคีรีขันธ์'], ['80','นครศรีธรรมราช'], ['81','กระบี่'], ['82','พังงา'],
+  ['83','ภูเก็ต'], ['84','สุราษฎร์ธานี'], ['85','ระนอง'], ['86','ชุมพร'], ['90','สงขลา'], ['91','สตูล'],
+  ['92','ตรัง'], ['93','พัทลุง'], ['94','ปัตตานี'], ['95','ยะลา'], ['96','นราธิวาส']
+];
+
+var REQUIRED = ['provinceId','docType','amphurId','districtId','totalWahStr','pricePerWahStr','totalPriceStr'];
 var owners = []; /* [{psnId, fullName}] */
 
 function $(id) { return document.getElementById(id); }
@@ -1518,22 +1538,27 @@ function renderOwners() {
   tb.innerHTML = html;
 }
 
-/* ---------- อำเภอ/ตำบล ---------- */
-function fillAmphur(sel) {
-  var box = $(sel);
-  box.innerHTML = '<option value="">กรุณาเลือก</option>';
-  for (var a in ADMIN['33']) {
+/* ---------- จังหวัด/อำเภอ/ตำบล ---------- */
+function onProvinceChange() {
+  var prov = $('provinceId').value;
+  var aBox = $('amphurId');
+  aBox.innerHTML = '<option value="">กรุณาเลือก</option>';
+  var dBox = $('districtId');
+  dBox.innerHTML = '<option value="">กรุณาเลือก</option>';
+  if (!prov || !ADMIN[prov]) return;
+  for (var a in ADMIN[prov]) {
     var opt = document.createElement('option');
-    opt.value = a; opt.text = ADMIN['33'][a].name;
-    box.appendChild(opt);
+    opt.value = a; opt.text = ADMIN[prov][a].name;
+    aBox.appendChild(opt);
   }
 }
 function onAmphurChange() {
+  var prov = $('provinceId').value;
   var amph = $('amphurId').value;
   var dBox = $('districtId');
   dBox.innerHTML = '<option value="">กรุณาเลือก</option>';
-  if (!amph || !ADMIN['33'][amph]) return;
-  var dists = ADMIN['33'][amph].districts;
+  if (!prov || !amph || !ADMIN[prov] || !ADMIN[prov][amph]) return;
+  var dists = ADMIN[prov][amph].districts;
   for (var d in dists) {
     var opt = document.createElement('option');
     opt.value = d; opt.text = dists[d];
@@ -1618,6 +1643,8 @@ function loadEditRecord() {
   if (r['ไร่']) $('raiStr').value = r['ไร่'];
   if (r['งาน']) $('nganStr').value = r['งาน'];
   if (r['ตร.วา']) $('squareWahStr').value = r['ตร.วา'];
+  if (r['จังหวัด']) $('provinceId').value = r['จังหวัด'];
+  onProvinceChange();
   if (r['อำเภอ']) $('amphurId').value = r['อำเภอ'];
   onAmphurChange();
   if (r['ตำบล']) $('districtId').value = r['ตำบล'];
@@ -1662,7 +1689,7 @@ function collect() {
     'ตร.วา': sel('squareWahStr'),
     'ตำบล': sel('districtId'),
     'อำเภอ': sel('amphurId'),
-    'จังหวัด': '33',
+    'จังหวัด': sel('provinceId'),
     'รวมราคาประเมินที่ดิน (บาท)': sel('totalPriceStr'),
     'ราคาต่อตร.วา': sel('pricePerWahStr'),
     'Path รูปที่ดิน': ''
@@ -1713,8 +1740,8 @@ function resetForm() {
    'page','road','alley','villageNo','note','ltaxRemark'].forEach(function(f) { $(f).value = ''; });
   ['utm2','scale'].forEach(function(f) { $(f).value = ''; });
   $('docType').value = '';
-  $('amphurId').value = '';
-  onAmphurChange();
+  $('provinceId').value = '';
+  onProvinceChange();
   $('districtId').value = '';
   $('raiStr').value = '0'; $('nganStr').value = '0'; $('squareWahStr').value = '0.00';
   calTotalWah(); calTotalPrice();
@@ -1725,7 +1752,14 @@ function resetForm() {
 
 /* init */
 (function() {
-  fillAmphur('amphurId');
+  var pBox = $('provinceId');
+  PROVINCES.forEach(function(p) {
+    var opt = document.createElement('option');
+    opt.value = p[0]; opt.text = p[1];
+    pBox.appendChild(opt);
+  });
+  $('provinceId').value = '33';
+  onProvinceChange();
   $('amphurId').value = '3305';
   onAmphurChange();
   $('districtId').value = '330506'; /* ปรือใหญ่ */
