@@ -210,6 +210,10 @@
         <div class="field" style="max-width:160px;"><input type="text" id="villageNo" name="land.villageNo"></div>
       </div>
       <div class="row">
+        <label>จังหวัด <span class="req">*</span></label>
+        <div class="field"><select id="provinceId" name="provinceId" onchange="onProvinceChange()"></select></div>
+      </div>
+      <div class="row">
         <label>อำเภอ <span class="req">*</span></label>
         <div class="field"><select id="amphurId" name="amphurId" onchange="onAmphurChange()"></select></div>
       </div>
@@ -319,25 +323,11 @@
    ข้อมูลอ้างอิง (ต้นแบบ - จะ sync ให้ตรงกับระบบ LTAX จริงต่อไป)
    ========================================================= */
 
-/* อำเภอ/ตำบล — มีข้อมูลจริงของ อ.ขุขันธ์ (จากหน้าเว็บ) + ตัวอย่างเมืองศรีสะเกษ */
-var ADMIN = {
-  '33': {
-    '3305': { name: 'ขุขันธ์', districts: {
-      '330524': 'กฤษณา', '330501': 'กันทรารมย์', '330514': 'โคกตาล*', '330517': 'โคกเพชร',
-      '330502': 'จะกง', '330503': 'ใจดี', '330523': 'ดงรัก*', '330504': 'ดองกำเม็ด',
-      '330513': 'ตะเคียน', '330519': 'ตะเคียนราม*', '330508': 'ตาอุด', '330515': 'นิคมพัฒนา',
-      '330518': 'ปราสาท', '330506': 'ปรือใหญ่', '330525': 'ลมศักดิ์', '330512': 'ละลม*',
-      '330527': 'ศรีตระกูล', '330528': 'ศรีสะอาด', '330507': 'สะเดาใหญ่', '330521': 'สำโรงตาเจ็น',
-      '330505': 'โสน', '330526': 'หนองฉลอง', '330516': 'ห้วยตามอญ*', '330520': 'ห้วยติ๊กชู*',
-      '330510': 'ห้วยใต้', '330522': 'ห้วยสำราญ', '330509': 'ห้วยเหนือ', '330511': 'หัวเสือ'
-    }},
-    '3301': { name: 'เมืองศรีสะเกษ', districts: {
-      '330101': 'เมืองใต้', '330102': 'เมืองเหนือ'
-    }}
-  }
-};
+/* จังหวัด/อำเภอ/ตำบล — ครบทุกจังหวัด (77 จ. / 928 อ. / 7,436 ต. จาก admin_data.js)
+   โหลดจาก window.ADMIN_DATA (ไฟล์ admin_data.js) — รหัสตามระบบ DLA */
+var ADMIN_DATA = window.ADMIN_DATA || { provinces: [], byProvince: {}, byDistrict: {} };
 
-var REQUIRED = ['docType','amphurId','districtId','totalWahStr','pricePerWahStr','totalPriceStr'];
+var REQUIRED = ['docType','provinceId','amphurId','districtId','totalWahStr','pricePerWahStr','totalPriceStr'];
 var owners = []; /* [{psnId, fullName}] */
 
 function $(id) { return document.getElementById(id); }
@@ -372,27 +362,38 @@ function renderOwners() {
   tb.innerHTML = html;
 }
 
-/* ---------- อำเภอ/ตำบล ---------- */
-function fillAmphur(sel) {
-  var box = $(sel);
+/* ---------- จังหวัด/อำเภอ/ตำบล ---------- */
+function fillProvince() {
+  var box = $('provinceId');
   box.innerHTML = '<option value="">กรุณาเลือก</option>';
-  for (var a in ADMIN['33']) {
-    var opt = document.createElement('option');
-    opt.value = a; opt.text = ADMIN['33'][a].name;
-    box.appendChild(opt);
-  }
+  ADMIN_DATA.provinces.forEach(function(p) {
+    var o = document.createElement('option');
+    o.value = p.c; o.text = p.n;
+    box.appendChild(o);
+  });
+}
+function onProvinceChange() {
+  var prov = $('provinceId').value;
+  var aBox = $('amphurId'), dBox = $('districtId');
+  aBox.innerHTML = '<option value="">กรุณาเลือก</option>';
+  dBox.innerHTML = '<option value="">กรุณาเลือก</option>';
+  if (!prov) return;
+  (ADMIN_DATA.byProvince[prov] || []).forEach(function(a) {
+    var o = document.createElement('option');
+    o.value = a.c; o.text = a.n;
+    aBox.appendChild(o);
+  });
 }
 function onAmphurChange() {
   var amph = $('amphurId').value;
   var dBox = $('districtId');
   dBox.innerHTML = '<option value="">กรุณาเลือก</option>';
-  if (!amph || !ADMIN['33'][amph]) return;
-  var dists = ADMIN['33'][amph].districts;
-  for (var d in dists) {
-    var opt = document.createElement('option');
-    opt.value = d; opt.text = dists[d];
-    dBox.appendChild(opt);
-  }
+  if (!amph) return;
+  (ADMIN_DATA.byDistrict[amph] || []).forEach(function(d) {
+    var o = document.createElement('option');
+    o.value = d.c; o.text = d.n;
+    dBox.appendChild(o);
+  });
 }
 
 /* ---------- คำนวณเนื้อที่/ราคา (สูตรตามระบบ) ---------- */
@@ -477,8 +478,8 @@ function loadEditRecord() {
   if (r['ไร่']) $('raiStr').value = r['ไร่'];
   if (r['งาน']) $('nganStr').value = r['งาน'];
   if (r['ตร.วา']) $('squareWahStr').value = r['ตร.วา'];
-  if (r['อำเภอ']) $('amphurId').value = r['อำเภอ'];
-  onAmphurChange();
+  if (r['จังหวัด']) { $('provinceId').value = r['จังหวัด']; onProvinceChange(); }
+  if (r['อำเภอ']) { $('amphurId').value = r['อำเภอ']; onAmphurChange(); }
   if (r['ตำบล']) $('districtId').value = r['ตำบล'];
   if (r['หมายเหตุ']) $('note').value = r['หมายเหตุ'];
   if (r['หมายเหตุเจ้าหน้าที่']) $('ltaxRemark').value = r['หมายเหตุเจ้าหน้าที่'];
@@ -529,7 +530,7 @@ function collect() {
     'รวมเนื้อที่ทั้งหมด (ตร.ว.)': sel('totalWahStr'),
     'ตำบล': sel('districtId'),
     'อำเภอ': sel('amphurId'),
-    'จังหวัด': '33',
+    'จังหวัด': $('provinceId') ? sel('provinceId') : '33',
     'ราคาต่อตร.วา': sel('pricePerWahStr'),
     'รวมราคาประเมินที่ดิน (บาท)': sel('totalPriceStr'),
     'หมายเหตุ': sel('note'),
@@ -582,6 +583,8 @@ function resetForm() {
    'page','road','alley','villageNo','note','ltaxRemark'].forEach(function(f) { $(f).value = ''; });
   ['utm2','scale'].forEach(function(f) { $(f).value = ''; });
   $('docType').value = '';
+  $('provinceId').value = '';
+  onProvinceChange();
   $('amphurId').value = '';
   onAmphurChange();
   $('districtId').value = '';
@@ -594,7 +597,9 @@ function resetForm() {
 
 /* init */
 (function() {
-  fillAmphur('amphurId');
+  fillProvince();
+  $('provinceId').value = '33';
+  onProvinceChange();
   $('amphurId').value = '3305';
   onAmphurChange();
   $('districtId').value = '330506'; /* ปรือใหญ่ */
