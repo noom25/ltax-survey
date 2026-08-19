@@ -540,7 +540,7 @@ function saveSign() {
   };
 
   LTAX_store('ltax_sign', data);
-  showSavedModal('รหัสป้าย: ' + data['รหัสป้าย'] + ' (จังหวัด ' + (data['จังหวัด'] || '') + ')');
+  showSavedModal('รหัสป้าย: ' + data['รหัสป้าย'] + ' (จังหวัด ' + (data['จังหวัด'] || '') + ')', 'ltax_owner', { ctx: { psnId: data['เลขบัตรเจ้าของป้าย'] } });
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -586,6 +586,7 @@ function resetForm() {
   onAmphurChange();
   $('districtId').value = '330506'; /* ปรือใหญ่ */
   loadEditRecord();
+  setTimeout(applyNextCtx, 0);
 })();
 </script>
 <style>
@@ -612,33 +613,20 @@ function resetForm() {
       <button type="button" class="btn btn-next" id="ltaxModalNext">กรอกชุดถัดไป (ต่อไป)</button>
       <button type="button" class="btn btn-more" id="ltaxModalMore">เพิ่มรายการใหม่</button>
       <button type="button" class="btn btn-home" id="ltaxModalHome">กลับหน้าแรก</button>
+      <button type="button" class="btn btn-home" id="ltaxModalNoSign" style="display:none;">ไม่มีป้าย (จบชุด)</button>
       <button type="button" class="btn btn-close" id="ltaxModalClose">ปิด</button>
     </div>
   </div>
 </div>
 
 <script>
-/* ---------- modal ยืนยันการบันทึก ---------- */
-var _LTAX_NEXT = {
-  ltax_owner: 'ltax_land',
-  ltax_land: 'ltax_land_usage',
-  ltax_land_usage: 'ltax_building',
-  ltax_building: 'ltax_building_usage',
-  ltax_building_usage: 'ltax_sign',
-  ltax_sign: 'ltax_owner'
-};
-function showSavedModal(info, next) {
-  $('ltaxModalInfo').textContent = info;
-  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
-  nb.textContent = isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)';
-  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next); };
-  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
-  $('ltaxModalHome').onclick = function() { hideSavedModal(); if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; };
-  $('ltaxModalClose').onclick = hideSavedModal;
-  $('ltaxModal').style.display = 'flex';
-}
-function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
-function goNextForm(fid) {
+/* ---------- modal ยืนยันการบันทึก + flow ชุดข้อมูล ---------- */
+function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
+function goHome() { if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; }
+function goNextForm(fid, ctx) {
+  var c = ltaxReadCtx();
+  for (var k in (ctx || {})) if (ctx[k]) c[k] = ctx[k];
+  try { sessionStorage.setItem('ltax_next', JSON.stringify(c)); } catch(e) {}
   if (window.openForm) { try { window.openForm(fid); return; } catch(e) {} }
   var F = {
     ltax_owner: 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html',
@@ -650,7 +638,31 @@ function goNextForm(fid) {
   };
   window.location.href = F[fid] || 'index.html';
 }
-</script>
+function showSavedModal(info, next, opts) {
+  opts = opts || {};
+  $('ltaxModalInfo').textContent = info;
+  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
+  nb.textContent = opts.askSign ? 'มีป้าย — กรอกป้าย' : (isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)');
+  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next, opts.ctx); };
+  var ns = $('ltaxModalNoSign');
+  if (opts.askSign) { ns.style.display = 'block'; ns.onclick = function() { hideSavedModal(); goHome(); }; }
+  else ns.style.display = 'none';
+  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
+  $('ltaxModalHome').onclick = function() { hideSavedModal(); goHome(); };
+  $('ltaxModalClose').onclick = hideSavedModal;
+  $('ltaxModal').style.display = 'flex';
+}
+function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
+function applyNextCtx() {
+  var c = ltaxReadCtx();
+  if (!c || !c.psnId) return;
+  sessionStorage.removeItem('ltax_next');
+  if (window.__editKey) return;
+  owners = [{ psnId: c.psnId, fullName: c.fullName || '' }];
+  renderOwners();
+  if (c.parcelCode) $('landParcelCode').value = c.parcelCode;
+  window.__dirty = true;
+}</script>
 
 </body>
 </html>

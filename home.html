@@ -187,6 +187,12 @@
   #view-home .step-num { background: #367fa9; }
   #view-home .step-num.photo { background: #00a65a; }
   #view-home .step-info .t { color: #153d6b; }
+/* badge สถานะชุดข้อมูล */
+  .chain-badge { display: inline-block; padding: 4px 12px; border-radius: 14px; font-size: 12px; font-weight: bold; margin: 4px 4px 4px 0; }
+  .chain-badge.ok { background: #d4edda; color: #155724; border: 1px solid #b7e0c0; }
+  .chain-badge.no { background: #fff3cd; color: #8a6d3b; border: 1px solid #f0e0b0; }
+  .chain-badge.mid { background: #ffe9e3; color: #c0392b; border: 1px solid #f5c6cb; }
+  .chain-badge .step { font-weight: normal; font-size: 11px; opacity: .8; }
 </style>
 </head>
 <body>
@@ -402,7 +408,9 @@ function doSearch() {
     h += '<tr class="grp"><td colspan="4">' + g.meta.label + ' (' + g.hits.length + ')</td></tr>';
     g.hits.forEach(function(hit) {
       var key = hit.rec[g.meta.key] || ('#' + (hit.idx + 1));
-      h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + (g.meta.desc(hit.rec) || '') + '</td>' +
+      var descCell = g.meta.desc(hit.rec) || '';
+      if (g.key === 'ltax_owner') descCell += ' ' + chainBadge(String(hit.rec['เลขบัตรประชาชน'] || '').trim());
+      h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + descCell + '</td>' +
            '<td style="white-space:nowrap;">' +
            '<a class="btn btn-view" href="#" onclick="viewData(\'' + g.key + '\',' + hit.idx + '); return false;">ดูข้อมูล</a> ' +
            '<a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">แก้ไข</a>' +
@@ -480,6 +488,34 @@ function psnList(v) {
 function hasPsn(recField, psnId) {
   return psnList(recField).indexOf(String(psnId)) >= 0;
 }
+
+/* สถานะชุดข้อมูลของเจ้าของ (B/C: ครบทั้ง 6 หมวดแล้วหรือยัง) */
+function chainState(psnId) {
+  psnId = String(psnId || '').trim();
+  if (!psnId) return { level: -1, msg: 'ไม่มีเลขบัตร', ok: false };
+  var lands = getList('ltax_land').filter(function(l) { return hasPsn(l['เลขบัตรเจ้าของที่ดิน'], psnId); });
+  if (!lands.length) return { level: 0, msg: 'ยังไม่มีที่ดิน — กรอกที่ดิน', ok: false };
+  var lcodes = lands.map(function(l) { return String(l['รหัสแปลงที่ดิน'] || '').trim(); }).filter(Boolean);
+  var lus = getList('ltax_land_usage').filter(function(u) { return lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) >= 0; });
+  if (!lus.length) return { level: 1, msg: 'ยังไม่ได้กรอกการใช้ประโยชน์ที่ดิน', ok: false };
+  var blds = getList('ltax_building').filter(function(b) {
+    return hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId) && lcodes.indexOf(String(b['รหัสแปลงที่ดิน'] || '').trim()) >= 0;
+  });
+  if (!blds.length) return { level: 2, msg: 'ยังไม่ได้กรอกสิ่งปลูกสร้าง', ok: false };
+  var bcodes = blds.map(function(b) { return String(b['รหัสสิ่งปลูกสร้าง'] || '').trim(); }).filter(Boolean);
+  var bus = getList('ltax_building_usage').filter(function(u) { return bcodes.indexOf(String(u['รหัสสิ่งปลูกสร้าง'] || '').trim()) >= 0; });
+  if (!bus.length) return { level: 3, msg: 'ยังไม่ได้กรอกการใช้ประโยชน์สิ่งปลูกสร้าง', ok: false };
+  var signs = getList('ltax_sign').filter(function(s) { return hasPsn(s['เลขบัตรเจ้าของป้าย'], psnId); });
+  if (!signs.length) return { level: 4, msg: 'ครบ 5 หมวดแล้ว (ไม่มีป้าย)', ok: true };
+  return { level: 5, msg: 'ครบทั้ง 6 หมวด', ok: true };
+}
+function chainBadge(psnId) {
+  var s = chainState(psnId);
+  var cls = s.ok ? 'ok' : (s.level <= 1 ? 'mid' : 'no');
+  var icon = s.ok ? '✓' : '▶';
+  var steps = s.level >= 0 ? ' <span class="step">(' + (s.level + 1) + '/6)</span>' : '';
+  return '<span class="chain-badge ' + cls + '">' + icon + ' ' + s.msg + steps + '</span>';
+}
 function findIdx(listKey, field, val) {
   var list = getList(listKey);
   for (var i = 0; i < list.length; i++) {
@@ -527,6 +563,7 @@ function renderOwnerDetail(rec) {
   h += '<div class="k"><b>อีเมล</b><span>' + esc(rec['อีเมล']) + '</span></div>';
   h += '<div class="k"><b>ที่อยู่เพื่อส่งจดหมาย</b><span>' + esc(rec['ที่อยู่เพื่อส่งจดหมาย'] === '2' ? 'ที่อยู่ปัจจุบัน' : 'ที่อยู่ตามบัตรประชาชน') + '</span></div>';
   h += '</div></div>';
+  h += '<div style="margin:2px 0 10px;">' + chainBadge(psnId) + '</div>';
 
   // ── ที่อยู่ปัจจุบัน (แยกชุด ตามฟอร์มกรม) ──
   if (rec['บ้านเลขที่ปัจจุบัน']) {
