@@ -1,0 +1,12 @@
+cd "C:\LTAX_Automation\bot_upload_data v1"
+python run_all.py
+python run_all.py --manual-otp
+=======================================
+user / passwd =ltaxonline
+3330500109674
+aJ4p27Wt@W2Ag@
+=======================================
+รูปภาพ (ใหม่):
+- ฟอร์ม HTML จะฝังรูปเป็น base64 ใน JSON เอง (ใช้ได้ทุกเครื่อง iPhone/iPad/Android/Windows/Mac)
+- รัน json_to_excel.py แล้วจะแยกรูปออกมาใส่โฟลเดอร์ "photos" ให้อัตโนมัติ + แปลง HEIC->JPG
+- ต้องมี library ตัวนี้ (ติดตั้งครั้งเดียว):  pip install pillow-heif
