@@ -66,9 +66,10 @@
 <body>
 
 <header>
-  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Online) :: เพิ่มเจ้าของทรัพย์สิน</div>
+  <div><b>LTAX</b> ONLINE :: เพิ่มเจ้าของทรัพย์สิน</div>
   <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
 </header>
+<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>ทะเบียนเจ้าของทรัพย์สิน (AST001)</b> <span style="float:right;">แบบเพิ่ม/แก้ไขข้อมูลเจ้าของ</span></div>
 
 <div class="container">
   <div class="panel">
@@ -460,17 +461,23 @@ function loadEditRecord() {
   setSelectOrAdd($('districtId'), r['ตำบล']);
   if (r['รหัสไปรษณีย์']) $('postalCode').value = r['รหัสไปรษณีย์'];
   if (r['โทรศัพท์']) $('tel').value = r['โทรศัพท์'];
+  if (r['อีเมล']) $('email').value = r['อีเมล'];
+  if (r['สถานะบุคคล']) $('personStatus').value = r['สถานะบุคคล'];
+  if (r['ที่อยู่เพื่อส่งจดหมาย']) $('sendAddr').value = r['ที่อยู่เพื่อส่งจดหมาย'];
 
-  /* ฟอร์มบังคับให้กรอกที่อยู่ปัจจุบัน — คัดลอกจากที่อยู่ตามบัตรเมื่อแก้ไข */
-  if (!$('currNo').value) $('currNo').value = $('addrNo').value;
-  if (!$('currVillage').value) $('currVillage').value = $('addrVillage').value;
-  if (!$('currRoad').value) $('currRoad').value = $('addrRoad').value;
-  if (!$('currAlley').value) $('currAlley').value = $('addrAlley').value;
-  if (!$('currPostalCode').value) $('currPostalCode').value = $('postalCode').value;
-  setSelectOrAdd($('currProvinceId'), $('provinceId').value);
-  setSelectOrAdd($('currAmphurId'), $('amphurId').value);
+  /* ที่อยู่ปัจจุบัน — ถ้ามีค่าใน record ใช้ของเดิม ถ้าไม่มี (ข้อมูลเก่า) คัดลอกจากที่อยู่ตามบัตร */
+  var currMap = [
+    ['บ้านเลขที่ปัจจุบัน','currNo','addrNo'], ['หมู่ที่ปัจจุบัน','currVillage','addrVillage'],
+    ['ถนนปัจจุบัน','currRoad','addrRoad'], ['ซอยปัจจุบัน','currAlley','addrAlley'],
+    ['รหัสไปรษณีย์ปัจจุบัน','currPostalCode','postalCode']
+  ];
+  currMap.forEach(function(m) {
+    $(m[1]).value = (r[m[0]] || $(m[2]).value);
+  });
+  setSelectOrAdd($('currProvinceId'), r['จังหวัดปัจจุบัน'] || $('provinceId').value);
+  setSelectOrAdd($('currAmphurId'), r['อำเภอปัจจุบัน'] || $('amphurId').value);
   onProvinceChange('currProvinceId', 'currAmphurId', 'currDistrictId');
-  setSelectOrAdd($('currDistrictId'), $('districtId').value);
+  setSelectOrAdd($('currDistrictId'), r['ตำบลปัจจุบัน'] || $('districtId').value);
   if (!$('sendAddr').value) $('sendAddr').value = '1';
 
   window.__editKey = key;
@@ -489,6 +496,7 @@ function collect() {
     'คำนำหน้า': sel('prefixName'),
     'ชื่อ': sel('firstName').trim(),
     'นามสกุล': sel('lastName').trim(),
+    'สถานะบุคคล': sel('personStatus'),
     'สัญชาติ': '',
     'เลขที่บ้าน': sel('addrNo'),
     'หมู่ที่': sel('addrVillage'),
@@ -498,7 +506,17 @@ function collect() {
     'อำเภอ': sel('amphurId'),
     'จังหวัด': sel('provinceId'),
     'รหัสไปรษณีย์': sel('postalCode'),
-    'โทรศัพท์': sel('tel')
+    'บ้านเลขที่ปัจจุบัน': sel('currNo'),
+    'หมู่ที่ปัจจุบัน': sel('currVillage'),
+    'ซอยปัจจุบัน': sel('currAlley'),
+    'ถนนปัจจุบัน': sel('currRoad'),
+    'ตำบลปัจจุบัน': sel('currDistrictId'),
+    'อำเภอปัจจุบัน': sel('currAmphurId'),
+    'จังหวัดปัจจุบัน': sel('currProvinceId'),
+    'รหัสไปรษณีย์ปัจจุบัน': sel('currPostalCode'),
+    'โทรศัพท์': sel('tel'),
+    'อีเมล': sel('email'),
+    'ที่อยู่เพื่อส่งจดหมาย': sel('sendAddr')
   };
 }
 

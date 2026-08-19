@@ -79,9 +79,10 @@
 <body>
 
 <header>
-  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Online) :: แก้ไขข้อมูลที่ดิน</div>
+  <div><b>LTAX</b> ONLINE :: แก้ไขข้อมูลที่ดิน</div>
   <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
 </header>
+<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>ทะเบียนที่ดินและสิ่งปลูกสร้าง (LND001)</b> <span style="float:right;">แบบเพิ่ม/แก้ไขข้อมูลที่ดิน</span></div>
 
 <div class="container">
   <div class="panel">
@@ -457,16 +458,21 @@ function loadEditRecord() {
 
   owners = String(r['เลขบัตรเจ้าของที่ดิน'] || '').split(';').filter(Boolean).map(function(p) { return { psnId: p, fullName: '' }; });
   renderOwners();
+  if (r['รหัสกลุ่มที่ดิน']) $('landGroup').value = r['รหัสกลุ่มที่ดิน'];
   if (r['รหัสแปลงที่ดิน']) $('parcelCode').value = r['รหัสแปลงที่ดิน'];
   if (r['ประเภทเอกสาร']) $('docType').value = r['ประเภทเอกสาร'];
   if (r['เลขที่เอกสาร']) $('docNo').value = r['เลขที่เอกสาร'];
   if (r['หน้าสำรวจ']) $('dealingFileNo').value = r['หน้าสำรวจ'];
   if (r['เล่มที่']) $('volume').value = r['เล่มที่'];
+  if (r['หน้าที่']) $('page').value = r['หน้าที่'];
   if (r['ระวาง']) $('utm1').value = r['ระวาง'];
   if (r['แผนที่ระวางภูมิประเทศ']) $('utm2').value = r['แผนที่ระวางภูมิประเทศ'];
   if (r['ระวางUTM']) $('utm3').value = r['ระวางUTM'];
+  if (r['แผ่นที่ระวางUTM']) $('utm4').value = r['แผ่นที่ระวางUTM'];
   if (r['มาตราส่วน']) $('scale').value = r['มาตราส่วน'];
   if (r['เลขที่ดิน']) $('parcelNo').value = r['เลขที่ดิน'];
+  if (r['ถนน']) $('road').value = r['ถนน'];
+  if (r['ซอย']) $('alley').value = r['ซอย'];
   if (r['หมู่ที่']) $('villageNo').value = r['หมู่ที่'];
   if (r['ไร่']) $('raiStr').value = r['ไร่'];
   if (r['งาน']) $('nganStr').value = r['งาน'];
@@ -474,6 +480,8 @@ function loadEditRecord() {
   if (r['อำเภอ']) $('amphurId').value = r['อำเภอ'];
   onAmphurChange();
   if (r['ตำบล']) $('districtId').value = r['ตำบล'];
+  if (r['หมายเหตุ']) $('note').value = r['หมายเหตุ'];
+  if (r['หมายเหตุเจ้าหน้าที่']) $('ltaxRemark').value = r['หมายเหตุเจ้าหน้าที่'];
   if (r['รวมราคาประเมินที่ดิน (บาท)']) $('totalPriceStr').value = r['รวมราคาประเมินที่ดิน (บาท)'];
 
   /* ฟอร์มบังคับให้กรอกราคาต่อตร.วา — ใช้ค่าที่เก็บไว้ หรือคำนวณย้อนกลับจากราคารวม/เนื้อที่ */
@@ -499,25 +507,33 @@ function collect() {
   var sel = function(id) { var el = $(id); return el ? el.value : ''; };
   return {
     'เลขบัตรเจ้าของที่ดิน': owners.map(function(o) { return o.psnId; }).join(';'),
+    'รหัสกลุ่มที่ดิน': sel('landGroup'),
     'รหัสแปลงที่ดิน': $('parcelCode').value.toUpperCase(),
     'ประเภทเอกสาร': sel('docType'),
     'เลขที่เอกสาร': sel('docNo'),
-    'หน้าสำรวจ': sel('dealingFileNo'),
-    'เล่มที่': sel('volume'),
     'ระวาง': sel('utm1'),
     'แผนที่ระวางภูมิประเทศ': sel('utm2'),
     'ระวางUTM': sel('utm3'),
+    'แผ่นที่ระวางUTM': sel('utm4'),
     'มาตราส่วน': sel('scale'),
     'เลขที่ดิน': sel('parcelNo'),
+    'หน้าสำรวจ': sel('dealingFileNo'),
+    'เล่มที่': sel('volume'),
+    'หน้าที่': sel('page'),
+    'ถนน': sel('road'),
+    'ซอย': sel('alley'),
     'หมู่ที่': sel('villageNo'),
     'ไร่': sel('raiStr'),
     'งาน': sel('nganStr'),
     'ตร.วา': sel('squareWahStr'),
+    'รวมเนื้อที่ทั้งหมด (ตร.ว.)': sel('totalWahStr'),
     'ตำบล': sel('districtId'),
     'อำเภอ': sel('amphurId'),
     'จังหวัด': '33',
-    'รวมราคาประเมินที่ดิน (บาท)': sel('totalPriceStr'),
     'ราคาต่อตร.วา': sel('pricePerWahStr'),
+    'รวมราคาประเมินที่ดิน (บาท)': sel('totalPriceStr'),
+    'หมายเหตุ': sel('note'),
+    'หมายเหตุเจ้าหน้าที่': sel('ltaxRemark'),
     'Path รูปที่ดิน': ''
   };
 }

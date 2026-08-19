@@ -90,14 +90,112 @@
   .btn-view:hover { background: #00695c; }
   .btn-back { background: #757575; border-color: #616161; color: #fff; padding: 4px 14px; font-size: 13px; }
   .btn-back:hover { background: #616161; }
+
+  /* ═══════════ Theme LTAX ONLINE (ลุคกรม — AdminLTE box / form-control) ═══════════ */
+  body { background: #eef1f5; }
+
+  /* ── header 2 ชั้นแบบ LTAX Online ── */
+  #view-form header, header {
+    background: #153d6b;
+    color: #fff; padding: 8px 20px; font-size: 15px; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+  }
+  #view-form header + .content-info, header + .content-info {
+    background: #eaf2fb; color: #1b4f8a; font-size: 12px;
+    padding: 4px 20px; border-bottom: 1px solid #c9d8ea;
+  }
+  header .org { font-weight: normal; font-size: 12px; color: #cfe0f5; }
+  header .org b { color: #ffd75e; }
+
+  /* ── กล่อง (box: ฟอร์ม + หน้าหลัก) — AdminLTE box-primary ── */
+  #view-form .panel,
+  #view-home .panel {
+    border: 1px solid #d2d6de; border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 14px;
+  }
+  #view-form .panel-head,
+  #view-home .panel-head {
+    background: linear-gradient(#3c8dbc, #367fa9); color: #fff;
+    font-weight: bold; padding: 9px 14px; border-radius: 3px 3px 0 0; font-size: 15px;
+    border-bottom: 3px solid #2f6a8d;
+  }
+  #view-form .panel-body { padding: 14px; }
+
+  /* ── หัวข้อกลุ่มฟิลด์ (section-title) ── */
+  #view-form .section-title {
+    background: #f5f9fc; color: #153d6b; font-weight: bold;
+    padding: 6px 10px; border-left: 4px solid #367fa9;
+    border-top: 1px solid #e1e9f0; border-right: 1px solid #e1e9f0;
+    margin: 16px 0 10px 0; font-size: 14px;
+  }
+
+  /* ── label-form แบบกรม ── */
+  #view-form .row label {
+    color: #333; font-weight: 600; width: 240px;
+    padding: 7px 10px; text-align: right;
+  }
+  #view-form .row label .req { color: #dd4b39; }
+
+  /* ── form-control แบบกรม ── */
+  #view-form .row .field input[type=text],
+  #view-form .row .field select,
+  #view-form textarea,
+  #view-form input[type=text] {
+    border: 1px solid #d2d6de; border-radius: 3px; padding: 5px 9px;
+    font-size: 14px; font-family: inherit;
+  }
+  #view-form .row .field input[type=text]:focus,
+  #view-form .row .field select:focus,
+  #view-form textarea:focus {
+    border-color: #3c8dbc; outline: none; box-shadow: 0 0 0 2px rgba(60,141,188,.18);
+  }
+  #view-form .row .field { flex: 1; }
+  #view-form .hint { font-size: 11.5px; }
+
+  /* ── ปุ่ม: primary/บันทึก = น้ำเงินกรม, ลบ = แดง ── */
+  #view-form .btn-save, #view-form .btn-ok, #view-form .btn-main,
+  #view-home .btn-main {
+    background: #367fa9; border-color: #367fa9; color: #fff;
+  }
+  #view-form .btn-save:hover, #view-form .btn-ok:hover, #view-form .btn-main:hover,
+  #view-home .btn-main:hover { background: #2f6a8d; border-color: #2f6a8d; }
+  #view-form .btn-add { background: #00a65a; border-color: #008d4c; color: #fff; }
+  #view-form .btn-add:hover { background: #008d4c; }
+  #view-form .btn-link, #view-form .btn-dbd { background: #3c8dbc; border-color: #337b9e; color: #fff; }
+  #view-form .btn-link:hover, #view-form .btn-dbd:hover { background: #337b9e; }
+
+  /* ── ตาราง (ทะเบียน/รายการใช้) ลุค AdminLTE dataTable ── */
+  #view-form table, #view-home table { border-collapse: collapse; }
+  #view-form .search-result th, #view-form .view-tbl th,
+  #view-home .search-result th, #view-home .view-tbl th {
+    background: #3c8dbc; color: #fff; border: 1px solid #367fa9;
+    padding: 6px 8px; text-align: left; font-weight: 600;
+  }
+  #view-form .search-result td, #view-form .view-tbl td,
+  #view-home .search-result td, #view-home .view-tbl td {
+    border: 1px solid #d2d6de; padding: 6px 8px;
+  }
+  #view-form .search-result tr:nth-child(even),
+  #view-form .view-tbl tr:nth-child(even),
+  #view-home .search-result tr:nth-child(even),
+  #view-home .view-tbl tr:nth-child(even) { background: #f7fafc; }
+
+  /* ── เมนูหน้าแรก (step-list) ให้ดูเหมือนหมวดเมนู LTAX ── */
+  #view-home .step-list a { border: 1px solid #d2d6de; border-radius: 3px; }
+  #view-home .step-list a:hover { border-color: #3c8dbc; box-shadow: 0 2px 10px rgba(60,141,188,.25); transform: translateX(3px); }
+  #view-home .step-num { background: #367fa9; }
+  #view-home .step-num.photo { background: #00a65a; }
+  #view-home .step-info .t { color: #153d6b; }
 </style>
 </head>
 <body>
 
 <header>
-  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Offline)</div>
+  <div><b>LTAX</b> ONLINE <span style="font-weight:normal; font-size:12px; color:#cfe0f5;">— ระบบสำรวจ/บันทึกภาษีที่ดินและสิ่งปลูกสร้าง (ออฟไลน์)</span></div>
   <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ / ปีภาษี 2569</div>
 </header>
+<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>การเพิ่มข้อมูลทรัพย์สินและเจ้าของ</b> <span style="float:right;">รหัสทะเบียน AST001 / LND001 / BLD001 / SGN001</span></div>
 
 <div class="container">
 
@@ -416,6 +514,7 @@ function renderOwnerDetail(rec) {
   h += '<div class="k"><b>คำนำหน้าชื่อ/หน่วยงาน</b><span>' + esc(rec['คำนำหน้า']) + '</span></div>';
   h += '<div class="k"><b>ชื่อ</b><span>' + esc(rec['ชื่อ']) + '</span></div>';
   h += '<div class="k"><b>นามสกุล</b><span>' + esc(rec['นามสกุล']) + '</span></div>';
+  h += '<div class="k"><b>สถานะบุคคล</b><span>' + esc(rec['สถานะบุคคล'] === '1' ? 'มีชีวิต' : (rec['สถานะบุคคล'] === '2' ? 'ถึงแก่กรรม' : (rec['สถานะบุคคล'] === '3' ? 'ล้มละลาย' : rec['สถานะบุคคล']))) + '</span></div>';
   h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['เลขที่บ้าน']) + '</span></div>';
   h += '<div class="k"><b>หมู่ที่/ชุมชน</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
   h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
@@ -425,7 +524,23 @@ function renderOwnerDetail(rec) {
   h += '<div class="k"><b>จังหวัด</b><span>' + esc(rec['จังหวัด']) + '</span></div>';
   h += '<div class="k"><b>รหัสไปรษณีย์</b><span>' + esc(rec['รหัสไปรษณีย์']) + '</span></div>';
   h += '<div class="k"><b>โทรศัพท์</b><span>' + esc(rec['โทรศัพท์']) + '</span></div>';
+  h += '<div class="k"><b>อีเมล</b><span>' + esc(rec['อีเมล']) + '</span></div>';
+  h += '<div class="k"><b>ที่อยู่เพื่อส่งจดหมาย</b><span>' + esc(rec['ที่อยู่เพื่อส่งจดหมาย'] === '2' ? 'ที่อยู่ปัจจุบัน' : 'ที่อยู่ตามบัตรประชาชน') + '</span></div>';
   h += '</div></div>';
+
+  // ── ที่อยู่ปัจจุบัน (แยกชุด ตามฟอร์มกรม) ──
+  if (rec['บ้านเลขที่ปัจจุบัน']) {
+    h += '<div class="view-panel"><div class="view-title">📍 ที่อยู่ปัจจุบัน</div><div class="view-kv">';
+    h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['บ้านเลขที่ปัจจุบัน']) + '</span></div>';
+    h += '<div class="k"><b>หมู่ที่/ชุมชน</b><span>' + esc(rec['หมู่ที่ปัจจุบัน']) + '</span></div>';
+    h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนนปัจจุบัน']) + '</span></div>';
+    h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอยปัจจุบัน']) + '</span></div>';
+    h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบลปัจจุบัน']) + '</span></div>';
+    h += '<div class="k"><b>อำเภอ</b><span>' + esc(rec['อำเภอปัจจุบัน']) + '</span></div>';
+    h += '<div class="k"><b>จังหวัด</b><span>' + esc(rec['จังหวัดปัจจุบัน']) + '</span></div>';
+    h += '<div class="k"><b>รหัสไปรษณีย์</b><span>' + esc(rec['รหัสไปรษณีย์ปัจจุบัน']) + '</span></div>';
+    h += '</div></div>';
+  }
 
   // ── ที่ดินที่ผูกกับเจ้าของนี้ ──
   var lands = [];
@@ -488,18 +603,29 @@ function renderLandDetail(rec) {
   h += '<div class="view-title">🏞️ ที่ดิน: ' + esc(landCode) + '</div>';
   h += '<div class="view-kv">';
   h += '<div class="k"><b>รหัสแปลงที่ดิน</b><span>' + esc(landCode) + '</span></div>';
+  h += '<div class="k"><b>รหัสกลุ่มที่ดิน</b><span>' + esc(rec['รหัสกลุ่มที่ดิน']) + '</span></div>';
   h += '<div class="k"><b>ประเภทเอกสารสิทธิ์</b><span>' + esc(rec['ประเภทเอกสาร']) + '</span></div>';
   h += '<div class="k"><b>เลขที่เอกสารสิทธิ์</b><span>' + esc(rec['เลขที่เอกสาร']) + '</span></div>';
   h += '<div class="k"><b>หน้าสำรวจ</b><span>' + esc(rec['หน้าสำรวจ']) + '</span></div>';
   h += '<div class="k"><b>เล่มที่</b><span>' + esc(rec['เล่มที่']) + '</span></div>';
-  h += '<div class="k"><b>ระวาง</b><span>' + esc(rec['ระวาง'] || rec['แผนที่ระวางภูมิประเทศ'] || rec['ระวางUTM']) + '</span></div>';
+  h += '<div class="k"><b>หน้าที่</b><span>' + esc(rec['หน้าที่']) + '</span></div>';
+  h += '<div class="k"><b>ระวาง</b><span>' + esc(rec['ระวาง']) + '</span></div>';
+  h += '<div class="k"><b>แผนที่ระวางภูมิประเทศ</b><span>' + esc(rec['แผนที่ระวางภูมิประเทศ']) + '</span></div>';
+  h += '<div class="k"><b>ระวางUTM</b><span>' + esc(rec['ระวางUTM']) + '</span></div>';
+  h += '<div class="k"><b>แผ่นที่ระวางUTM</b><span>' + esc(rec['แผ่นที่ระวางUTM']) + '</span></div>';
+  h += '<div class="k"><b>มาตราส่วน</b><span>' + esc(rec['มาตราส่วน']) + '</span></div>';
   h += '<div class="k"><b>เลขที่ดิน</b><span>' + esc(rec['เลขที่ดิน']) + '</span></div>';
   h += '<div class="k"><b>หมู่ที่</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
+  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
+  h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอย']) + '</span></div>';
   h += '<div class="k"><b>เนื้อที่</b><span>' + esc(fmtArea(rec)) + '</span></div>';
+  h += '<div class="k"><b>รวมเนื้อที่ทั้งหมด (ตร.ว.)</b><span>' + esc(rec['รวมเนื้อที่ทั้งหมด (ตร.ว.)']) + '</span></div>';
   h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบล']) + '</span></div>';
   h += '<div class="k"><b>อำเภอ</b><span>' + esc(rec['อำเภอ']) + '</span></div>';
   h += '<div class="k"><b>ราคาประเมิน (บาท/ตร.วา)</b><span>' + esc(rec['ราคาต่อตร.วา']) + '</span></div>';
   h += '<div class="k"><b>รวมราคาประเมิน (บาท)</b><span>' + esc(rec['รวมราคาประเมินที่ดิน (บาท)']) + '</span></div>';
+  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
+  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
   h += '</div>';
 
   // เจ้าของแปลง
@@ -589,13 +715,23 @@ function renderBuildingDetail(rec) {
   h += '<div class="k"><b>แปลงที่ตั้ง</b><span>' + esc(rec['รหัสแปลงที่ดิน']) + '</span></div>';
   h += '<div class="k"><b>เลขที่</b><span>' + esc(rec['เลขที่บ้าน']) + '</span></div>';
   h += '<div class="k"><b>หมู่ที่</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
+  h += '<div class="k"><b>หมู่บ้าน/ชุมชน</b><span>' + esc(rec['หมู่บ้าน/ชุมชน']) + '</span></div>';
   h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
+  h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอย']) + '</span></div>';
   h += '<div class="k"><b>ประเภทอาคาร</b><span>' + esc(rec['ประเภทอาคาร']) + '</span></div>';
   h += '<div class="k"><b>โครงสร้าง</b><span>' + esc(rec['โครงสร้าง']) + '</span></div>';
   h += '<div class="k"><b>จำนวนชั้น</b><span>' + esc(rec['จำนวนชั้น']) + '</span></div>';
   h += '<div class="k"><b>ขนาด (กว้าง x ยาว ม.)</b><span>' + esc(rec['กว้าง(ม.)']) + ' x ' + esc(rec['ยาว(ม.)']) + '</span></div>';
+  h += '<div class="k"><b>ขนาดพื้นที่ทั้งอาคาร (ตร.ม.)</b><span>' + esc(rec['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)']) + '</span></div>';
   h += '<div class="k"><b>เนื้อที่ที่ดิน</b><span>' + esc(rec['เนื้อที่ที่ดิน']) + '</span></div>';
+  h += '<div class="k"><b>อายุสิ่งปลูกสร้าง (ปี)</b><span>' + esc(rec['อายุสิ่งปลูกสร้าง']) + '</span></div>';
   h += '<div class="k"><b>ปีที่สร้าง</b><span>' + esc(rec['ปีที่สร้าง']) + '</span></div>';
+  h += '<div class="k"><b>ราคาประเมิน (บาท/ตร.ม.)</b><span>' + esc(rec['ราคาประเมินต่อตร.ม.']) + '</span></div>';
+  h += '<div class="k"><b>ราคาประเมินทุนทรัพย์ (บาท)</b><span>' + esc(rec['ราคาประเมินทุนทรัพย์']) + '</span></div>';
+  h += '<div class="k"><b>หักค่าเสื่อม (บาท)</b><span>' + esc(rec['หักค่าเสื่อม']) + '</span></div>';
+  h += '<div class="k"><b>คงเหลือราคาประเมิน (บาท)</b><span>' + esc(rec['คงเหลือราคาประเมิน']) + '</span></div>';
+  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
+  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
   h += '</div>';
 
   var ownerLinks = psnList(rec['เลขบัตรเจ้าของสิ่งปลูกสร้าง'] || rec['เลขบัตรเจ้าของที่ดิน']).map(function(p) {
@@ -662,16 +798,27 @@ function renderSignDetail(rec) {
   h += '<div class="view-title">🪧 ป้าย: ' + esc(rec['รหัสป้าย']) + '</div>';
   h += '<div class="view-kv">';
   h += '<div class="k"><b>รหัสป้าย</b><span>' + esc(rec['รหัสป้าย']) + '</span></div>';
+  h += '<div class="k"><b>รหัสแปลงที่ดิน</b><span>' + esc(rec['รหัสแปลงที่ดิน']) + '</span></div>';
   h += '<div class="k"><b>ชื่อสถานประกอบการค้า/กิจการ</b><span>' + esc(rec['ชื่อสถานประกอบการค้า/กิจการ']) + '</span></div>';
   h += '<div class="k"><b>วันที่ติดตั้งป้าย</b><span>' + esc(rec['วันที่ติดตั้งป้าย']) + '</span></div>';
   h += '<div class="k"><b>ป้ายแสดง</b><span>' + esc(rec['ป้ายแสดง']) + '</span></div>';
   h += '<div class="k"><b>ประเภทป้าย</b><span>' + esc(rec['ประเภทป้าย']) + '</span></div>';
   h += '<div class="k"><b>ขนาด (กว้าง x ยาว ซม.)</b><span>' + esc(rec['กว้าง (ซม.)']) + ' x ' + esc(rec['ยาว (ซม.)']) + '</span></div>';
+  h += '<div class="k"><b>เนื้อที่ป้าย (ตร.ซม.)</b><span>' + esc(rec['เนื้อที่ป้าย (ตร.ซม.)']) + '</span></div>';
   h += '<div class="k"><b>จำนวนด้าน</b><span>' + esc(rec['จำนวนด้าน']) + '</span></div>';
+  h += '<div class="k"><b>จำนวนหน่วย</b><span>' + esc(rec['จำนวนหน่วย']) + '</span></div>';
   h += '<div class="k"><b>ข้อความภายในป้าย</b><span>' + esc(rec['ข้อความภายในป้าย']) + '</span></div>';
+  h += '<div class="k"><b>งวดที่ติดตั้งป้าย</b><span>' + esc(rec['งวดที่ติดตั้งป้าย']) + '</span></div>';
+  h += '<div class="k"><b>อัตราภาษีป้าย</b><span>' + esc(rec['อัตราภาษีป้าย']) + '</span></div>';
+  h += '<div class="k"><b>รวมเงินภาษี (บาท)</b><span>' + esc(rec['รวมเงินภาษี (บาท)']) + '</span></div>';
   h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['บ้านเลขที่']) + '</span></div>';
   h += '<div class="k"><b>หมู่</b><span>' + esc(rec['หมู่']) + '</span></div>';
+  h += '<div class="k"><b>ตรอก/ซอย</b><span>' + esc(rec['ตรอก/ซอย']) + '</span></div>';
+  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
+  h += '<div class="k"><b>ชุมชน</b><span>' + esc(rec['ชุมชน']) + '</span></div>';
   h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบล']) + '</span></div>';
+  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
+  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
   h += '</div>';
 
   var ownerLinks = psnList(rec['เลขบัตรเจ้าของป้าย']).map(function(p) {

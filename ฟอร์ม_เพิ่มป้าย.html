@@ -72,9 +72,10 @@
 <body>
 
 <header>
-  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Offline) :: แก้ไขข้อมูลป้าย</div>
-  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ / ปีภาษี 2569</div>
+  <div><b>LTAX</b> ONLINE :: แก้ไขข้อมูลป้าย</div>
+  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
 </header>
+<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>ทะเบียนป้าย (SGN001)</b> <span style="float:right;">แบบเพิ่ม/แก้ไขข้อมูลป้าย</span></div>
 
 <div class="container">
   <div class="panel">
@@ -417,6 +418,7 @@ function loadEditRecord() {
   owners = String(r['เลขบัตรเจ้าของป้าย'] || '').split(';').filter(Boolean).map(function(p) { return { psnId: p, fullName: '' }; });
   renderOwners();
   if (r['รหัสป้าย']) $('signboardCode').value = r['รหัสป้าย'];
+  if (r['รหัสแปลงที่ดิน']) $('landParcelCode').value = r['รหัสแปลงที่ดิน'];
   if (r['ชื่อสถานประกอบการค้า/กิจการ']) $('signboardName').value = r['ชื่อสถานประกอบการค้า/กิจการ'];
   if (r['วันที่ติดตั้งป้าย']) $('setupDateStr').value = r['วันที่ติดตั้งป้าย'];
   if (r['บ้านเลขที่']) $('addrNo').value = r['บ้านเลขที่'];
@@ -434,9 +436,15 @@ function loadEditRecord() {
   if (r['ประเภทป้าย']) $('character').value = r['ประเภทป้าย'];
   if (r['กว้าง (ซม.)']) $('widthStr').value = r['กว้าง (ซม.)'];
   if (r['ยาว (ซม.)']) $('heightStr').value = r['ยาว (ซม.)'];
+  if (r['เนื้อที่ป้าย (ตร.ซม.)']) $('totalAreaStr').value = r['เนื้อที่ป้าย (ตร.ซม.)'];
   if (r['จำนวนด้าน']) $('noSideStr').value = r['จำนวนด้าน'];
+  if (r['จำนวนหน่วย']) $('unitStr').value = r['จำนวนหน่วย'];
   if (r['ข้อความภายในป้าย']) $('signboardDesc').value = r['ข้อความภายในป้าย'];
   if (r['งวดที่ติดตั้งป้าย']) $('period').value = r['งวดที่ติดตั้งป้าย'];
+  if (r['อัตราภาษีป้าย']) $('taxRateStr').value = r['อัตราภาษีป้าย'];
+  if (r['รวมเงินภาษี (บาท)']) $('taxAmountStr').value = r['รวมเงินภาษี (บาท)'];
+  if (r['หมายเหตุ']) $('note').value = r['หมายเหตุ'];
+  if (r['หมายเหตุเจ้าหน้าที่']) $('ltaxRemark').value = r['หมายเหตุเจ้าหน้าที่'];
   photoData = r['รูปภาพ_data'] || '';
 
   window.__editKey = key;
@@ -460,6 +468,7 @@ function saveSign() {
   var data = {
     'รหัสป้าย': $('signboardCode').value.trim().toUpperCase(),
     'เลขบัตรเจ้าของป้าย': owners.map(function(o) { return o.psnId; }).join(';'),
+    'รหัสแปลงที่ดิน': $('landParcelCode') ? $('landParcelCode').value : '',
     'ชื่อสถานประกอบการค้า/กิจการ': $('signboardName').value,
     'วันที่ติดตั้งป้าย': $('setupDateStr').value,
     'บ้านเลขที่': $('addrNo').value,
@@ -473,9 +482,15 @@ function saveSign() {
     'ประเภทป้าย': $('character').value,
     'กว้าง (ซม.)': $('widthStr').value,
     'ยาว (ซม.)': $('heightStr').value,
+    'เนื้อที่ป้าย (ตร.ซม.)': $('totalAreaStr').value,
     'จำนวนด้าน': $('noSideStr').value,
+    'จำนวนหน่วย': $('unitStr') ? $('unitStr').value : '',
     'ข้อความภายในป้าย': $('signboardDesc').value,
     'งวดที่ติดตั้งป้าย': $('period').value,
+    'อัตราภาษีป้าย': $('taxRateStr') ? $('taxRateStr').value : '',
+    'รวมเงินภาษี (บาท)': $('taxAmountStr') ? $('taxAmountStr').value : '',
+    'หมายเหตุ': $('note') ? $('note').value : '',
+    'หมายเหตุเจ้าหน้าที่': $('ltaxRemark') ? $('ltaxRemark').value : '',
     'จังหวัด': '33',
     'รหัสไปรษณีย์': '',
     'โทรศัพท์': '',

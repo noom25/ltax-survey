@@ -72,9 +72,10 @@
 <body>
 
 <header>
-  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Offline) :: แก้ไขข้อมูลสิ่งปลูกสร้าง</div>
-  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ / ปีภาษี 2569</div>
+  <div><b>LTAX</b> ONLINE :: แก้ไขข้อมูลสิ่งปลูกสร้าง</div>
+  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
 </header>
+<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>ทะเบียนที่ดินและสิ่งปลูกสร้าง (BLD001)</b> <span style="float:right;">แบบเพิ่ม/แก้ไขข้อมูลสิ่งปลูกสร้าง</span></div>
 
 <div class="container">
   <div class="panel">
@@ -495,6 +496,7 @@ function loadEditRecord() {
   if (r['รหัสสิ่งปลูกสร้าง']) $('buildingCode').value = r['รหัสสิ่งปลูกสร้าง'];
   if (r['เลขที่บ้าน']) $('addrNo').value = r['เลขที่บ้าน'];
   if (r['หมู่ที่']) $('villageNo').value = r['หมู่ที่'];
+  if (r['หมู่บ้าน/ชุมชน']) $('villageName').value = r['หมู่บ้าน/ชุมชน'];
   if (r['ซอย']) $('alley').value = r['ซอย'];
   if (r['ถนน']) $('road').value = r['ถนน'];
   if (r['ประเภทอาคาร']) $('buildingType').value = r['ประเภทอาคาร'];
@@ -502,8 +504,16 @@ function loadEditRecord() {
   if (r['จำนวนชั้น']) $('noFloor').value = r['จำนวนชั้น'];
   if (r['กว้าง(ม.)']) $('widthStr').value = r['กว้าง(ม.)'];
   if (r['ยาว(ม.)']) $('heightStr').value = r['ยาว(ม.)'];
+  if (r['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)']) $('totalAreaStr').value = r['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)'];
   if (r['เนื้อที่ที่ดิน']) $('landAreaStr').value = r['เนื้อที่ที่ดิน'];
+  if (r['อายุสิ่งปลูกสร้าง']) $('ageStr').value = r['อายุสิ่งปลูกสร้าง'];
   if (r['ปีที่สร้าง']) $('since').value = r['ปีที่สร้าง'];
+  if (r['ราคาประเมินต่อตร.ม.']) $('pricePerMeterStr').value = r['ราคาประเมินต่อตร.ม.'];
+  if (r['ราคาประเมินทุนทรัพย์']) $('totalPriceStr').value = r['ราคาประเมินทุนทรัพย์'];
+  if (r['หักค่าเสื่อม']) $('depreciationPriceStr').value = r['หักค่าเสื่อม'];
+  if (r['คงเหลือราคาประเมิน']) $('netPriceStr').value = r['คงเหลือราคาประเมิน'];
+  if (r['หมายเหตุ']) $('note').value = r['หมายเหตุ'];
+  if (r['หมายเหตุเจ้าหน้าที่']) $('ltaxRemark').value = r['หมายเหตุเจ้าหน้าที่'];
   photoData = r['รูปภาพ_data'] || '';
 
   window.__editKey = key;
@@ -524,6 +534,7 @@ function collect() {
     'รหัสอาคาร': '',
     'เลขที่บ้าน': sel('addrNo'),
     'หมู่ที่': sel('villageNo'),
+    'หมู่บ้าน/ชุมชน': sel('villageName'),
     'ซอย': sel('alley'),
     'ถนน': sel('road'),
     'ประเภทอาคาร': sel('buildingType'),
@@ -531,8 +542,16 @@ function collect() {
     'จำนวนชั้น': sel('noFloor'),
     'กว้าง(ม.)': sel('widthStr'),
     'ยาว(ม.)': sel('heightStr'),
+    'ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)': sel('totalAreaStr'),
     'เนื้อที่ที่ดิน': sel('landAreaStr'),
+    'อายุสิ่งปลูกสร้าง': sel('ageStr'),
     'ปีที่สร้าง': sel('since'),
+    'ราคาประเมินต่อตร.ม.': sel('pricePerMeterStr'),
+    'ราคาประเมินทุนทรัพย์': sel('totalPriceStr'),
+    'หักค่าเสื่อม': sel('depreciationPriceStr'),
+    'คงเหลือราคาประเมิน': sel('netPriceStr'),
+    'หมายเหตุ': sel('note'),
+    'หมายเหตุเจ้าหน้าที่': sel('ltaxRemark'),
     'ประเภทการใช้งาน': '',
     'พื้นที่พาณิชย์': '',
     'สัดส่วนกรรมสิทธิ์': '',
