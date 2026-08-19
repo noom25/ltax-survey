@@ -1,8 +1,8 @@
 /* LTAX Offline — Service Worker
    cache-first: ครั้งแรกต้องมีเน็ตเพื่อติดตั้ง ครั้งต่อ ๆ ไปเปิดได้แม้ไม่มีเน็ต
-   version: 20260819-185632
+   version: 20260819-222745
 */
-var VERSION = "20260819-185632";
+var VERSION = "20260819-222745";
 var CACHE = "ltax-offline-" + VERSION;
 
 var ASSETS = [

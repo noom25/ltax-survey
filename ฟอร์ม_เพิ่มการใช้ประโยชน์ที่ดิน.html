@@ -351,6 +351,7 @@ function saveUsed() {
 
   var data = collect();
   LTAX_store('ltax_land_usage', data);
+  showSavedModal('รหัสแปลงที่ดิน: ' + data['รหัสแปลงที่ดิน'] + ' (' + usages.length + ' รายการใช้ประโยชน์)', 'ltax_building');
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -451,5 +452,69 @@ function resetForm() {
 
 hideAgri();
 </script>
+<style>
+/* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
+#ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
+#ltaxModal .box{background:#fff;border-radius:12px;max-width:92%;width:330px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.35);overflow:hidden;}
+#ltaxModal .head{background:linear-gradient(135deg,#367fa9,#1b4f8a);color:#fff;padding:14px 10px 26px;font-size:16px;font-weight:700;}
+#ltaxModal .tick{width:62px;height:62px;border-radius:50%;background:#28a745;color:#fff;font-size:34px;line-height:62px;margin:-31px auto 12px;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+#ltaxModal .info{font-size:13px;color:#333;margin:4px 14px 14px;word-break:break-word;line-height:1.5;}
+#ltaxModal .btns{padding:0 14px 14px;}
+#ltaxModal .btn{display:block;width:100%;margin:7px 0 0;padding:11px;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;}
+#ltaxModal .btn-next{background:#367fa9;color:#fff;}
+#ltaxModal .btn-more{background:#28a745;color:#fff;}
+#ltaxModal .btn-home{background:#eef4f8;color:#1b4f8a;}
+#ltaxModal .btn-close{background:#f4f6f8;color:#8a8f94;}
+</style>
+
+<div id="ltaxModal">
+  <div class="box">
+    <div class="head">บันทึกข้อมูลเรียบร้อย</div>
+    <div class="tick">&#10003;</div>
+    <div class="info" id="ltaxModalInfo"></div>
+    <div class="btns">
+      <button type="button" class="btn btn-next" id="ltaxModalNext">กรอกชุดถัดไป (ต่อไป)</button>
+      <button type="button" class="btn btn-more" id="ltaxModalMore">เพิ่มรายการใหม่</button>
+      <button type="button" class="btn btn-home" id="ltaxModalHome">กลับหน้าแรก</button>
+      <button type="button" class="btn btn-close" id="ltaxModalClose">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- modal ยืนยันการบันทึก ---------- */
+var _LTAX_NEXT = {
+  ltax_owner: 'ltax_land',
+  ltax_land: 'ltax_land_usage',
+  ltax_land_usage: 'ltax_building',
+  ltax_building: 'ltax_building_usage',
+  ltax_building_usage: 'ltax_sign',
+  ltax_sign: 'ltax_owner'
+};
+function showSavedModal(info, next) {
+  $('ltaxModalInfo').textContent = info;
+  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
+  nb.textContent = isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)';
+  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next); };
+  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
+  $('ltaxModalHome').onclick = function() { hideSavedModal(); if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; };
+  $('ltaxModalClose').onclick = hideSavedModal;
+  $('ltaxModal').style.display = 'flex';
+}
+function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
+function goNextForm(fid) {
+  if (window.openForm) { try { window.openForm(fid); return; } catch(e) {} }
+  var F = {
+    ltax_owner: 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html',
+    ltax_land: 'ฟอร์ม_เพิ่มที่ดิน.html',
+    ltax_land_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์ที่ดิน.html',
+    ltax_building: 'ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html',
+    ltax_building_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html',
+    ltax_sign: 'ฟอร์ม_เพิ่มป้าย.html'
+  };
+  window.location.href = F[fid] || 'index.html';
+}
+</script>
+
 </body>
 </html>
