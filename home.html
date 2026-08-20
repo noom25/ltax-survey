@@ -502,6 +502,17 @@ function chainState(psnId) {
     return hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId) && lcodes.indexOf(String(b['รหัสแปลงที่ดิน'] || '').trim()) >= 0;
   });
   if (!blds.length) return { level: 2, msg: 'ยังไม่ได้กรอกสิ่งปลูกสร้าง', ok: false };
+  /* ★ ตรวจเชิงลึก: แปลงที่มีอาคาร ต้องแบ่งที่ตั้งสิ่งปลูกสร้าง (ประเภท 2/3/4) ในการใช้ที่ดิน */
+  var homeTypes = { '2': 1, '3': 1, '4': 1 };
+  var hasHomeUsage = lus.some(function(u) {
+    if (lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) < 0) return false;
+    var used = u['รายการใช้ประโยชน์'] || [];
+    return used.some(function(x) { return homeTypes[String(x['ประเภทการใช้ประโยชน์'] || '').trim()]; });
+  });
+  if (!hasHomeUsage) return { level: 2, msg: 'แปลงมีอาคาร แต่ยังไม่ได้แบ่งที่ตั้งสิ่งปลูกสร้างในการใช้ที่ดิน', ok: false };
+  /* ★ ตรวจเชิงลึก: อาคารต้องมี "เนื้อที่ที่ดิน" (กันบ้านลอย) */
+  var bldNoLand = blds.filter(function(b) { return !String(b['เนื้อที่ที่ดิน'] || '').trim(); });
+  if (bldNoLand.length) return { level: 2, msg: 'อาคาร ' + String(bldNoLand[0]['รหัสสิ่งปลูกสร้าง'] || '').trim() + ' ยังไม่มีเนื้อที่ที่ดิน', ok: false };
   var bcodes = blds.map(function(b) { return String(b['รหัสสิ่งปลูกสร้าง'] || '').trim(); }).filter(Boolean);
   var bus = getList('ltax_building_usage').filter(function(u) { return bcodes.indexOf(String(u['รหัสสิ่งปลูกสร้าง'] || '').trim()) >= 0; });
   if (!bus.length) return { level: 3, msg: 'ยังไม่ได้กรอกการใช้ประโยชน์สิ่งปลูกสร้าง', ok: false };

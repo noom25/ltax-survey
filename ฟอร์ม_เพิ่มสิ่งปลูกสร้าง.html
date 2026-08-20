@@ -326,7 +326,7 @@ var BUILDING_PRICE = {
 };
 
 var TAX_YEAR = 2569;
-var REQUIRED = ['landParcelCode','buildingCode','buildingType','structure','totalAreaStr','ageStr'];
+var REQUIRED = ['landParcelCode','buildingCode','landAreaStr','buildingType','structure','totalAreaStr','ageStr'];
 var owners = [], lands = [];
 
 function $(id) { return document.getElementById(id); }
@@ -712,8 +712,26 @@ function applyNextCtx() {
   if (c.parcelCode) {
     $('landParcelCode').value = c.parcelCode;
     if (typeof lands !== 'undefined' && lands) { lands = [{ code: c.parcelCode }]; renderLands(); }
+    autoFillLandArea(c.parcelCode);
   }
   window.__dirty = true;
+}
+
+/* auto-fill "เนื้อที่ที่ดิน" (ไร่-งาน-ตร.วา) จากแปลงใน localStorage — กรอกเฉพาะยังว่าง */
+function autoFillLandArea(parcelCode) {
+  if (!parcelCode) return;
+  if (String($('landAreaStr').value || '').trim()) return;  // มีค่าอยู่แล้วไม่ทับ
+  var code = String(parcelCode).trim().toUpperCase();
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { list = []; }
+  for (var i = 0; i < list.length; i++) {
+    if (String(list[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() !== code) continue;
+    var rai = String(list[i]['ไร่'] || '').trim(), ngan = String(list[i]['งาน'] || '').trim(), wa = String(list[i]['ตร.วา'] || '').trim();
+    if (rai === '' && ngan === '' && wa === '') return;
+    $('landAreaStr').value = rai + '-' + ngan + '-' + wa;
+    calLandAreaWah();
+    break;
+  }
 }</script>
 
 </body>
