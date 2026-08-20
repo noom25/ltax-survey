@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เพิ่มการใช้ประโยชน์ในสิ่งปลูกสร้าง</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tahoma', 'Segoe UI', sans-serif; background: #f2f2f2; font-size: 14px; }
+
+  header {
+    background: linear-gradient(#1b4f8a, #153d6b);
+    color: #fff; padding: 8px 20px; font-size: 15px; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  header .org { font-weight: normal; font-size: 12px; }
+  header .org b { color: #ffd75e; }
+
+  .container { max-width: 860px; margin: 15px auto; padding: 0 10px; }
+  .panel { background: #fff; border: 1px solid #c8c8c8; border-radius: 4px; margin-bottom: 12px; }
+  .panel-head {
+    background: #2b6cb0; color: #fff; font-weight: bold;
+    padding: 8px 14px; border-radius: 4px 4px 0 0; font-size: 15px;
+  }
+  .panel-body { padding: 14px; }
+
+  .row { display: flex; align-items: flex-start; margin-bottom: 8px; }
+  .row label { width: 210px; padding: 6px 8px; text-align: right; flex-shrink: 0; }
+  .row label .req { color: #d33; font-weight: bold; }
+  .row .field { flex: 1; padding: 0 4px; }
+  .row .field input[type=text], .row .field select, .row .field textarea {
+    width: 100%; padding: 5px 8px; border: 1px solid #b0b0b0; border-radius: 3px;
+    font-size: 14px; font-family: inherit;
+  }
+  .row .field input[readonly] { background: #f5f5f5; }
+  .row .field .inline { display: inline-flex; gap: 8px; width: 100%; }
+  .row .field .inline input { flex: 1; }
+  .row .field .small { max-width: 140px; }
+  .hint { color: #888; font-size: 12px; padding: 4px 6px 0 6px; }
+
+  .btn-bar { text-align: center; margin: 10px 0 20px 0; }
+  .btn {
+    padding: 7px 26px; font-size: 14px; border-radius: 4px; border: 1px solid;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+  .btn-save { background: #2e7d32; border-color: #1b5e20; color: #fff; }
+  .btn-save:hover { background: #1b5e20; }
+  .btn-back { background: #f5f5f5; border-color: #b0b0b0; color: #333; }
+  .btn-back:hover { background: #e0e0e0; }
+
+  #preview { margin-top: 10px; }
+  #preview textarea { width: 100%; height: 120px; font-size: 12px; font-family: Consolas, monospace; }
+  .preview-head {
+    background: #fff3cd; border: 1px solid #e6c65a; color: #7a5c00;
+    padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div><b>LTAX</b> ONLINE :: เพิ่มการใช้ประโยชน์ในสิ่งปลูกสร้าง</div>
+  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
+</header>
+<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>การใช้ประโยชน์สิ่งปลูกสร้าง (BLD001-USE)</b> <span style="float:right;">แบบเพิ่ม/แก้ไขรายการใช้ประโยชน์</span></div>
+
+<div class="container">
+  <div class="panel">
+    <div class="panel-head">แก้ไขข้อมูลการใช้ประโยชน์</div>
+    <div class="panel-body">
+
+      <div class="row">
+        <label>รหัสสิ่งปลูกสร้าง</label>
+        <div class="field"><input type="text" id="buildingCode" onblur="this.value=this.value.toUpperCase()" placeholder="เช่น 50A001-B001"></div>
+      </div>
+      <div class="row">
+        <label>เลขบัตรเจ้าของสิ่งปลูกสร้าง</label>
+        <div class="field"><input type="text" id="psnId"></div>
+      </div>
+
+      <div class="section-title">รายการการใช้ประโยชน์ (หลายรายการได้)</div>
+
+      <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+        <thead>
+          <tr style="background:#e8f0f8;">
+            <th style="border:1px solid #ccc; padding:4px 6px;">ลำดับ</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;">การใช้ประโยชน์</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;">ชั้นที่</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;">ขนาดพื้นที่รวม (ตร.ม.)</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;">ลักษณะการใช้</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;"></th>
+          </tr>
+        </thead>
+        <tbody id="usageTable">
+          <tr><td colspan="6" style="border:1px solid #ccc; padding:8px; text-align:center; color:#888;">ยังไม่พบข้อมูล — กด "เพิ่มรายการ"</td></tr>
+        </tbody>
+      </table>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <button type="button" class="btn btn-save" onclick="addUsage()" style="padding:5px 18px; font-weight:normal;"> + เพิ่มรายการ </button>
+        </div>
+      </div>
+
+      <div class="section-title">กรอกข้อมูลรายการ (รายการล่าสุดที่กำลังเพิ่ม)</div>
+
+      <div class="row">
+        <label>การใช้ประโยชน์ <span class="req">*</span></label>
+        <div class="field">
+          <select id="usedType" name="buildingUsed.usedType">
+            <option value="">กรุณาเลือก</option>
+            <option value="1">1 - อยู่อาศัย</option>
+            <option value="2">2 - อยู่อาศัย+ประกอบการ</option>
+            <option value="3">3 - ประกอบการอย่างเดียว</option>
+            <option value="4">4 - ว่างเปล่า/ไม่ใช้งาน</option>
+            <option value="5">5 - อื่นๆ</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <label style="width:auto; text-align:left; font-weight:normal; padding:4px 0;">
+            <input type="checkbox" id="fullArea" name="fullArea" value="Y" onclick="hideArea()">
+            &nbsp;เต็มพื้นที่สิ่งปลูกสร้างทุกชั้น
+          </label>
+        </div>
+      </div>
+
+      <div id="hideArea">
+        <div class="row">
+          <label>ชั้นที่ <span class="req">*</span></label>
+          <div class="field small"><input type="text" id="useFloor" name="buildingUsed.useFloor"></div>
+        </div>
+        <div class="row">
+          <label>ขนาดพื้นที่ (กว้าง x ยาว เมตร)</label>
+          <div class="field">
+            <div class="inline">
+              <input type="text" id="widthStr" name="buildingUsed.widthStr" placeholder="กว้าง" oninput="calTotalArea()">
+              <input type="text" id="lengthStr" name="buildingUsed.lengthStr" placeholder="ยาว" oninput="calTotalArea()">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>ขนาดพื้นที่รวม (ตร.ม.) <span class="req">*</span></label>
+        <div class="field small"><input type="text" id="areaStr" name="buildingUsed.areaStr"></div>
+        <div class="hint" style="margin-left:218px;">ไม่ต้องกรอกถ้าเช็ค "เต็มพื้นที่ทุกชั้น"</div>
+      </div>
+      <div class="row">
+        <label>ขนาดพื้นที่คงเหลือ (ตร.ม.)</label>
+        <div class="field small"><input type="text" id="remainAreaStr" name="buildingUsed.remainAreaStr" placeholder="225.00"></div>
+        <div class="hint" style="margin-left:218px;">ระบบดึงจากหน้าก่อน (สิ่งปลูกสร้าง)</div>
+      </div>
+
+      <div class="row">
+        <label>ลักษณะการใช้</label>
+        <div class="field" style="max-width:220px;">
+          <select id="usedFor" name="buildingUsed.usedFor">
+            <option value="">กรุณาเลือก</option>
+            <option value="1">ใช้ประโยชน์เอง</option>
+            <option value="2">ให้เช่า</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>หมายเหตุ</label>
+        <div class="field"><textarea id="note" name="buildingUsed.note" rows="2"></textarea></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="btn-bar">
+    <button type="button" class="btn btn-save" onclick="saveUsage()"> ตกลง </button>
+    <button type="button" class="btn btn-back" onclick="goBack()"> กลับไป </button>
+  </div>
+
+  <div id="preview" style="display:none;">
+    <div class="preview-head">ผลลัพธ์ (JSON สำหรับเก็บ — นำไปรวมกับข้อมูลอื่นที่ index.html)</div>
+    <textarea id="previewBox" readonly></textarea>
+  </div>
+</div>
+
+<script>
+function $(id) { return document.getElementById(id); }
+
+var usages = [];
+var editIdx = -1;
+
+function LTAX_store(key, record) {
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+    list[window.__editIdx] = record;
+  } else {
+    list.push(record);
+  }
+  localStorage.setItem(key, JSON.stringify(list));
+  window.__editKey = null;
+  window.__editIdx = -1;
+}
+window.__editKey = null;
+window.__editIdx = -1;
+function LTAX_download(filename, record) {
+  var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+/* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
+function loadEditRecord() {
+  var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
+  var key = params.get('editKey');
+  var idx = parseInt(params.get('editIdx') || '-1', 10);
+  if (!key || idx < 0) return false;
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (!list[idx]) return false;
+  var r = list[idx];
+
+  if (r['รหัสสิ่งปลูกสร้าง']) $('buildingCode').value = r['รหัสสิ่งปลูกสร้าง'];
+  if (r['เลขบัตรเจ้าของสิ่งปลูกสร้าง']) $('psnId').value = r['เลขบัตรเจ้าของสิ่งปลูกสร้าง'];
+  usages = (r['รายการใช้ประโยชน์'] || []).map(function(u) {
+    return {
+      usedType: u['ประเภทการใช้งาน'],
+      usedTypeLabel: '',
+      fullArea: u['เต็มพื้นที่ทุกชั้น'] === 'Y',
+      useFloor: u['ชั้นที่'],
+      widthStr: u['กว้าง(ม.)'],
+      lengthStr: u['ยาว(ม.)'],
+      areaStr: u['พื้นที่รวม(ตร.ม.)'],
+      remainAreaStr: u['ขนาดพื้นที่คงเหลือ(ตร.ม.)'],
+      usedFor: u['ลักษณะการใช้'],
+      usedForLabel: '',
+      note: u['หมายเหตุ']
+    };
+  });
+  renderUsage();
+
+  window.__editKey = key;
+  window.__editIdx = idx;
+  window.__saved = true;
+  $('previewBox').value = JSON.stringify(r, null, 2);
+  $('preview').style.display = 'block';
+  return true;
+}
+
+function renderUsage() {
+  var tb = $('usageTable');
+  if (!usages.length) {
+    tb.innerHTML = '<tr><td colspan="6" style="border:1px solid #ccc; padding:8px; text-align:center; color:#888;">ยังไม่พบข้อมูล — กด "เพิ่มรายการ"</td></tr>';
+    return;
+  }
+  var rows = usages.map(function(u, i) {
+    return '<tr>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px; text-align:center;">' + (i + 1) + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px;">' + u.usedTypeLabel + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px; text-align:center;">' + (u.fullArea ? 'ทุกชั้น' : u.useFloor) + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px; text-align:right;">' + u.areaStr + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px;">' + (u.usedForLabel || '') + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px; text-align:center;">' +
+        '<a href="#" onclick="editUsage(' + i + '); return false;">แก้ไข</a> &nbsp; ' +
+        '<a href="#" onclick="removeUsage(' + i + '); return false;" style="color:#d33;">ลบ</a>' +
+      '</td>' +
+    '</tr>';
+  }).join('');
+  tb.innerHTML = rows;
+}
+
+function clearUsageEntry() {
+  $('usedType').value = '';
+  $('fullArea').checked = false;
+  $('useFloor').value = '';
+  $('widthStr').value = '';
+  $('lengthStr').value = '';
+  $('areaStr').value = '';
+  $('usedFor').value = '';
+  $('note').value = '';
+  $('hideArea').style.display = 'block';
+  editIdx = -1;
+}
+
+function addUsage() {
+  var missing = [];
+  if (!$('usedType').value) missing.push('การใช้ประโยชน์');
+  if (!$('fullArea').checked && !$('useFloor').value.trim()) missing.push('ชั้นที่');
+  if (!$('areaStr').value || parseFloat($('areaStr').value) <= 0) missing.push('ขนาดพื้นที่รวม');
+  if (missing.length) { alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', ')); return; }
+
+  var u = {
+    usedType: $('usedType').value,
+    usedTypeLabel: $('usedType').selectedOptions[0].text,
+    fullArea: $('fullArea').checked,
+    useFloor: $('fullArea').checked ? '' : $('useFloor').value.trim(),
+    widthStr: $('fullArea').checked ? '' : $('widthStr').value.trim(),
+    lengthStr: $('fullArea').checked ? '' : $('lengthStr').value.trim(),
+    areaStr: $('areaStr').value.trim(),
+    remainAreaStr: $('remainAreaStr').value.trim(),
+    usedFor: $('usedFor').value,
+    usedForLabel: $('usedFor').selectedOptions.length ? $('usedFor').selectedOptions[0].text : '',
+    note: $('note').value.trim()
+  };
+  if (editIdx >= 0) { usages[editIdx] = u; } else { usages.push(u); }
+  clearUsageEntry();
+  renderUsage();
+  window.__dirty = true;
+}
+
+function editUsage(i) {
+  var u = usages[i];
+  editIdx = i;
+  $('usedType').value = u.usedType;
+  $('fullArea').checked = u.fullArea;
+  $('useFloor').value = u.useFloor;
+  $('widthStr').value = u.widthStr;
+  $('lengthStr').value = u.lengthStr;
+  $('areaStr').value = u.areaStr;
+  $('remainAreaStr').value = u.remainAreaStr;
+  $('usedFor').value = u.usedFor;
+  $('note').value = u.note;
+  if (u.fullArea) { $('hideArea').style.display = 'none'; } else { $('hideArea').style.display = 'block'; }
+  $('usedType').focus();
+}
+
+function removeUsage(i) {
+  usages.splice(i, 1);
+  if (editIdx === i) clearUsageEntry();
+  renderUsage();
+  window.__dirty = true;
+}
+
+function hideArea() {
+  var cb = $('fullArea');
+  if (cb.checked) {
+    $('hideArea').style.display = 'none';
+    $('useFloor').value = '';
+    $('widthStr').value = '';
+    $('lengthStr').value = '';
+    $('areaStr').value = $('remainAreaStr').value;
+  } else {
+    $('hideArea').style.display = 'block';
+    $('areaStr').value = '';
+  }
+}
+
+function calTotalArea() {
+  var w = parseFloat($('widthStr').value) || 0;
+  var l = parseFloat($('lengthStr').value) || 0;
+  $('areaStr').value = (w * l).toFixed(2);
+}
+
+function saveUsage() {
+  var missing = [];
+  if (!$('buildingCode').value.trim()) missing.push('รหัสสิ่งปลูกสร้าง');
+  if (!$('psnId').value.trim()) missing.push('เลขบัตรเจ้าของสิ่งปลูกสร้าง');
+  if (missing.length) { alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', ')); return; }
+
+  var psnId = $('psnId').value.trim();
+  var code = $('buildingCode').value.trim().toUpperCase();
+
+  if (!usages.length) {
+    /* ลบรายการจนหมด → กดบันทึก = ลบข้อมูลการใช้ประโยชน์อาคารนี้ทิ้ง */
+    if (!confirm('ไม่มีรายการใช้ประโยชน์ในรายการ\nกด "ตกลง" = ลบข้อมูลการใช้ประโยชน์อาคารนี้ทิ้ง (รวมที่บันทึกไว้แล้ว)')) return;
+    try {
+      var list = JSON.parse(localStorage.getItem('ltax_building_usage') || '[]');
+      var kept = [];
+      var removed = false;
+      for (var i = 0; i < list.length; i++) {
+        var hit = (window.__editIdx === i && window.__editKey === 'ltax_building_usage') ||
+                  String(list[i]['รหัสสิ่งปลูกสร้าง'] || '').trim().toUpperCase() === code;
+        if (hit && !removed) { removed = true; continue; }
+        kept.push(list[i]);
+      }
+      localStorage.setItem('ltax_building_usage', JSON.stringify(kept));
+      alert('ลบข้อมูลการใช้ประโยชน์อาคาร ' + code + ' เรียบร้อย');
+    } catch (e) { alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e); }
+    window.__editKey = null; window.__editIdx = -1;
+    window.__saved = true;
+    $('previewBox').value = '[]';
+    $('preview').style.display = 'none';
+    if (window.__goHome) window.__goHome(); else if (window.location.href.indexOf('index.html') >= 0) showView('home');
+    else window.location.href = 'index.html';
+    return;
+  }
+
+  var data = {
+    'รหัสสิ่งปลูกสร้าง': code,
+    'เลขบัตรเจ้าของสิ่งปลูกสร้าง': psnId,
+    'รายการใช้ประโยชน์': usages.map(function(u) {
+      return {
+        'ประเภทการใช้งาน': u.usedType,
+        'เต็มพื้นที่ทุกชั้น': u.fullArea ? 'Y' : 'N',
+        'ชั้นที่': u.useFloor,
+        'กว้าง(ม.)': u.widthStr,
+        'ยาว(ม.)': u.lengthStr,
+        'พื้นที่รวม(ตร.ม.)': u.areaStr,
+        'ขนาดพื้นที่คงเหลือ(ตร.ม.)': u.remainAreaStr,
+        'ลักษณะการใช้': u.usedFor,
+        'หมายเหตุ': u.note
+      };
+    })
+  };
+
+  LTAX_store('ltax_building_usage', data);
+  showSavedModal('รหัสสิ่งปลูกสร้าง: ' + code + ' (' + usages.length + ' รายการใช้ประโยชน์)', 'ltax_sign', { askSign: true, ctx: { psnId: psnId, buildingCode: code } });
+  $('previewBox').value = JSON.stringify(data, null, 2);
+  $('preview').style.display = 'block';
+  window.__saved = true;
+}
+
+window.__dirty = false;
+document.addEventListener('input', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+document.addEventListener('change', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+
+function goBack() {
+  if (window.__dirty && !window.__saved) { alert('กรุณาบันทึกข้อมูลก่อน'); return; }
+  if (window.__goHome) { window.__goHome(); return; }
+  window.location.href = 'index.html';
+}
+
+function resetForm() {
+  if (!confirm('ล้างข้อมูลในฟอร์ม?')) return;
+  ['buildingCode','psnId','useFloor','widthStr','lengthStr','areaStr','remainAreaStr','note'].forEach(function(f) { $(f).value = ''; });
+  $('usedType').value = ''; $('usedFor').value = '';
+  $('fullArea').checked = false;
+  $('hideArea').style.display = 'block';
+  usages = [];
+  renderUsage();
+  $('preview').style.display = 'none';
+}
+  loadEditRecord();
+  setTimeout(applyNextCtx, 0);
+</script>
+<style>
+/* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
+#ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
+#ltaxModal .box{background:#fff;border-radius:12px;max-width:92%;width:330px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.35);overflow:hidden;}
+#ltaxModal .head{background:linear-gradient(135deg,#367fa9,#1b4f8a);color:#fff;padding:14px 10px 26px;font-size:16px;font-weight:700;}
+#ltaxModal .tick{width:62px;height:62px;border-radius:50%;background:#28a745;color:#fff;font-size:34px;line-height:62px;margin:-31px auto 12px;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+#ltaxModal .info{font-size:13px;color:#333;margin:4px 14px 14px;word-break:break-word;line-height:1.5;}
+#ltaxModal .btns{padding:0 14px 14px;}
+#ltaxModal .btn{display:block;width:100%;margin:7px 0 0;padding:11px;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;}
+#ltaxModal .btn-next{background:#367fa9;color:#fff;}
+#ltaxModal .btn-more{background:#28a745;color:#fff;}
+#ltaxModal .btn-home{background:#eef4f8;color:#1b4f8a;}
+#ltaxModal .btn-close{background:#f4f6f8;color:#8a8f94;}
+</style>
+
+<div id="ltaxModal">
+  <div class="box">
+    <div class="head">บันทึกข้อมูลเรียบร้อย</div>
+    <div class="tick">&#10003;</div>
+    <div class="info" id="ltaxModalInfo"></div>
+    <div class="btns">
+      <button type="button" class="btn btn-next" id="ltaxModalNext">กรอกชุดถัดไป (ต่อไป)</button>
+      <button type="button" class="btn btn-more" id="ltaxModalMore">เพิ่มรายการใหม่</button>
+      <button type="button" class="btn btn-home" id="ltaxModalHome">กลับหน้าแรก</button>
+      <button type="button" class="btn btn-home" id="ltaxModalNoSign" style="display:none;">ไม่มีป้าย (จบชุด)</button>
+      <button type="button" class="btn btn-close" id="ltaxModalClose">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- modal ยืนยันการบันทึก + flow ชุดข้อมูล ---------- */
+function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
+function goHome() { if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; }
+function goNextForm(fid, ctx) {
+  var c = ltaxReadCtx();
+  for (var k in (ctx || {})) if (ctx[k]) c[k] = ctx[k];
+  try { sessionStorage.setItem('ltax_next', JSON.stringify(c)); } catch(e) {}
+  if (window.openForm) { try { window.openForm(fid); return; } catch(e) {} }
+  var F = {
+    ltax_owner: 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html',
+    ltax_land: 'ฟอร์ม_เพิ่มที่ดิน.html',
+    ltax_land_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์ที่ดิน.html',
+    ltax_building: 'ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html',
+    ltax_building_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html',
+    ltax_sign: 'ฟอร์ม_เพิ่มป้าย.html'
+  };
+  window.location.href = F[fid] || 'index.html';
+}
+function showSavedModal(info, next, opts) {
+  opts = opts || {};
+  $('ltaxModalInfo').textContent = info;
+  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
+  nb.textContent = opts.askSign ? 'มีป้าย — กรอกป้าย' : (isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)');
+  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next, opts.ctx); };
+  var ns = $('ltaxModalNoSign');
+  if (opts.askSign) { ns.style.display = 'block'; ns.onclick = function() { hideSavedModal(); goHome(); }; }
+  else ns.style.display = 'none';
+  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
+  $('ltaxModalHome').onclick = function() { hideSavedModal(); goHome(); };
+  $('ltaxModalClose').onclick = hideSavedModal;
+  $('ltaxModal').style.display = 'flex';
+}
+function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
+function applyNextCtx() {
+  var c = ltaxReadCtx();
+  if (!c || !c.buildingCode) return;
+  sessionStorage.removeItem('ltax_next');
+  if (window.__editKey) return;
+  $('buildingCode').value = c.buildingCode;
+  if (c.psnId) $('psnId').value = c.psnId;
+  window.__dirty = true;
+}</script>
+
+</body>
+</html>
