@@ -361,11 +361,36 @@ function saveUsage() {
   var missing = [];
   if (!$('buildingCode').value.trim()) missing.push('รหัสสิ่งปลูกสร้าง');
   if (!$('psnId').value.trim()) missing.push('เลขบัตรเจ้าของสิ่งปลูกสร้าง');
-  if (!usages.length) missing.push('รายการใช้ประโยชน์อย่างน้อย 1 รายการ');
   if (missing.length) { alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', ')); return; }
 
   var psnId = $('psnId').value.trim();
   var code = $('buildingCode').value.trim().toUpperCase();
+
+  if (!usages.length) {
+    /* ลบรายการจนหมด → กดบันทึก = ลบข้อมูลการใช้ประโยชน์อาคารนี้ทิ้ง */
+    if (!confirm('ไม่มีรายการใช้ประโยชน์ในรายการ\nกด "ตกลง" = ลบข้อมูลการใช้ประโยชน์อาคารนี้ทิ้ง (รวมที่บันทึกไว้แล้ว)')) return;
+    try {
+      var list = JSON.parse(localStorage.getItem('ltax_building_usage') || '[]');
+      var kept = [];
+      var removed = false;
+      for (var i = 0; i < list.length; i++) {
+        var hit = (window.__editIdx === i && window.__editKey === 'ltax_building_usage') ||
+                  String(list[i]['รหัสสิ่งปลูกสร้าง'] || '').trim().toUpperCase() === code;
+        if (hit && !removed) { removed = true; continue; }
+        kept.push(list[i]);
+      }
+      localStorage.setItem('ltax_building_usage', JSON.stringify(kept));
+      alert('ลบข้อมูลการใช้ประโยชน์อาคาร ' + code + ' เรียบร้อย');
+    } catch (e) { alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e); }
+    window.__editKey = null; window.__editIdx = -1;
+    window.__saved = true;
+    $('previewBox').value = '[]';
+    $('preview').style.display = 'none';
+    if (window.__goHome) window.__goHome(); else if (window.location.href.indexOf('index.html') >= 0) showView('home');
+    else window.location.href = 'index.html';
+    return;
+  }
+
   var data = {
     'รหัสสิ่งปลูกสร้าง': code,
     'เลขบัตรเจ้าของสิ่งปลูกสร้าง': psnId,

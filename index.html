@@ -1879,7 +1879,7 @@ refreshSummary();
         <label>รหัสแปลงที่ดิน (ผูก)</label>
         <div class="field">
           <div class="inline" style="display:inline-flex; gap:8px; width:100%;">
-            <input type="text" id="landParcelCode" placeholder="ตัวอย่าง: 50A001" onblur="this.value=this.value.toUpperCase()">
+            <input type="text" id="landParcelCode" placeholder="ตัวอย่าง: 50A001" onblur="this.value=this.value.toUpperCase()" onchange="recalcRemain()">
             <input type="text" id="remainWah" placeholder="พื้นที่แปลงคงเหลือ (ตร.ว.)" style="max-width:200px;">
           </div>
           <div class="hint">พื้นที่แปลงคงเหลือ = เนื้อที่แปลง - พื้นที่ใช้ไปแล้ว (ระบบจะตรวจว่าห้ามเกิน)</div>
@@ -1938,6 +1938,11 @@ refreshSummary();
             <input type="text" id="nganStr" name="landUsed.nganStr" value="0" oninput="calArea()">
             <span>งาน</span>
             <input type="text" id="squareWahStr" name="landUsed.squareWahStr" value="0.00" oninput="calArea()">
+            <span>ตร.ว.</span>
+          </div>
+          <div class="area-total">
+            <span>รวม</span>
+            <input type="text" id="usedTotalWahStr" readonly oninput="calArea()">
             <span>ตร.ว.</span>
           </div>
           <div class="hint" id="areaWarn"></div>
@@ -2233,7 +2238,12 @@ refreshSummary();
       <div class="row">
         <label>เนื้อที่ที่ดิน (ไร่-งาน-ตร.ว.)</label>
         <div class="field">
-          <input type="text" id="landAreaStr" placeholder="ตัวอย่าง: 1-1-0" style="max-width:220px;">
+          <div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <input type="text" id="landAreaStr" placeholder="ตัวอย่าง: 1-1-0" style="max-width:220px;" oninput="calLandAreaWah()">
+            <span style="font-size:13px; color:#555;">รวม</span>
+            <input type="text" id="landAreaWahStr" readonly style="max-width:120px; background:#eef2f7; font-weight:600;" placeholder="0">
+            <span style="font-size:13px; color:#555;">ตร.ว.</span>
+          </div>
           <div class="hint">เนื้อที่แปลงที่ดินที่สิ่งปลูกสร้างตั้งอยู่ (ใช้เลือกประเภทการใช้ประโยชน์ที่ดินในระบบ)</div>
         </div>
       </div>
@@ -3782,6 +3792,8 @@ function hideAgri() {
 
 function calArea() {
   var usedWah = getUsedWah();
+  var ut = $('usedTotalWahStr');
+  if (ut) ut.value = usedWah > 0 ? usedWah.toFixed(2) : '';
   var remain = $('remainWah').value;
   var warn = $('areaWarn');
   if (remain !== '' && num(remain) > 0 && usedWah > num(remain)) {
@@ -3789,6 +3801,31 @@ function calArea() {
   } else {
     warn.innerHTML = usedWah > 0 ? 'รวม ' + usedWah.toLocaleString('en-US') + ' ตร.ว.' : '';
   }
+}
+
+/* พื้นที่แปลงคงเหลือ (ตร.ว.) = เนื้อที่แปลงทั้งหมด − ผลรวมรายการใช้ประโยชน์ (ทั้งหมดในตาราง) */
+function recalcRemain() {
+  var pc = $('landParcelCode').value.trim().toUpperCase();
+  var rw = $('remainWah');
+  if (!pc || !rw) return;
+  var landList = [];
+  try { landList = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { landList = []; }
+  var land = null;
+  for (var i = 0; i < landList.length; i++) {
+    var lc = String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase();
+    if (lc === pc) { land = landList[i]; break; }
+  }
+  if (!land) return;  // ยังไม่มีแปลงนี้ในเครื่อง → ปล่อยตามเดิม (กรอกเอง/ค่าเดิม)
+  var totalWah = num(land['เนื้อที่(ตร.ว.)']);
+  if (totalWah <= 0) {
+    totalWah = num(land['ไร่']) * 400 + num(land['งาน']) * 100 + num(land['ตร.วา']);
+  }
+  var usedTotal = 0;
+  (usages || []).forEach(function(u) {
+    usedTotal += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']);
+  });
+  rw.value = (totalWah - usedTotal).toFixed(2);
+  window.__dirty = true;
 }
 
 /* ---------- รายการหลายประเภท ---------- */
@@ -3838,12 +3875,14 @@ function addUsage() {
   });
   renderUsage();
   clearUsageEntry();
+  recalcRemain();
 }
 
 function removeUsage(i) {
   usages.splice(i, 1);
   window.__dirty = true;
   renderUsage();
+  recalcRemain();
 }
 
 function clearUsageEntry() {
@@ -3853,6 +3892,7 @@ function clearUsageEntry() {
   $('note').value = ''; $('formFile').value = '';
   photoData = ''; $('photoStatus').textContent = '';
   $('areaWarn').innerHTML = '';
+  var ut = $('usedTotalWahStr'); if (ut) ut.value = '';
 hideAgri();
 }
 
@@ -3887,7 +3927,31 @@ function collect() {
 function saveUsed() {
   if (!$('psnId').value.trim()) { alert('กรุณากรอกเลขบัตรเจ้าของที่ดิน'); return; }
   if (!$('landParcelCode').value.trim()) { alert('กรุณากรอกรหัสแปลงที่ดิน'); return; }
-  if (!usages.length) { alert('ยังไม่มีรายการใช้ประโยชน์ — กด "เพิ่มรายการ"'); return; }
+  if (!usages.length) {
+    /* ลบรายการจนหมด → กดบันทึก = ลบข้อมูลการใช้ประโยชน์แปลงนี้ทิ้ง */
+    if (!confirm('ไม่มีรายการใช้ประโยชน์ในรายการ\nกด "ตกลง" = ลบข้อมูลการใช้ประโยชน์แปลงนี้ทิ้ง (รวมที่บันทึกไว้แล้ว)')) return;
+    try {
+      var arc = $('landParcelCode').value.trim().toUpperCase();
+      var list = JSON.parse(localStorage.getItem('ltax_land_usage') || '[]');
+      var kept = [];
+      var removed = false;
+      for (var i = 0; i < list.length; i++) {
+        var hit = (window.__editIdx === i && window.__editKey === 'ltax_land_usage') ||
+                  String(list[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === arc;
+        if (hit && !removed) { removed = true; continue; }
+        kept.push(list[i]);
+      }
+      localStorage.setItem('ltax_land_usage', JSON.stringify(kept));
+      alert('ลบข้อมูลการใช้ประโยชน์แปลง ' + arc + ' เรียบร้อย');
+    } catch (e) { alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e); }
+    window.__editKey = null; window.__editIdx = -1;
+    window.__saved = true;
+    $('previewBox').value = '[]';
+    $('preview').style.display = 'none';
+    if (window.__goHome) window.__goHome(); else if (window.location.href.indexOf('index.html') >= 0) showView('home');
+    else window.location.href = 'index.html';
+    return;
+  }
 
   var data = collect();
   LTAX_store('ltax_land_usage', data);
@@ -4037,6 +4101,7 @@ function applyNextCtx() {
   if (c.parcelCode) $('landParcelCode').value = c.parcelCode;
   window.__dirty = true;
 }
+setTimeout(function() { recalcRemain(); }, 100);
 </script>
 
 <script type="text/plain" id="js-ltax_building">
@@ -4181,6 +4246,17 @@ function calTotalArea() {
   $('totalAreaStr').value = fmt(num($('widthStr').value) * num($('heightStr').value) * num($('noFloor').value), true);
   recalcPrice();
 }
+
+/* คำนวณ "เนื้อที่ที่ดิน" (ไร่-งาน-วา เช่น 1-1-0) → แสดงรวมเป็นตร.วา */
+function calLandAreaWah() {
+  var v = String($('landAreaStr').value || '').trim();
+  var out = $('landAreaWahStr');
+  if (!out) return;
+  var m = v.match(/^(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)$/);
+  if (!m) { out.value = ''; return; }
+  var total = num(m[1]) * 400 + num(m[2]) * 100 + num(m[3]);
+  out.value = total > 0 ? total.toFixed(2) : '';
+}
 function changeBuildingType() {
   var code = $('buildingType').value;
   var price = BUILDING_PRICE[code];
@@ -4276,7 +4352,7 @@ function loadEditRecord() {
   if (r['กว้าง(ม.)']) $('widthStr').value = r['กว้าง(ม.)'];
   if (r['ยาว(ม.)']) $('heightStr').value = r['ยาว(ม.)'];
   if (r['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)']) $('totalAreaStr').value = r['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)'];
-  if (r['เนื้อที่ที่ดิน']) $('landAreaStr').value = r['เนื้อที่ที่ดิน'];
+  if (r['เนื้อที่ที่ดิน']) { $('landAreaStr').value = r['เนื้อที่ที่ดิน']; calLandAreaWah(); }
   if (r['อายุสิ่งปลูกสร้าง']) $('ageStr').value = r['อายุสิ่งปลูกสร้าง'];
   if (r['ปีที่สร้าง']) $('since').value = r['ปีที่สร้าง'];
   if (r['ราคาประเมินต่อตร.ม.']) $('pricePerMeterStr').value = r['ราคาประเมินต่อตร.ม.'];
@@ -4621,11 +4697,36 @@ function saveUsage() {
   var missing = [];
   if (!$('buildingCode').value.trim()) missing.push('รหัสสิ่งปลูกสร้าง');
   if (!$('psnId').value.trim()) missing.push('เลขบัตรเจ้าของสิ่งปลูกสร้าง');
-  if (!usages.length) missing.push('รายการใช้ประโยชน์อย่างน้อย 1 รายการ');
   if (missing.length) { alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', ')); return; }
 
   var psnId = $('psnId').value.trim();
   var code = $('buildingCode').value.trim().toUpperCase();
+
+  if (!usages.length) {
+    /* ลบรายการจนหมด → กดบันทึก = ลบข้อมูลการใช้ประโยชน์อาคารนี้ทิ้ง */
+    if (!confirm('ไม่มีรายการใช้ประโยชน์ในรายการ\nกด "ตกลง" = ลบข้อมูลการใช้ประโยชน์อาคารนี้ทิ้ง (รวมที่บันทึกไว้แล้ว)')) return;
+    try {
+      var list = JSON.parse(localStorage.getItem('ltax_building_usage') || '[]');
+      var kept = [];
+      var removed = false;
+      for (var i = 0; i < list.length; i++) {
+        var hit = (window.__editIdx === i && window.__editKey === 'ltax_building_usage') ||
+                  String(list[i]['รหัสสิ่งปลูกสร้าง'] || '').trim().toUpperCase() === code;
+        if (hit && !removed) { removed = true; continue; }
+        kept.push(list[i]);
+      }
+      localStorage.setItem('ltax_building_usage', JSON.stringify(kept));
+      alert('ลบข้อมูลการใช้ประโยชน์อาคาร ' + code + ' เรียบร้อย');
+    } catch (e) { alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e); }
+    window.__editKey = null; window.__editIdx = -1;
+    window.__saved = true;
+    $('previewBox').value = '[]';
+    $('preview').style.display = 'none';
+    if (window.__goHome) window.__goHome(); else if (window.location.href.indexOf('index.html') >= 0) showView('home');
+    else window.location.href = 'index.html';
+    return;
+  }
+
   var data = {
     'รหัสสิ่งปลูกสร้าง': code,
     'เลขบัตรเจ้าของสิ่งปลูกสร้าง': psnId,

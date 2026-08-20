@@ -186,7 +186,12 @@
       <div class="row">
         <label>เนื้อที่ที่ดิน (ไร่-งาน-ตร.ว.)</label>
         <div class="field">
-          <input type="text" id="landAreaStr" placeholder="ตัวอย่าง: 1-1-0" style="max-width:220px;">
+          <div style="display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <input type="text" id="landAreaStr" placeholder="ตัวอย่าง: 1-1-0" style="max-width:220px;" oninput="calLandAreaWah()">
+            <span style="font-size:13px; color:#555;">รวม</span>
+            <input type="text" id="landAreaWahStr" readonly style="max-width:120px; background:#eef2f7; font-weight:600;" placeholder="0">
+            <span style="font-size:13px; color:#555;">ตร.ว.</span>
+          </div>
           <div class="hint">เนื้อที่แปลงที่ดินที่สิ่งปลูกสร้างตั้งอยู่ (ใช้เลือกประเภทการใช้ประโยชน์ที่ดินในระบบ)</div>
         </div>
       </div>
@@ -410,6 +415,17 @@ function calTotalArea() {
   $('totalAreaStr').value = fmt(num($('widthStr').value) * num($('heightStr').value) * num($('noFloor').value), true);
   recalcPrice();
 }
+
+/* คำนวณ "เนื้อที่ที่ดิน" (ไร่-งาน-วา เช่น 1-1-0) → แสดงรวมเป็นตร.วา */
+function calLandAreaWah() {
+  var v = String($('landAreaStr').value || '').trim();
+  var out = $('landAreaWahStr');
+  if (!out) return;
+  var m = v.match(/^(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)$/);
+  if (!m) { out.value = ''; return; }
+  var total = num(m[1]) * 400 + num(m[2]) * 100 + num(m[3]);
+  out.value = total > 0 ? total.toFixed(2) : '';
+}
 function changeBuildingType() {
   var code = $('buildingType').value;
   var price = BUILDING_PRICE[code];
@@ -505,7 +521,7 @@ function loadEditRecord() {
   if (r['กว้าง(ม.)']) $('widthStr').value = r['กว้าง(ม.)'];
   if (r['ยาว(ม.)']) $('heightStr').value = r['ยาว(ม.)'];
   if (r['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)']) $('totalAreaStr').value = r['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)'];
-  if (r['เนื้อที่ที่ดิน']) $('landAreaStr').value = r['เนื้อที่ที่ดิน'];
+  if (r['เนื้อที่ที่ดิน']) { $('landAreaStr').value = r['เนื้อที่ที่ดิน']; calLandAreaWah(); }
   if (r['อายุสิ่งปลูกสร้าง']) $('ageStr').value = r['อายุสิ่งปลูกสร้าง'];
   if (r['ปีที่สร้าง']) $('since').value = r['ปีที่สร้าง'];
   if (r['ราคาประเมินต่อตร.ม.']) $('pricePerMeterStr').value = r['ราคาประเมินต่อตร.ม.'];
