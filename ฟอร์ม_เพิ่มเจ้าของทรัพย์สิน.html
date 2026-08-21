@@ -61,15 +61,27 @@
     background: #fff3cd; border: 1px solid #e6c65a; color: #7a5c00;
     padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
   }
+
+  .ref-search-box { position: relative; }
+  .ref-results {
+    border: 1px solid #b0b0b0; border-top: none; border-radius: 0 0 3px 3px;
+    max-height: 240px; overflow-y: auto; display: none; background: #fff;
+    position: absolute; left: 0; right: 0; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  }
+  .ref-item { padding: 8px 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+  .ref-item:hover { background: #eef3fa; }
+  .ref-item .nm { font-weight: bold; color: #1b4f8a; }
+  .ref-item .id { color: #888; font-size: 12px; }
+  .ref-item .ad { font-size: 12px; color: #888; }
+  .ref-empty { padding: 8px 10px; color: #888; font-size: 13px; }
 </style>
 </head>
 <body>
 
 <header>
-  <div><b>LTAX</b> ONLINE :: เพิ่มเจ้าของทรัพย์สิน</div>
+  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Online) :: เพิ่มเจ้าของทรัพย์สิน</div>
   <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
 </header>
-<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>ทะเบียนเจ้าของทรัพย์สิน (AST001)</b> <span style="float:right;">แบบเพิ่ม/แก้ไขข้อมูลเจ้าของ</span></div>
 
 <div class="container">
   <div class="panel">
@@ -77,6 +89,15 @@
     <div class="panel-body">
 
       <div class="section-title">ข้อมูลเจ้าของทรัพย์สิน</div>
+
+      <div class="row">
+        <label>ค้นหาจากข้อมูลอ้างอิงเดิม</label>
+        <div class="field ref-search-box">
+          <input type="text" id="refSearch" placeholder="พิมพ์เลขบัตรประชาชน หรือ ชื่อ-นามสกุล..." oninput="onRefSearchInput()" autocomplete="off">
+          <div id="refResults" class="ref-results"></div>
+          <div class="hint">เลือกรายการเพื่อเติมข้อมูลเจ้าของอัตโนมัติ (ต้องนำเข้าข้อมูลอ้างอิงจากหน้าแรกก่อน)</div>
+        </div>
+      </div>
 
       <div class="row">
         <label>ประเภทบุคคล <span class="req">*</span></label>
@@ -281,10 +302,38 @@ var PREFIXES = {
   '8': [ '0 โปรดเลือกคำนำหน้า', 'G11 อื่นๆ' ]
 };
 
-/* จังหวัด/อำเภอ/ตำบล — ครบทุกจังหวัด (77 จ. / 928 อ. / 7,436 ต. จาก admin_data.js)
-   โหลดจาก window.ADMIN_DATA (ไฟล์ admin_data.js) — รหัสตามระบบ DLA */
-var ADMIN_DATA = window.ADMIN_DATA || { provinces: [], byProvince: {}, byDistrict: {} };
-var PROVINCES = ADMIN_DATA.provinces.map(function(p) { return [p.c, p.n]; });
+/* จังหวัด (รหัส 2 หลัก ตามระบบ DLA) */
+var PROVINCES = [
+  ['10','กรุงเทพมหานคร'],['11','สมุทรปราการ'],['12','นนทบุรี'],['13','ปทุมธานี'],
+  ['14','พระนครศรีอยุธยา'],['15','อ่างทอง'],['16','ลพบุรี'],['17','สิงห์บุรี'],
+  ['18','ชัยนาท'],['19','สระบุรี'],['20','ชลบุรี'],['21','ระยอง'],['22','จันทบุรี'],
+  ['23','ตราด'],['24','ฉะเชิงเทรา'],['25','ปราจีนบุรี'],['26','นครนายก'],['27','สระแก้ว'],
+  ['30','นครราชสีมา'],['31','บุรีรัมย์'],['32','สุรินทร์'],['33','ศรีสะเกษ'],['34','อุบลราชธานี'],
+  ['35','ยโสธร'],['36','ชัยภูมิ'],['37','อำนาจเจริญ'],['38','บึงกาฬ'],['39','หนองบัวลำภู'],
+  ['40','ขอนแก่น'],['41','อุดรธานี'],['42','เลย'],['43','หนองคาย'],['44','มหาสารคาม'],
+  ['45','ร้อยเอ็ด'],['46','กาฬสินธุ์'],['47','สกลนคร'],['48','นครพนม'],['49','มุกดาหาร'],
+  ['50','เชียงใหม่'],['51','ลำพูน'],['52','ลำปาง'],['53','อุตรดิตถ์'],['54','แพร่'],
+  ['55','น่าน'],['56','พะเยา'],['57','เชียงราย'],['58','แม่ฮ่องสอน'],
+  ['60','นครสวรรค์'],['61','อุทัยธานี'],['62','กำแพงเพชร'],['63','ตาก'],['64','สุโขทัย'],
+  ['65','พิษณุโลก'],['66','พิจิตร'],['67','เพชรบูรณ์'],
+  ['70','ราชบุรี'],['71','กาญจนบุรี'],['72','สุพรรณบุรี'],['73','นครปฐม'],['74','สมุทรสาคร'],
+  ['75','สมุทรสงคราม'],['76','เพชรบุรี'],['77','ประจวบคีรีขันธ์'],
+  ['80','นครศรีธรรมราช'],['81','กระบี่'],['82','พังงา'],['83','ภูเก็ต'],['84','สุราษฎร์ธานี'],
+  ['85','ระนอง'],['86','ชุมพร'],
+  ['90','สงขลา'],['91','สตูล'],['92','ปัตตานี'],['93','ยะลา'],['94','นราธิวาส']
+];
+
+/* อำเภอ/ตำบล ตัวอย่าง (ยังมีเฉพาะ จ.ศรีสะเกษ) - จะเติมให้ครบตามระบบจริง */
+var ADMIN = {
+  '33': {
+    '3305': { name: 'ขุขันธ์', districts: {
+      '330501': 'ปรือใหญ่', '330502': 'ปรือใหญ่ 2'
+    }},
+    '3301': { name: 'เมืองศรีสะเกษ', districts: {
+      '330101': 'เมืองใต้', '330102': 'เมืองเหนือ'
+    }}
+  }
+};
 
 var REQUIRED = ['personType','psnId','prefixName','firstName','addrNo','provinceId','amphurId','districtId','currNo','currProvinceId','currAmphurId','currDistrictId','sendAddr'];
 
@@ -320,27 +369,34 @@ function onProvinceChange(pSel, aSel, dSel) {
   aBox.innerHTML = '<option value="">--</option>';
   dBox.innerHTML = '<option value="">--</option>';
   if (!prov) return;
-  var list = ADMIN_DATA.byProvince[prov] || [];
-  list.forEach(function(a) {
-    var opt = document.createElement('option');
-    opt.value = a.c; opt.text = a.n;
-    aBox.appendChild(opt);
-  });
-  if (aBox.options.length > 1) aBox.selectedIndex = 1;
-  onAmphurChange(aSel, dSel);
+  var data = ADMIN[prov];
+  if (data) {
+    for (var a in data) {
+      var opt = document.createElement('option');
+      opt.value = a; opt.text = data[a].name;
+      aBox.appendChild(opt);
+    }
+    if (aBox.options.length > 1) aBox.selectedIndex = 1;
+    onAmphurChange(aSel, dSel);
+  } else {
+    var o = document.createElement('option');
+    o.value = ''; o.text = 'ยังไม่มีข้อมูลอำเภอของจังหวัดนี้ (ต้นแบบ)';
+    aBox.appendChild(o);
+  }
 }
 
 function onAmphurChange(aSel, dSel) {
+  var prov = aSel.indexOf('curr') === 0 ? $('currProvinceId').value : $('provinceId').value;
   var amph = $(aSel).value;
   var dBox = $(dSel);
   dBox.innerHTML = '<option value="">--</option>';
-  if (!amph) return;
-  var list = ADMIN_DATA.byDistrict[amph] || [];
-  list.forEach(function(d) {
+  if (!prov || !amph || !ADMIN[prov] || !ADMIN[prov][amph]) return;
+  var dists = ADMIN[prov][amph].districts;
+  for (var d in dists) {
     var opt = document.createElement('option');
-    opt.value = d.c; opt.text = d.n;
+    opt.value = d; opt.text = dists[d];
     dBox.appendChild(opt);
-  });
+  }
 }
 
 function copyAddress() {
@@ -356,6 +412,116 @@ function copyAddress() {
   });
   if ($('provinceId').value) onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
 }
+
+/* =========================================================
+   ค้นหาจากข้อมูลอ้างอิงเดิม (นำเข้าจากหน้าแรก — localStorage 'ltax_ref_owner')
+   ========================================================= */
+function getRefOwners() {
+  try { return JSON.parse(localStorage.getItem('ltax_ref_owner') || '[]'); } catch(e) { return []; }
+}
+
+function onRefSearchInput() {
+  var q = $('refSearch').value.trim().toLowerCase();
+  var box = $('refResults');
+  if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  var list = getRefOwners().filter(function(r) {
+    var hay = ((r['เลขบัตรประชาชน'] || '') + ' ' + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '')).toLowerCase();
+    return hay.indexOf(q) >= 0;
+  }).slice(0, 8);
+
+  window.__refFiltered = list;
+
+  if (!list.length) {
+    box.innerHTML = '<div class="ref-empty">ไม่พบข้อมูลอ้างอิงที่ตรงกับ "' + $('refSearch').value.trim() + '" — ยังไม่ได้นำเข้าไฟล์ หรือไม่มีรายชื่อนี้</div>';
+    box.style.display = 'block';
+    return;
+  }
+
+  box.innerHTML = list.map(function(r, i) {
+    var addr = [r['ตำบล'], r['อำเภอ'], r['จังหวัด']].filter(Boolean).join(' / ');
+    return '<div class="ref-item" onclick="applyRefOwner(' + i + ')">' +
+      '<span class="nm">' + (r['คำนำหน้า'] || '') + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '') + '</span>' +
+      ' <span class="id">(' + (r['เลขบัตรประชาชน'] || '') + ')</span>' +
+      (addr ? '<div class="ad">' + addr + '</div>' : '') +
+      '</div>';
+  }).join('');
+  box.style.display = 'block';
+}
+
+function findProvinceCode(name) {
+  if (!name) return '';
+  for (var i = 0; i < PROVINCES.length; i++) {
+    if (PROVINCES[i][1] === String(name).trim()) return PROVINCES[i][0];
+  }
+  return '';
+}
+function findAmphurCode(provCode, name) {
+  var data = ADMIN[provCode];
+  if (!data || !name) return '';
+  for (var a in data) { if (data[a].name === String(name).trim()) return a; }
+  return '';
+}
+function findDistrictCode(provCode, amphCode, name) {
+  var data = ADMIN[provCode] && ADMIN[provCode][amphCode];
+  if (!data || !name) return '';
+  for (var d in data.districts) { if (data.districts[d] === String(name).trim()) return d; }
+  return '';
+}
+
+function applyRefOwner(i) {
+  var r = (window.__refFiltered || [])[i];
+  if (!r) return;
+
+  $('psnId').value = r['เลขบัตรประชาชน'] || '';
+
+  if (r['คำนำหน้า']) {
+    var pbox = $('prefixName'), pv = r['คำนำหน้า'], matched = false;
+    for (var k = 0; k < pbox.options.length; k++) {
+      if (pbox.options[k].text === pv || pbox.options[k].value === pv) { pbox.value = pbox.options[k].value; matched = true; break; }
+    }
+    if (!matched) setSelectOrAdd(pbox, pv);
+  }
+
+  $('firstName').value = r['ชื่อ'] || '';
+  $('lastName').value = r['นามสกุล'] || '';
+  $('addrNo').value = r['เลขที่บ้าน'] || '';
+  $('addrVillage').value = r['หมู่ที่'] || '';
+  $('addrRoad').value = r['ถนน'] || '';
+  $('addrAlley').value = r['ซอย'] || '';
+  $('postalCode').value = r['รหัสไปรษณีย์'] || '';
+  if (r['โทรศัพท์']) $('tel').value = r['โทรศัพท์'];
+
+  var provCode = findProvinceCode(r['จังหวัด']);
+  if (provCode) {
+    $('provinceId').value = provCode;
+    onProvinceChange('provinceId', 'amphurId', 'districtId');
+    var amphCode = findAmphurCode(provCode, r['อำเภอ']);
+    if (amphCode) {
+      $('amphurId').value = amphCode;
+      onAmphurChange('amphurId', 'districtId');
+      var distCode = findDistrictCode(provCode, amphCode, r['ตำบล']);
+      if (distCode) $('districtId').value = distCode;
+      else if (r['ตำบล']) setSelectOrAdd($('districtId'), r['ตำบล']);
+    } else if (r['อำเภอ']) {
+      setSelectOrAdd($('amphurId'), r['อำเภอ']);
+    }
+  } else if (r['จังหวัด']) {
+    alert('พบจังหวัด "' + r['จังหวัด'] + '" ซึ่งยังไม่มีในรายการอำเภอ/ตำบลของระบบนี้ — กรุณาเลือกจังหวัด/อำเภอ/ตำบลเอง');
+  }
+
+  $('refResults').style.display = 'none';
+  $('refSearch').value = '';
+  window.__dirty = true;
+}
+
+document.addEventListener('click', function(e) {
+  var box = $('refResults');
+  var input = $('refSearch');
+  if (box && box.style.display !== 'none' && e.target !== input && !box.contains(e.target)) {
+    box.style.display = 'none';
+  }
+});
 
 /* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
 window.__editKey = null;
@@ -420,33 +586,23 @@ function loadEditRecord() {
   if (r['หมู่ที่']) $('addrVillage').value = r['หมู่ที่'];
   if (r['ซอย']) $('addrAlley').value = r['ซอย'];
   if (r['ถนน']) $('addrRoad').value = r['ถนน'];
-  if (r['จังหวัด']) { $('provinceId').value = r['จังหวัด']; onProvinceChange('provinceId','amphurId','districtId'); }
-  if (r['อำเภอ']) { $('amphurId').value = r['อำเภอ']; onAmphurChange('amphurId','districtId'); }
-  if (r['ตำบล']) $('districtId').value = r['ตำบล'];
+  setSelectOrAdd($('provinceId'), r['จังหวัด']);
+  setSelectOrAdd($('amphurId'), r['อำเภอ']);
+  onProvinceChange('provinceId', 'amphurId', 'districtId');
+  setSelectOrAdd($('districtId'), r['ตำบล']);
   if (r['รหัสไปรษณีย์']) $('postalCode').value = r['รหัสไปรษณีย์'];
   if (r['โทรศัพท์']) $('tel').value = r['โทรศัพท์'];
-  if (r['อีเมล']) $('email').value = r['อีเมล'];
-  if (r['สถานะบุคคล']) $('personStatus').value = r['สถานะบุคคล'];
-  if (r['ที่อยู่เพื่อส่งจดหมาย']) $('sendAddr').value = r['ที่อยู่เพื่อส่งจดหมาย'];
 
-  /* ที่อยู่ปัจจุบัน — ถ้ามีค่าใน record ใช้ของเดิม ถ้าไม่มี (ข้อมูลเก่า) คัดลอกจากที่อยู่ตามบัตร */
-  var currMap = [
-    ['บ้านเลขที่ปัจจุบัน','currNo','addrNo'], ['หมู่ที่ปัจจุบัน','currVillage','addrVillage'],
-    ['ถนนปัจจุบัน','currRoad','addrRoad'], ['ซอยปัจจุบัน','currAlley','addrAlley'],
-    ['รหัสไปรษณีย์ปัจจุบัน','currPostalCode','postalCode']
-  ];
-  currMap.forEach(function(m) {
-    $(m[1]).value = (r[m[0]] || $(m[2]).value);
-  });
-  if (r['จังหวัดปัจจุบัน'] || $('provinceId').value) {
-    $('currProvinceId').value = r['จังหวัดปัจจุบัน'] || $('provinceId').value;
-    onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
-  }
-  if (r['อำเภอปัจจุบัน'] || $('amphurId').value) {
-    $('currAmphurId').value = r['อำเภอปัจจุบัน'] || $('amphurId').value;
-    onAmphurChange('currAmphurId','currDistrictId');
-  }
-  $('currDistrictId').value = r['ตำบลปัจจุบัน'] || $('districtId').value;
+  /* ฟอร์มบังคับให้กรอกที่อยู่ปัจจุบัน — คัดลอกจากที่อยู่ตามบัตรเมื่อแก้ไข */
+  if (!$('currNo').value) $('currNo').value = $('addrNo').value;
+  if (!$('currVillage').value) $('currVillage').value = $('addrVillage').value;
+  if (!$('currRoad').value) $('currRoad').value = $('addrRoad').value;
+  if (!$('currAlley').value) $('currAlley').value = $('addrAlley').value;
+  if (!$('currPostalCode').value) $('currPostalCode').value = $('postalCode').value;
+  setSelectOrAdd($('currProvinceId'), $('provinceId').value);
+  setSelectOrAdd($('currAmphurId'), $('amphurId').value);
+  onProvinceChange('currProvinceId', 'currAmphurId', 'currDistrictId');
+  setSelectOrAdd($('currDistrictId'), $('districtId').value);
   if (!$('sendAddr').value) $('sendAddr').value = '1';
 
   window.__editKey = key;
@@ -465,7 +621,6 @@ function collect() {
     'คำนำหน้า': sel('prefixName'),
     'ชื่อ': sel('firstName').trim(),
     'นามสกุล': sel('lastName').trim(),
-    'สถานะบุคคล': sel('personStatus'),
     'สัญชาติ': '',
     'เลขที่บ้าน': sel('addrNo'),
     'หมู่ที่': sel('addrVillage'),
@@ -475,17 +630,7 @@ function collect() {
     'อำเภอ': sel('amphurId'),
     'จังหวัด': sel('provinceId'),
     'รหัสไปรษณีย์': sel('postalCode'),
-    'บ้านเลขที่ปัจจุบัน': sel('currNo'),
-    'หมู่ที่ปัจจุบัน': sel('currVillage'),
-    'ซอยปัจจุบัน': sel('currAlley'),
-    'ถนนปัจจุบัน': sel('currRoad'),
-    'ตำบลปัจจุบัน': sel('currDistrictId'),
-    'อำเภอปัจจุบัน': sel('currAmphurId'),
-    'จังหวัดปัจจุบัน': sel('currProvinceId'),
-    'รหัสไปรษณีย์ปัจจุบัน': sel('currPostalCode'),
-    'โทรศัพท์': sel('tel'),
-    'อีเมล': sel('email'),
-    'ที่อยู่เพื่อส่งจดหมาย': sel('sendAddr')
+    'โทรศัพท์': sel('tel')
   };
 }
 
@@ -502,7 +647,6 @@ function saveOwner() {
   }
   var data = collect();
   LTAX_store('ltax_owner', data);
-  showSavedModal('เลขบัตรประชาชน: ' + data['เลขบัตรประชาชน'], 'ltax_land', { ctx: { psnId: data['เลขบัตรประชาชน'], fullName: (data['ชื่อ'] || '') + ' ' + (data['นามสกุล'] || '') } });
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -552,76 +696,9 @@ function resetForm() {
   $('currProvinceId').value = '33';
   onPersonTypeChange();
   onProvinceChange('provinceId','amphurId','districtId');
-  $('amphurId').value = '3305'; onAmphurChange('amphurId','districtId'); $('districtId').value = '330506';
   onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
-  $('currAmphurId').value = '3305'; onAmphurChange('currAmphurId','currDistrictId'); $('currDistrictId').value = '330506';
   loadEditRecord();
 })();
 </script>
-<style>
-/* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
-#ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
-#ltaxModal .box{background:#fff;border-radius:12px;max-width:92%;width:330px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.35);overflow:hidden;}
-#ltaxModal .head{background:linear-gradient(135deg,#367fa9,#1b4f8a);color:#fff;padding:14px 10px 26px;font-size:16px;font-weight:700;}
-#ltaxModal .tick{width:62px;height:62px;border-radius:50%;background:#28a745;color:#fff;font-size:34px;line-height:62px;margin:-31px auto 12px;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);}
-#ltaxModal .info{font-size:13px;color:#333;margin:4px 14px 14px;word-break:break-word;line-height:1.5;}
-#ltaxModal .btns{padding:0 14px 14px;}
-#ltaxModal .btn{display:block;width:100%;margin:7px 0 0;padding:11px;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;}
-#ltaxModal .btn-next{background:#367fa9;color:#fff;}
-#ltaxModal .btn-more{background:#28a745;color:#fff;}
-#ltaxModal .btn-home{background:#eef4f8;color:#1b4f8a;}
-#ltaxModal .btn-close{background:#f4f6f8;color:#8a8f94;}
-</style>
-
-<div id="ltaxModal">
-  <div class="box">
-    <div class="head">บันทึกข้อมูลเรียบร้อย</div>
-    <div class="tick">&#10003;</div>
-    <div class="info" id="ltaxModalInfo"></div>
-    <div class="btns">
-      <button type="button" class="btn btn-next" id="ltaxModalNext">กรอกชุดถัดไป (ต่อไป)</button>
-      <button type="button" class="btn btn-more" id="ltaxModalMore">เพิ่มรายการใหม่</button>
-      <button type="button" class="btn btn-home" id="ltaxModalHome">กลับหน้าแรก</button>
-      <button type="button" class="btn btn-home" id="ltaxModalNoSign" style="display:none;">ไม่มีป้าย (จบชุด)</button>
-      <button type="button" class="btn btn-close" id="ltaxModalClose">ปิด</button>
-    </div>
-  </div>
-</div>
-
-<script>
-/* ---------- modal ยืนยันการบันทึก + flow ชุดข้อมูล ---------- */
-function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
-function goHome() { if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; }
-function goNextForm(fid, ctx) {
-  var c = ltaxReadCtx();
-  for (var k in (ctx || {})) if (ctx[k]) c[k] = ctx[k];
-  try { sessionStorage.setItem('ltax_next', JSON.stringify(c)); } catch(e) {}
-  if (window.openForm) { try { window.openForm(fid); return; } catch(e) {} }
-  var F = {
-    ltax_owner: 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html',
-    ltax_land: 'ฟอร์ม_เพิ่มที่ดิน.html',
-    ltax_land_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์ที่ดิน.html',
-    ltax_building: 'ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html',
-    ltax_building_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html',
-    ltax_sign: 'ฟอร์ม_เพิ่มป้าย.html'
-  };
-  window.location.href = F[fid] || 'index.html';
-}
-function showSavedModal(info, next, opts) {
-  opts = opts || {};
-  $('ltaxModalInfo').textContent = info;
-  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
-  nb.textContent = opts.askSign ? 'มีป้าย — กรอกป้าย' : (isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)');
-  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next, opts.ctx); };
-  var ns = $('ltaxModalNoSign');
-  if (opts.askSign) { ns.style.display = 'block'; ns.onclick = function() { hideSavedModal(); goHome(); }; }
-  else ns.style.display = 'none';
-  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
-  $('ltaxModalHome').onclick = function() { hideSavedModal(); goHome(); };
-  $('ltaxModalClose').onclick = hideSavedModal;
-  $('ltaxModal').style.display = 'flex';
-}
-function hideSavedModal() { $('ltaxModal').style.display = 'none'; }</script>
-
 </body>
 </html>

@@ -20,9 +20,8 @@ import time
 import shutil
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# โครงสร้างปัจจุบัน (ltax-survey = mirror ของ web\) ไฟล์อยู่ที่ root ตรง ๆ
-# ยังรองรับโครงสร้างเก่าที่มี web\ อยู่ (bot_upload_data v1) ด้วย
-WEB_DIR = os.path.join(BASE_DIR, "web") if os.path.isdir(os.path.join(BASE_DIR, "web")) else BASE_DIR
+# โครงสร้างปัจจุบัน: ไฟล์อยู่ที่ root ตรง ๆ (ไม่แยก web\) — Pages/server ใช้ root
+WEB_DIR = BASE_DIR
 
 # ลำดับ + id ของฟอร์ม (id ใช้กับ localStorage และ openForm)
 FORM_ORDER = [
@@ -32,6 +31,7 @@ FORM_ORDER = [
     ("ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html", "ltax_building"),
     ("ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html", "ltax_building_usage"),
     ("ฟอร์ม_เพิ่มป้าย.html", "ltax_sign"),
+    ("ฟอร์ม_ทะเบียนทรัพย์สิน.html", "ltax_asset"),
     ("ถ่ายรูป.html", "ltax_photo"),
 ]
 
@@ -116,6 +116,7 @@ def build_index():
         '/* ===== หน้าแรก (จาก home.html) ===== */',
         home_css,
         '</style>',
+        '<script src="admin_data.js"></script>',
         '</head>',
         '<body>',
         '<div id="view-home">',
@@ -174,7 +175,7 @@ def build_manifest():
 
 
 def build_sw():
-    assets = ['index.html', 'manifest.json',
+    assets = ['index.html', 'manifest.json', 'admin_data.js',
               'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png']
     assets += [fname for fname, _ in FORM_ORDER]
 
@@ -239,7 +240,7 @@ def main():
         dst = os.path.join(BASE_DIR, "mobile_offline", "index.html")
         shutil.copyfile(os.path.join(WEB_DIR, "index.html"), dst)
         print("  --sync: คัดลอก index.html -> mobile_offline/index.html แล้ว")
-    print("เสร็จ — อัปโหลดโฟลเดอร์ web/ ขึ้นเว็บจริง (https) เพื่อติดตั้งเป็นแอปครั้งแรก")
+    print("เสร็จ — ไฟล์เว็บอยู่ที่ root (index.html, sw.js, manifest.json, icons/) พร้อมอัปขึ้นเว็บจริง (https)")
 
 
 SW_TEMPLATE = """/* LTAX Offline — Service Worker

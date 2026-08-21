@@ -69,6 +69,8 @@
   .btn-danger:hover { background: #8e1d1d; }
   .btn-edit { background: #1976d2; border-color: #0d47a1; color: #fff; padding: 4px 14px; font-size: 13px; }
   .btn-edit:hover { background: #0d47a1; }
+  .btn-registry { background: #00897b; border-color: #00695c; color: #fff; padding: 4px 14px; font-size: 13px; display: inline-block; margin-top: 4px; }
+  .btn-registry:hover { background: #00695c; }
   .btn-install { background: #00897b; border-color: #00695c; color: #fff; }
   .btn-install:hover { background: #00695c; }
 
@@ -83,126 +85,6 @@
   .search-result td { border: 1px solid #cfd6e0; padding: 6px 8px; }
   .search-result .grp { background: #eef3fa; font-weight: bold; color: #1b4f8a; }
   .search-empty { color: #888; font-size: 13px; padding: 10px 2px; }
-
-  /* ── หน้าดูข้อมูล (อ่านอย่างเดียว แบบ AST001) ── */
-  .view-panel { background: #fff; border: 1px solid #c8c8c8; border-radius: 6px; padding: 14px 18px; margin-bottom: 16px; }
-  .view-title { font-size: 17px; font-weight: bold; color: #1b4f8a; margin-bottom: 10px; }
-  .view-sub { font-size: 15px; font-weight: bold; color: #1b4f8a; margin: 18px 0 8px; border-bottom: 2px solid #2b6cb0; padding-bottom: 4px; }
-  .view-kv { display: table; width: 100%; font-size: 13px; }
-  .view-kv .k { display: table-row; }
-  .view-kv .k b { display: table-cell; width: 32%; padding: 5px 8px; color: #1b4f8a; background: #eef3fa; border: 1px solid #cfd6e0; font-weight: normal; }
-  .view-kv .k span { display: table-cell; padding: 5px 8px; border: 1px solid #cfd6e0; }
-  .view-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 4px; }
-  .view-tbl th { background: #dbe9f7; border: 1px solid #b8c9dd; padding: 6px 8px; text-align: left; }
-  .view-tbl td { border: 1px solid #cfd6e0; padding: 6px 8px; }
-  .view-tbl .none { color: #999; text-align: center; padding: 10px; }
-  .btn-view { background: #00897b; border-color: #00695c; color: #fff; padding: 4px 14px; font-size: 13px; }
-  .btn-view:hover { background: #00695c; }
-  .btn-back { background: #757575; border-color: #616161; color: #fff; padding: 4px 14px; font-size: 13px; }
-  .btn-back:hover { background: #616161; }
-
-  /* ═══════════ Theme LTAX ONLINE (ลุคกรม — AdminLTE box / form-control) ═══════════ */
-  body { background: #eef1f5; }
-
-  /* ── header 2 ชั้นแบบ LTAX Online ── */
-  #view-form header, header {
-    background: #153d6b;
-    color: #fff; padding: 8px 20px; font-size: 15px; font-weight: bold;
-    display: flex; justify-content: space-between; align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,.2);
-  }
-  #view-form header + .content-info, header + .content-info {
-    background: #eaf2fb; color: #1b4f8a; font-size: 12px;
-    padding: 4px 20px; border-bottom: 1px solid #c9d8ea;
-  }
-  header .org { font-weight: normal; font-size: 12px; color: #cfe0f5; }
-  header .org b { color: #ffd75e; }
-
-  /* ── กล่อง (box: ฟอร์ม + หน้าหลัก) — AdminLTE box-primary ── */
-  #view-form .panel,
-  #view-home .panel {
-    border: 1px solid #d2d6de; border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 14px;
-  }
-  #view-form .panel-head,
-  #view-home .panel-head {
-    background: linear-gradient(#3c8dbc, #367fa9); color: #fff;
-    font-weight: bold; padding: 9px 14px; border-radius: 3px 3px 0 0; font-size: 15px;
-    border-bottom: 3px solid #2f6a8d;
-  }
-  #view-form .panel-body { padding: 14px; }
-
-  /* ── หัวข้อกลุ่มฟิลด์ (section-title) ── */
-  #view-form .section-title {
-    background: #f5f9fc; color: #153d6b; font-weight: bold;
-    padding: 6px 10px; border-left: 4px solid #367fa9;
-    border-top: 1px solid #e1e9f0; border-right: 1px solid #e1e9f0;
-    margin: 16px 0 10px 0; font-size: 14px;
-  }
-
-  /* ── label-form แบบกรม ── */
-  #view-form .row label {
-    color: #333; font-weight: 600; width: 240px;
-    padding: 7px 10px; text-align: right;
-  }
-  #view-form .row label .req { color: #dd4b39; }
-
-  /* ── form-control แบบกรม ── */
-  #view-form .row .field input[type=text],
-  #view-form .row .field select,
-  #view-form textarea,
-  #view-form input[type=text] {
-    border: 1px solid #d2d6de; border-radius: 3px; padding: 5px 9px;
-    font-size: 14px; font-family: inherit;
-  }
-  #view-form .row .field input[type=text]:focus,
-  #view-form .row .field select:focus,
-  #view-form textarea:focus {
-    border-color: #3c8dbc; outline: none; box-shadow: 0 0 0 2px rgba(60,141,188,.18);
-  }
-  #view-form .row .field { flex: 1; }
-  #view-form .hint { font-size: 11.5px; }
-
-  /* ── ปุ่ม: primary/บันทึก = น้ำเงินกรม, ลบ = แดง ── */
-  #view-form .btn-save, #view-form .btn-ok, #view-form .btn-main,
-  #view-home .btn-main {
-    background: #367fa9; border-color: #367fa9; color: #fff;
-  }
-  #view-form .btn-save:hover, #view-form .btn-ok:hover, #view-form .btn-main:hover,
-  #view-home .btn-main:hover { background: #2f6a8d; border-color: #2f6a8d; }
-  #view-form .btn-add { background: #00a65a; border-color: #008d4c; color: #fff; }
-  #view-form .btn-add:hover { background: #008d4c; }
-  #view-form .btn-link, #view-form .btn-dbd { background: #3c8dbc; border-color: #337b9e; color: #fff; }
-  #view-form .btn-link:hover, #view-form .btn-dbd:hover { background: #337b9e; }
-
-  /* ── ตาราง (ทะเบียน/รายการใช้) ลุค AdminLTE dataTable ── */
-  #view-form table, #view-home table { border-collapse: collapse; }
-  #view-form .search-result th, #view-form .view-tbl th,
-  #view-home .search-result th, #view-home .view-tbl th {
-    background: #3c8dbc; color: #fff; border: 1px solid #367fa9;
-    padding: 6px 8px; text-align: left; font-weight: 600;
-  }
-  #view-form .search-result td, #view-form .view-tbl td,
-  #view-home .search-result td, #view-home .view-tbl td {
-    border: 1px solid #d2d6de; padding: 6px 8px;
-  }
-  #view-form .search-result tr:nth-child(even),
-  #view-form .view-tbl tr:nth-child(even),
-  #view-home .search-result tr:nth-child(even),
-  #view-home .view-tbl tr:nth-child(even) { background: #f7fafc; }
-
-  /* ── เมนูหน้าแรก (step-list) ให้ดูเหมือนหมวดเมนู LTAX ── */
-  #view-home .step-list a { border: 1px solid #d2d6de; border-radius: 3px; }
-  #view-home .step-list a:hover { border-color: #3c8dbc; box-shadow: 0 2px 10px rgba(60,141,188,.25); transform: translateX(3px); }
-  #view-home .step-num { background: #367fa9; }
-  #view-home .step-num.photo { background: #00a65a; }
-  #view-home .step-info .t { color: #153d6b; }
-/* badge สถานะชุดข้อมูล */
-  .chain-badge { display: inline-block; padding: 4px 12px; border-radius: 14px; font-size: 12px; font-weight: bold; margin: 4px 4px 4px 0; }
-  .chain-badge.ok { background: #d4edda; color: #155724; border: 1px solid #b7e0c0; }
-  .chain-badge.no { background: #fff3cd; color: #8a6d3b; border: 1px solid #f0e0b0; }
-  .chain-badge.mid { background: #ffe9e3; color: #c0392b; border: 1px solid #f5c6cb; }
-  .chain-badge .step { font-weight: normal; font-size: 11px; opacity: .8; }
 </style>
 <script src="admin_data.js"></script>
 </head>
@@ -211,10 +93,9 @@
 
 
 <header>
-  <div><b>LTAX</b> ONLINE <span style="font-weight:normal; font-size:12px; color:#cfe0f5;">— ระบบสำรวจ/บันทึกภาษีที่ดินและสิ่งปลูกสร้าง (ออฟไลน์)</span></div>
+  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Offline)</div>
   <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ / ปีภาษี 2569</div>
 </header>
-<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>การเพิ่มข้อมูลทรัพย์สินและเจ้าของ</b> <span style="float:right;">รหัสทะเบียน AST001 / LND001 / BLD001 / SGN001</span></div>
 
 <div class="container">
 
@@ -246,7 +127,20 @@
     </div>
     <div id="searchHint" style="font-size:12px; color:#888;">ค้นหาในข้อมูลที่บันทึกไว้ (localStorage) — ข้อมูลของ: เจ้าของ / ที่ดิน / การใช้ที่ดิน / สิ่งปลูกสร้าง / การใช้สิ่งปลูกสร้าง / ป้าย</div>
     <div id="searchResult"></div>
-    <div id="viewDetail" style="display:none;"></div>
+  </div>
+
+  <div class="panel" style="background:#fff; border:1px solid #c8c8c8; border-radius:6px; padding:16px 18px; margin-bottom:20px;">
+    <div style="font-size:15px; font-weight:bold; color:#1b4f8a; margin-bottom:10px;">นำเข้าข้อมูลอ้างอิง (เจ้าของทรัพย์สินเดิม)</div>
+    <div id="refOwnerStats" style="font-size:13px; color:#555; margin-bottom:10px;">ข้อมูลอ้างอิงเจ้าของทรัพย์สิน: 0 รายการ</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+      <input type="file" id="refOwnerFile" accept=".xlsx,.xls,.csv" style="flex:1; min-width:200px; padding:6px; border:1px solid #b0b0b0; border-radius:4px;">
+      <button type="button" class="btn btn-main" onclick="importRefOwners()">นำเข้าไฟล์</button>
+      <button type="button" class="btn btn-danger" onclick="clearRefOwners()">ล้างข้อมูลอ้างอิง</button>
+    </div>
+    <div style="font-size:12px; color:#888; margin-top:8px; line-height:1.7;">
+      ไฟล์ต้องมีหัวคอลัมน์ (แถวแรก): <b>เลขบัตรประชาชน</b> (บังคับ), คำนำหน้า, ชื่อ, นามสกุล, เลขที่บ้าน, หมู่ที่, ถนน, ซอย, ตำบล, อำเภอ, จังหวัด, รหัสไปรษณีย์, โทรศัพท์ — รองรับไฟล์ .xlsx / .xls / .csv (นำเข้าไฟล์ Excel ครั้งแรกต้องมีเน็ต)<br>
+      นำเข้าแล้ว ตอนกรอกฟอร์ม "เพิ่มเจ้าของทรัพย์สิน" พิมพ์เลขบัตรหรือชื่อในช่องค้นหาด้านบนฟอร์ม ระบบจะเสนอรายชื่อให้เลือกแล้วเติมข้อมูลที่เหลือให้อัตโนมัติ
+    </div>
   </div>
 
   <ul class="step-list">
@@ -416,18 +310,17 @@ function doSearch() {
 
   var total = groups.reduce(function(s, g) { return s + g.hits.length; }, 0);
   var h = '<div style="font-size:13px; color:#555; margin-bottom:8px;">พบ ' + total + ' รายการ</div>';
-  h += '<table class="search-result"><thead><tr><th width="120">หมวด</th><th>รายการ</th><th>รายละเอียด</th><th width="90"></th></tr></thead><tbody>';
+  h += '<table class="search-result"><thead><tr><th width="120">หมวด</th><th>รายการ</th><th>รายละเอียด</th><th width="150"></th></tr></thead><tbody>';
   groups.forEach(function(g) {
     h += '<tr class="grp"><td colspan="4">' + g.meta.label + ' (' + g.hits.length + ')</td></tr>';
     g.hits.forEach(function(hit) {
       var key = hit.rec[g.meta.key] || ('#' + (hit.idx + 1));
-      var descCell = g.meta.desc(hit.rec) || '';
-      if (g.key === 'ltax_owner') descCell += ' ' + chainBadge(String(hit.rec['เลขบัตรประชาชน'] || '').trim());
-      h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + descCell + '</td>' +
-           '<td style="white-space:nowrap;">' +
-           '<a class="btn btn-view" href="#" onclick="viewData(\'' + g.key + '\',' + hit.idx + '); return false;">ดูข้อมูล</a> ' +
-           '<a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">แก้ไข</a>' +
-           '</td></tr>';
+      var actionBtns = '<a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">ดู / แก้ไข</a>';
+      if (g.key === 'ltax_owner') {
+        actionBtns += '<br><a class="btn btn-registry" href="#" onclick="openAssetRegistry(\'' + String(key).replace(/'/g, "\\'") + '\'); return false;">ทะเบียนทรัพย์สิน</a>';
+      }
+      h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + (g.meta.desc(hit.rec) || '') + '</td>' +
+           '<td>' + actionBtns + '</td></tr>';
     });
   });
   h += '</tbody></table>';
@@ -440,456 +333,157 @@ function clearSearch() {
   $('searchResult').innerHTML = '';
 }
 
+function openAssetRegistry(psnId) {
+  openForm('ltax_asset', '?psnId=' + encodeURIComponent(psnId));
+}
+
 /* =========================================================
-   ดูข้อมูล (อ่านอย่างเดียว) — แบบเดียวกับหน้า AST001
+   นำเข้าข้อมูลอ้างอิง (เจ้าของทรัพย์สินเดิม) — เก็บใน localStorage 'ltax_ref_owner'
+   ใช้เติมอัตโนมัติ (autofill) ในฟอร์มเพิ่มเจ้าของทรัพย์สิน
    ========================================================= */
-var _lastSearchScroll = 0;
+var REF_OWNER_HEADER_ALIASES = {
+  'เลขบัตรประชาชน': ['เลขบัตรประชาชน', 'เลขบัตร', 'เลขประจำตัวประชาชน', 'เลขที่บัตรประชาชน', 'psnid', 'id'],
+  'คำนำหน้า':      ['คำนำหน้า', 'คำนำหน้าชื่อ', 'prefix'],
+  'ชื่อ':          ['ชื่อ', 'firstname', 'first name'],
+  'นามสกุล':       ['นามสกุล', 'lastname', 'last name'],
+  'เลขที่บ้าน':     ['เลขที่บ้าน', 'บ้านเลขที่'],
+  'หมู่ที่':        ['หมู่ที่', 'หมู่'],
+  'ถนน':          ['ถนน'],
+  'ซอย':          ['ซอย'],
+  'ตำบล':          ['ตำบล'],
+  'อำเภอ':         ['อำเภอ'],
+  'จังหวัด':        ['จังหวัด'],
+  'รหัสไปรษณีย์':   ['รหัสไปรษณีย์', 'ไปรษณีย์'],
+  'โทรศัพท์':       ['โทรศัพท์', 'เบอร์โทร', 'tel', 'phone']
+};
 
-function esc(v) {
-  return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function viewData(key, idx) {
-  var list = getList(key);
-  var rec = list[idx];
-  if (!rec) { alert('ไม่พบข้อมูล'); return; }
-  _lastSearchScroll = window.pageYOffset;
-  $('searchResult').style.display = 'none';
-  var box = $('viewDetail');
-  box.style.display = 'block';
-  box.innerHTML = '<div style="margin-bottom:10px;">' +
-    '<a class="btn btn-back" href="#" onclick="closeView(); return false;">← กลับผลการค้นหา</a> ' +
-    '<a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + key + '\',' + idx + '); return false;">✏️ แก้ไข</a>' +
-    '</div>' + renderDetail(key, rec);
-  window.scrollTo(0, 0);
-}
-
-function closeView() {
-  $('viewDetail').style.display = 'none';
-  $('viewDetail').innerHTML = '';
-  $('searchResult').style.display = '';
-  window.scrollTo(0, _lastSearchScroll);
-}
-
-function renderDetail(key, rec) {
-  if (key === 'ltax_owner') return renderOwnerDetail(rec);
-  if (key === 'ltax_land') return renderLandDetail(rec);
-  if (key === 'ltax_land_usage') return renderLandUsageDetail(rec);
-  if (key === 'ltax_building') return renderBuildingDetail(rec);
-  if (key === 'ltax_building_usage') return renderBuildingUsageDetail(rec);
-  if (key === 'ltax_sign') return renderSignDetail(rec);
-  return '<div class="view-panel">' + renderKv(rec) + '</div>';
-}
-
-function renderKv(rec) {
-  var h = '<div class="view-kv">';
-  for (var k in rec) {
-    if (!rec.hasOwnProperty(k)) continue;
-    if (k.indexOf('_data') >= 0) continue;        // ข้ามรูป base64
-    if (k === 'Path รูปภาพ' || k === 'Path รูปที่ดิน') continue;
-    var v = rec[k];
-    if (Array.isArray(v)) continue;
-    h += '<div class="k"><b>' + esc(k) + '</b><span>' + esc(v) + '</span></div>';
+function splitCSVLine(line) {
+  var out = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (inQ) {
+      if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === ',') { out.push(cur); cur = ''; }
+      else cur += c;
+    }
   }
-  return h + '</div>';
+  out.push(cur);
+  return out;
 }
 
-/* ── ตัวช่วย: หาเจ้าของจากเลขบัตรที่อาจคั่นด้วย ';' ── */
-function psnList(v) {
-  return String(v == null ? '' : v).split(';').map(function(s) { return s.trim(); }).filter(Boolean);
-}
-function hasPsn(recField, psnId) {
-  return psnList(recField).indexOf(String(psnId)) >= 0;
-}
-
-/* สถานะชุดข้อมูลของเจ้าของ (B/C: ครบทั้ง 6 หมวดแล้วหรือยัง) */
-function chainState(psnId) {
-  psnId = String(psnId || '').trim();
-  if (!psnId) return { level: -1, msg: 'ไม่มีเลขบัตร', ok: false };
-  var lands = getList('ltax_land').filter(function(l) { return hasPsn(l['เลขบัตรเจ้าของที่ดิน'], psnId); });
-  if (!lands.length) return { level: 0, msg: 'ยังไม่มีที่ดิน — กรอกที่ดิน', ok: false };
-  var lcodes = lands.map(function(l) { return String(l['รหัสแปลงที่ดิน'] || '').trim(); }).filter(Boolean);
-  var lus = getList('ltax_land_usage').filter(function(u) { return lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) >= 0; });
-  if (!lus.length) return { level: 1, msg: 'ยังไม่ได้กรอกการใช้ประโยชน์ที่ดิน', ok: false };
-  var blds = getList('ltax_building').filter(function(b) {
-    return hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId) && lcodes.indexOf(String(b['รหัสแปลงที่ดิน'] || '').trim()) >= 0;
+function parseCSV(text) {
+  var lines = text.replace(/\r/g, '').split('\n').filter(function(l) { return l.trim() !== ''; });
+  if (!lines.length) return [];
+  var headers = splitCSVLine(lines[0]);
+  return lines.slice(1).map(function(line) {
+    var cells = splitCSVLine(line);
+    var obj = {};
+    headers.forEach(function(h, i) { obj[h.trim()] = (cells[i] || '').trim(); });
+    return obj;
   });
-  if (!blds.length) return { level: 2, msg: 'ยังไม่ได้กรอกสิ่งปลูกสร้าง', ok: false };
-  /* ★ ตรวจเชิงลึก: แปลงที่มีอาคาร ต้องแบ่งที่ตั้งสิ่งปลูกสร้าง (ประเภท 2/3/4) ในการใช้ที่ดิน */
-  var homeTypes = { '2': 1, '3': 1, '4': 1 };
-  var hasHomeUsage = lus.some(function(u) {
-    if (lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) < 0) return false;
-    var used = u['รายการใช้ประโยชน์'] || [];
-    return used.some(function(x) { return homeTypes[String(x['ประเภทการใช้ประโยชน์'] || '').trim()]; });
+}
+
+function normalizeRefRow(row) {
+  var out = {};
+  var lowerMap = {};
+  Object.keys(row).forEach(function(k) { lowerMap[k.trim().toLowerCase()] = row[k]; });
+  Object.keys(REF_OWNER_HEADER_ALIASES).forEach(function(canon) {
+    var aliases = REF_OWNER_HEADER_ALIASES[canon];
+    for (var i = 0; i < aliases.length; i++) {
+      var key = aliases[i].toLowerCase();
+      if (lowerMap.hasOwnProperty(key)) { out[canon] = String(lowerMap[key]).trim(); return; }
+    }
+    out[canon] = '';
   });
-  if (!hasHomeUsage) return { level: 2, msg: 'แปลงมีอาคาร แต่ยังไม่ได้แบ่งที่ตั้งสิ่งปลูกสร้างในการใช้ที่ดิน', ok: false };
-  /* ★ ตรวจเชิงลึก: อาคารต้องมี "เนื้อที่ที่ดิน" (กันบ้านลอย) */
-  var bldNoLand = blds.filter(function(b) { return !String(b['เนื้อที่ที่ดิน'] || '').trim(); });
-  if (bldNoLand.length) return { level: 2, msg: 'อาคาร ' + String(bldNoLand[0]['รหัสสิ่งปลูกสร้าง'] || '').trim() + ' ยังไม่มีเนื้อที่ที่ดิน', ok: false };
-  var bcodes = blds.map(function(b) { return String(b['รหัสสิ่งปลูกสร้าง'] || '').trim(); }).filter(Boolean);
-  var bus = getList('ltax_building_usage').filter(function(u) { return bcodes.indexOf(String(u['รหัสสิ่งปลูกสร้าง'] || '').trim()) >= 0; });
-  if (!bus.length) return { level: 3, msg: 'ยังไม่ได้กรอกการใช้ประโยชน์สิ่งปลูกสร้าง', ok: false };
-  var signs = getList('ltax_sign').filter(function(s) { return hasPsn(s['เลขบัตรเจ้าของป้าย'], psnId); });
-  if (!signs.length) return { level: 4, msg: 'ครบ 5 หมวดแล้ว (ไม่มีป้าย)', ok: true };
-  return { level: 5, msg: 'ครบทั้ง 6 หมวด', ok: true };
-}
-function chainBadge(psnId) {
-  var s = chainState(psnId);
-  var cls = s.ok ? 'ok' : (s.level <= 1 ? 'mid' : 'no');
-  var icon = s.ok ? '✓' : '▶';
-  var steps = s.level >= 0 ? ' <span class="step">(' + (s.level + 1) + '/6)</span>' : '';
-  return '<span class="chain-badge ' + cls + '">' + icon + ' ' + s.msg + steps + '</span>';
-}
-function findIdx(listKey, field, val) {
-  var list = getList(listKey);
-  for (var i = 0; i < list.length; i++) {
-    if (String(list[i][field] || '').trim() === String(val).trim()) return i;
-  }
-  return -1;
-}
-function fmtArea(r) {
-  return (r['ไร่'] || '0') + '-' + (r['งาน'] || '0') + '-' + (r['ตร.วา'] || '0') + ' ไร่-งาน-วา';
-}
-function tblStart(cols) {
-  var h = '<div class="table-responsive"><table class="view-tbl"><thead><tr>';
-  cols.forEach(function(c) { h += '<th>' + esc(c) + '</th>'; });
-  return h + '</tr></thead><tbody>';
-}
-function tblEnd(empty, colCount) {
-  if (empty) return '<tr><td class="none" colspan="' + colCount + '">ยังไม่พบข้อมูล</td></tr></tbody></table></div>';
-  return '</tbody></table></div>';
-}
-function viewLink(key, idx, label) {
-  return '<a class="btn btn-view" href="#" onclick="viewData(\'' + key + '\',' + idx + '); return false;">' + label + '</a>';
+  return out;
 }
 
-/* ── เจ้าของ: ข้อมูล + ตารางที่ดิน/อาคาร/ป้าย (แบบ AST001) ── */
-function renderOwnerDetail(rec) {
-  var psnId = String(rec['เลขบัตรประชาชน'] || '').trim();
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">👤 ข้อมูลเจ้าของทรัพย์สิน</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>ประเภทบุคคล</b><span>' + esc(rec['ประเภทบุคคล'] === '1' ? 'บุคคลธรรมดา' : (rec['ประเภทบุคคล'] === '2' ? 'นิติบุคคล' : rec['ประเภทบุคคล'])) + '</span></div>';
-  h += '<div class="k"><b>เลขประจำตัวประชาชน</b><span>' + esc(rec['เลขบัตรประชาชน']) + '</span></div>';
-  h += '<div class="k"><b>คำนำหน้าชื่อ/หน่วยงาน</b><span>' + esc(rec['คำนำหน้า']) + '</span></div>';
-  h += '<div class="k"><b>ชื่อ</b><span>' + esc(rec['ชื่อ']) + '</span></div>';
-  h += '<div class="k"><b>นามสกุล</b><span>' + esc(rec['นามสกุล']) + '</span></div>';
-  h += '<div class="k"><b>สถานะบุคคล</b><span>' + esc(rec['สถานะบุคคล'] === '1' ? 'มีชีวิต' : (rec['สถานะบุคคล'] === '2' ? 'ถึงแก่กรรม' : (rec['สถานะบุคคล'] === '3' ? 'ล้มละลาย' : rec['สถานะบุคคล']))) + '</span></div>';
-  h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['เลขที่บ้าน']) + '</span></div>';
-  h += '<div class="k"><b>หมู่ที่/ชุมชน</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
-  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
-  h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอย']) + '</span></div>';
-  h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบล']) + '</span></div>';
-  h += '<div class="k"><b>อำเภอ</b><span>' + esc(rec['อำเภอ']) + '</span></div>';
-  h += '<div class="k"><b>จังหวัด</b><span>' + esc(rec['จังหวัด']) + '</span></div>';
-  h += '<div class="k"><b>รหัสไปรษณีย์</b><span>' + esc(rec['รหัสไปรษณีย์']) + '</span></div>';
-  h += '<div class="k"><b>โทรศัพท์</b><span>' + esc(rec['โทรศัพท์']) + '</span></div>';
-  h += '<div class="k"><b>อีเมล</b><span>' + esc(rec['อีเมล']) + '</span></div>';
-  h += '<div class="k"><b>ที่อยู่เพื่อส่งจดหมาย</b><span>' + esc(rec['ที่อยู่เพื่อส่งจดหมาย'] === '2' ? 'ที่อยู่ปัจจุบัน' : 'ที่อยู่ตามบัตรประชาชน') + '</span></div>';
-  h += '</div></div>';
-  h += '<div style="margin:2px 0 10px;">' + chainBadge(psnId) + '</div>';
+function processRefRows(rows) {
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem('ltax_ref_owner') || '[]'); } catch(e) { list = []; }
+  var byId = {};
+  list.forEach(function(r, i) { if (r['เลขบัตรประชาชน']) byId[r['เลขบัตรประชาชน']] = i; });
 
-  // ── ที่อยู่ปัจจุบัน (แยกชุด ตามฟอร์มกรม) ──
-  if (rec['บ้านเลขที่ปัจจุบัน']) {
-    h += '<div class="view-panel"><div class="view-title">📍 ที่อยู่ปัจจุบัน</div><div class="view-kv">';
-    h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['บ้านเลขที่ปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>หมู่ที่/ชุมชน</b><span>' + esc(rec['หมู่ที่ปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนนปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอยปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบลปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>อำเภอ</b><span>' + esc(rec['อำเภอปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>จังหวัด</b><span>' + esc(rec['จังหวัดปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>รหัสไปรษณีย์</b><span>' + esc(rec['รหัสไปรษณีย์ปัจจุบัน']) + '</span></div>';
-    h += '</div></div>';
-  }
-
-  // ── ที่ดินที่ผูกกับเจ้าของนี้ ──
-  var lands = [];
-  getList('ltax_land').forEach(function(l, i) { if (hasPsn(l['เลขบัตรเจ้าของที่ดิน'], psnId)) lands.push({ rec: l, idx: i }); });
-  h += '<div class="view-sub">ที่ดิน ' + lands.length + ' แปลง</div>';
-  h += tblStart(['ลำดับ', 'รหัสแปลงที่ดิน', 'ประเภทเอกสารสิทธิ์', 'เลขที่เอกสารสิทธิ์', 'เลขที่ดิน', 'เนื้อที่']);
-  if (!lands.length) { h += tblEnd(true, 6); }
-  else {
-    lands.forEach(function(x, i) {
-      h += '<tr><td>' + (i + 1) + '</td><td><b>' + esc(x.rec['รหัสแปลงที่ดิน']) + '</b></td>' +
-           '<td>' + esc(x.rec['ประเภทเอกสาร']) + '</td><td>' + esc(x.rec['เลขที่เอกสาร']) + '</td>' +
-           '<td>' + esc(x.rec['เลขที่ดิน']) + '</td><td>' + esc(fmtArea(x.rec)) + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-
-  // ── สิ่งปลูกสร้างที่ผูกกับเจ้าของนี้ ──
-  var blds = [];
-  getList('ltax_building').forEach(function(b, i) { if (hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId)) blds.push({ rec: b, idx: i }); });
-  h += '<div class="view-sub">สิ่งปลูกสร้าง ' + blds.length + ' หลัง</div>';
-  h += tblStart(['รหัสสิ่งปลูกสร้าง', 'แปลงที่ตั้ง', 'เลขที่', 'ประเภทอาคาร', 'ขนาด (กว้างxยาว ม.)', 'ชั้น', '']);
-  if (!blds.length) { h += tblEnd(true, 7); }
-  else {
-    blds.forEach(function(x) {
-      h += '<tr><td><b>' + esc(x.rec['รหัสสิ่งปลูกสร้าง']) + '</b></td>' +
-           '<td>' + esc(x.rec['รหัสแปลงที่ดิน']) + '</td><td>' + esc(x.rec['เลขที่บ้าน']) + '</td>' +
-           '<td>' + esc(x.rec['ประเภทอาคาร']) + '</td>' +
-           '<td>' + esc(x.rec['กว้าง(ม.)']) + ' x ' + esc(x.rec['ยาว(ม.)']) + '</td>' +
-           '<td>' + esc(x.rec['จำนวนชั้น']) + '</td>' +
-           '<td>' + viewLink('ltax_building', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 7);
-  }
-
-  // ── ป้ายที่ผูกกับเจ้าของนี้ ──
-  var signs = [];
-  getList('ltax_sign').forEach(function(s, i) { if (hasPsn(s['เลขบัตรเจ้าของป้าย'], psnId)) signs.push({ rec: s, idx: i }); });
-  h += '<div class="view-sub">ป้าย ' + signs.length + ' ป้าย</div>';
-  h += tblStart(['รหัสป้าย', 'ข้อความภายในป้าย', 'ลักษณะของป้าย', 'ขนาด (ซม.)', 'ด้าน', '']);
-  if (!signs.length) { h += tblEnd(true, 6); }
-  else {
-    signs.forEach(function(x) {
-      h += '<tr><td><b>' + esc(x.rec['รหัสป้าย']) + '</b></td>' +
-           '<td>' + esc(x.rec['ข้อความภายในป้าย']) + '</td>' +
-           '<td>' + esc(x.rec['ประเภทป้าย']) + '</td>' +
-           '<td>' + esc(x.rec['กว้าง (ซม.)']) + ' x ' + esc(x.rec['ยาว (ซม.)']) + '</td>' +
-           '<td>' + esc(x.rec['จำนวนด้าน']) + '</td>' +
-           '<td>' + viewLink('ltax_sign', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-
-  return h;
-}
-
-/* ── ที่ดิน: ข้อมูลแปลง + เจ้าของ + การใช้ประโยชน์ ── */
-function renderLandDetail(rec) {
-  var landCode = String(rec['รหัสแปลงที่ดิน'] || '').trim();
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🏞️ ที่ดิน: ' + esc(landCode) + '</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสแปลงที่ดิน</b><span>' + esc(landCode) + '</span></div>';
-  h += '<div class="k"><b>รหัสกลุ่มที่ดิน</b><span>' + esc(rec['รหัสกลุ่มที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>ประเภทเอกสารสิทธิ์</b><span>' + esc(rec['ประเภทเอกสาร']) + '</span></div>';
-  h += '<div class="k"><b>เลขที่เอกสารสิทธิ์</b><span>' + esc(rec['เลขที่เอกสาร']) + '</span></div>';
-  h += '<div class="k"><b>หน้าสำรวจ</b><span>' + esc(rec['หน้าสำรวจ']) + '</span></div>';
-  h += '<div class="k"><b>เล่มที่</b><span>' + esc(rec['เล่มที่']) + '</span></div>';
-  h += '<div class="k"><b>หน้าที่</b><span>' + esc(rec['หน้าที่']) + '</span></div>';
-  h += '<div class="k"><b>ระวาง</b><span>' + esc(rec['ระวาง']) + '</span></div>';
-  h += '<div class="k"><b>แผนที่ระวางภูมิประเทศ</b><span>' + esc(rec['แผนที่ระวางภูมิประเทศ']) + '</span></div>';
-  h += '<div class="k"><b>ระวางUTM</b><span>' + esc(rec['ระวางUTM']) + '</span></div>';
-  h += '<div class="k"><b>แผ่นที่ระวางUTM</b><span>' + esc(rec['แผ่นที่ระวางUTM']) + '</span></div>';
-  h += '<div class="k"><b>มาตราส่วน</b><span>' + esc(rec['มาตราส่วน']) + '</span></div>';
-  h += '<div class="k"><b>เลขที่ดิน</b><span>' + esc(rec['เลขที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>หมู่ที่</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
-  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
-  h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอย']) + '</span></div>';
-  h += '<div class="k"><b>เนื้อที่</b><span>' + esc(fmtArea(rec)) + '</span></div>';
-  h += '<div class="k"><b>รวมเนื้อที่ทั้งหมด (ตร.ว.)</b><span>' + esc(rec['รวมเนื้อที่ทั้งหมด (ตร.ว.)']) + '</span></div>';
-  h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบล']) + '</span></div>';
-  h += '<div class="k"><b>อำเภอ</b><span>' + esc(rec['อำเภอ']) + '</span></div>';
-  h += '<div class="k"><b>ราคาประเมิน (บาท/ตร.วา)</b><span>' + esc(rec['ราคาต่อตร.วา']) + '</span></div>';
-  h += '<div class="k"><b>รวมราคาประเมิน (บาท)</b><span>' + esc(rec['รวมราคาประเมินที่ดิน (บาท)']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
-  h += '</div>';
-
-  // เจ้าของแปลง
-  var ownerLinks = psnList(rec['เลขบัตรเจ้าของที่ดิน']).map(function(p) {
-    var oi = findIdx('ltax_owner', 'เลขบัตรประชาชน', p);
-    return oi >= 0 ? '<a href="#" onclick="viewData(\'ltax_owner\',' + oi + '); return false;">' + esc(p) + '</a>'
-                   : esc(p) + ' <span style="color:#c62828;">(ยังไม่กรอกเจ้าของ)</span>';
+  var added = 0, updated = 0, skipped = 0;
+  rows.forEach(function(raw) {
+    var r = normalizeRefRow(raw);
+    var psn = String(r['เลขบัตรประชาชน'] || '').replace(/[^0-9]/g, '').trim();
+    if (!psn) { skipped++; return; }
+    r['เลขบัตรประชาชน'] = psn;
+    if (byId.hasOwnProperty(psn)) { list[byId[psn]] = r; updated++; }
+    else { list.push(r); byId[psn] = list.length - 1; added++; }
   });
-  if (ownerLinks.length) {
-    h += '<div class="k"><b>เจ้าของแปลง</b><span>' + ownerLinks.join(', ') + '</span></div>';
-  }
-  h += '</div>';
 
-  // สิ่งปลูกสร้างบนแปลงนี้
-  var blds = [];
-  getList('ltax_building').forEach(function(b, i) {
-    if (psnList(b['รหัสแปลงที่ดิน']).indexOf(landCode) >= 0) blds.push({ rec: b, idx: i });
+  try {
+    localStorage.setItem('ltax_ref_owner', JSON.stringify(list));
+  } catch(e) {
+    alert('บันทึกข้อมูลอ้างอิงไม่สำเร็จ (พื้นที่เก็บในเครื่องเต็ม): ' + e);
+    return;
+  }
+
+  refreshRefStats();
+  alert('นำเข้าสำเร็จ — เพิ่มใหม่ ' + added + ' รายการ, อัปเดต ' + updated + ' รายการ' +
+        (skipped ? ', ข้าม ' + skipped + ' แถว (ไม่มีเลขบัตรประชาชน)' : ''));
+  $('refOwnerFile').value = '';
+}
+
+function loadXLSXLib(cb) {
+  if (window.XLSX) { cb(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload = cb;
+  s.onerror = function() {
+    alert('โหลดตัวอ่านไฟล์ Excel ไม่ได้ — ต้องมีอินเทอร์เน็ตตอนนำเข้าไฟล์ .xlsx/.xls ครั้งแรก\nลองต่อเน็ตแล้วนำเข้าใหม่ หรือแปลงไฟล์เป็น .csv แทน');
+  };
+  document.head.appendChild(s);
+}
+
+function importRefOwners() {
+  var input = $('refOwnerFile');
+  var file = input.files && input.files[0];
+  if (!file) { alert('เลือกไฟล์ก่อน'); return; }
+  var name = file.name.toLowerCase();
+
+  if (name.endsWith('.csv')) {
+    var reader = new FileReader();
+    reader.onload = function(e) { processRefRows(parseCSV(e.target.result)); };
+    reader.onerror = function() { alert('อ่านไฟล์ CSV ไม่สำเร็จ'); };
+    reader.readAsText(file, 'utf-8');
+    return;
+  }
+
+  loadXLSXLib(function() {
+    if (!window.XLSX) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        var sheet = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        processRefRows(rows);
+      } catch(err) {
+        alert('อ่านไฟล์ Excel ไม่สำเร็จ: ' + err);
+      }
+    };
+    reader.onerror = function() { alert('อ่านไฟล์ Excel ไม่สำเร็จ'); };
+    reader.readAsArrayBuffer(file);
   });
-  h += '<div class="view-sub">สิ่งปลูกสร้างบนแปลงนี้ ' + blds.length + ' หลัง</div>';
-  h += tblStart(['รหัสสิ่งปลูกสร้าง', 'เลขที่', 'ประเภทอาคาร', 'ขนาด (กว้างxยาว ม.)', 'ชั้น', '']);
-  if (!blds.length) { h += tblEnd(true, 6); }
-  else {
-    blds.forEach(function(x) {
-      h += '<tr><td><b>' + esc(x.rec['รหัสสิ่งปลูกสร้าง']) + '</b></td>' +
-           '<td>' + esc(x.rec['เลขที่บ้าน']) + '</td><td>' + esc(x.rec['ประเภทอาคาร']) + '</td>' +
-           '<td>' + esc(x.rec['กว้าง(ม.)']) + ' x ' + esc(x.rec['ยาว(ม.)']) + '</td>' +
-           '<td>' + esc(x.rec['จำนวนชั้น']) + '</td>' +
-           '<td>' + viewLink('ltax_building', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-
-  // การใช้ประโยชน์ที่ดิน
-  var usages = [];
-  getList('ltax_land_usage').forEach(function(u, i) { if (String(u['รหัสแปลงที่ดิน'] || '').trim() === landCode) usages.push({ rec: u, idx: i }); });
-  h += '<div class="view-sub">การใช้ประโยชน์ที่ดิน ' + usages.length + ' รายการ</div>';
-  h += tblStart(['ประเภทการใช้ประโยชน์', 'พื้นที่ (ไร่-งาน-วา)', 'ผู้ทำประโยชน์', 'ใช้โดย', '']);
-  if (!usages.length) { h += tblEnd(true, 5); }
-  else {
-    usages.forEach(function(x) {
-      var u = x.rec;
-      h += '<tr><td>' + esc(u['ประเภทการใช้ประโยชน์']) + '</td>' +
-           '<td>' + esc(u['ไร่'] + '-' + u['งาน'] + '-' + u['ตร.วา']) + '</td>' +
-           '<td>' + esc(u['ผู้ทำประโยชน์']) + '</td>' +
-           '<td>' + esc(u['ใช้โดย']) + '</td>' +
-           '<td>' + viewLink('ltax_land_usage', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 5);
-  }
-
-  return h;
 }
 
-/* ── การใช้ประโยชน์ที่ดิน ── */
-function renderLandUsageDetail(rec) {
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🌱 การใช้ประโยชน์ที่ดิน</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสแปลงที่ดิน</b><span>' + esc(rec['รหัสแปลงที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>พื้นที่แปลงคงเหลือ (ตร.ว.)</b><span>' + esc(rec['พื้นที่แปลงคงเหลือ (ตร.ว.)']) + '</span></div>';
-  h += '</div></div>';
-  var usages = rec['รายการใช้ประโยชน์'] || [];
-  h += '<div class="view-sub">รายการใช้ประโยชน์ ' + usages.length + ' รายการ</div>';
-  h += tblStart(['ประเภท', 'พื้นที่ (ไร่-งาน-วา)', 'ผู้ทำประโยชน์', 'ใช้โดย', 'การเกษตรที่ทำ', 'หมายเหตุ']);
-  if (!usages.length) { h += tblEnd(true, 6); }
-  else {
-    usages.forEach(function(u) {
-      h += '<tr><td>' + esc(u['ประเภทการใช้ประโยชน์']) + '</td>' +
-           '<td>' + esc(u['ไร่'] + '-' + u['งาน'] + '-' + u['ตร.วา']) + '</td>' +
-           '<td>' + esc(u['ผู้ทำประโยชน์']) + '</td>' +
-           '<td>' + esc(u['ใช้โดย']) + '</td>' +
-           '<td>' + esc(u['การเกษตรที่ทำ']) + '</td>' +
-           '<td>' + esc(u['หมายเหตุ']) + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-  return h;
+function refreshRefStats() {
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem('ltax_ref_owner') || '[]'); } catch(e) { list = []; }
+  var el = $('refOwnerStats');
+  if (el) el.textContent = 'ข้อมูลอ้างอิงเจ้าของทรัพย์สิน: ' + list.length + ' รายการ';
 }
 
-/* ── สิ่งปลูกสร้าง: ข้อมูล + เจ้าของ + การใช้ประโยชน์ ── */
-function renderBuildingDetail(rec) {
-  var bldCode = String(rec['รหัสสิ่งปลูกสร้าง'] || '').trim();
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🏠 สิ่งปลูกสร้าง: ' + esc(bldCode) + '</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสสิ่งปลูกสร้าง</b><span>' + esc(bldCode) + '</span></div>';
-  h += '<div class="k"><b>แปลงที่ตั้ง</b><span>' + esc(rec['รหัสแปลงที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>เลขที่</b><span>' + esc(rec['เลขที่บ้าน']) + '</span></div>';
-  h += '<div class="k"><b>หมู่ที่</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
-  h += '<div class="k"><b>หมู่บ้าน/ชุมชน</b><span>' + esc(rec['หมู่บ้าน/ชุมชน']) + '</span></div>';
-  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
-  h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอย']) + '</span></div>';
-  h += '<div class="k"><b>ประเภทอาคาร</b><span>' + esc(rec['ประเภทอาคาร']) + '</span></div>';
-  h += '<div class="k"><b>โครงสร้าง</b><span>' + esc(rec['โครงสร้าง']) + '</span></div>';
-  h += '<div class="k"><b>จำนวนชั้น</b><span>' + esc(rec['จำนวนชั้น']) + '</span></div>';
-  h += '<div class="k"><b>ขนาด (กว้าง x ยาว ม.)</b><span>' + esc(rec['กว้าง(ม.)']) + ' x ' + esc(rec['ยาว(ม.)']) + '</span></div>';
-  h += '<div class="k"><b>ขนาดพื้นที่ทั้งอาคาร (ตร.ม.)</b><span>' + esc(rec['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)']) + '</span></div>';
-  h += '<div class="k"><b>เนื้อที่ที่ดิน</b><span>' + esc(rec['เนื้อที่ที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>อายุสิ่งปลูกสร้าง (ปี)</b><span>' + esc(rec['อายุสิ่งปลูกสร้าง']) + '</span></div>';
-  h += '<div class="k"><b>ปีที่สร้าง</b><span>' + esc(rec['ปีที่สร้าง']) + '</span></div>';
-  h += '<div class="k"><b>ราคาประเมิน (บาท/ตร.ม.)</b><span>' + esc(rec['ราคาประเมินต่อตร.ม.']) + '</span></div>';
-  h += '<div class="k"><b>ราคาประเมินทุนทรัพย์ (บาท)</b><span>' + esc(rec['ราคาประเมินทุนทรัพย์']) + '</span></div>';
-  h += '<div class="k"><b>หักค่าเสื่อม (บาท)</b><span>' + esc(rec['หักค่าเสื่อม']) + '</span></div>';
-  h += '<div class="k"><b>คงเหลือราคาประเมิน (บาท)</b><span>' + esc(rec['คงเหลือราคาประเมิน']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
-  h += '</div>';
-
-  var ownerLinks = psnList(rec['เลขบัตรเจ้าของสิ่งปลูกสร้าง'] || rec['เลขบัตรเจ้าของที่ดิน']).map(function(p) {
-    var oi = findIdx('ltax_owner', 'เลขบัตรประชาชน', p);
-    return oi >= 0 ? '<a href="#" onclick="viewData(\'ltax_owner\',' + oi + '); return false;">' + esc(p) + '</a>'
-                   : esc(p) + ' <span style="color:#c62828;">(ยังไม่กรอกเจ้าของ)</span>';
-  });
-  if (ownerLinks.length) h += '<div class="k"><b>เจ้าของ</b><span>' + ownerLinks.join(', ') + '</span></div>';
-  h += '</div>';
-
-  // การใช้ประโยชน์สิ่งปลูกสร้าง
-  var usages = [];
-  getList('ltax_building_usage').forEach(function(u, i) { if (String(u['รหัสสิ่งปลูกสร้าง'] || '').trim() === bldCode) usages.push({ rec: u, idx: i }); });
-  h += '<div class="view-sub">การใช้ประโยชน์สิ่งปลูกสร้าง ' + usages.length + ' รายการ</div>';
-  h += tblStart(['ประเภทการใช้งาน', 'ชั้นที่', 'พื้นที่ (ตร.ม.)', 'ขนาดคงเหลือ (ตร.ม.)', 'ลักษณะการใช้', '']);
-  if (!usages.length) { h += tblEnd(true, 6); }
-  else {
-    usages.forEach(function(x) {
-      var u = x.rec;
-      var us = u['รายการใช้ประโยชน์'] || [];
-      h += '<tr><td>' + esc(us.length ? us.map(function(z) { return z['ประเภทการใช้งาน']; }).join(', ') : u['ประเภทการใช้งาน']) + '</td>' +
-           '<td>' + esc(us.length ? us.map(function(z) { return z['ชั้นที่']; }).join(', ') : u['ชั้นที่']) + '</td>' +
-           '<td>' + esc(us.length ? us.map(function(z) { return z['พื้นที่รวม(ตร.ม.)']; }).join(', ') : u['พื้นที่รวม(ตร.ม.)']) + '</td>' +
-           '<td>' + esc(us.length ? us.map(function(z) { return z['ขนาดพื้นที่คงเหลือ(ตร.ม.)']; }).join(', ') : u['ขนาดพื้นที่คงเหลือ(ตร.ม.)']) + '</td>' +
-           '<td>' + esc(us.length ? us.map(function(z) { return z['ลักษณะการใช้']; }).join(', ') : u['ลักษณะการใช้']) + '</td>' +
-           '<td>' + viewLink('ltax_building_usage', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-
-  return h;
-}
-
-/* ── การใช้ประโยชน์สิ่งปลูกสร้าง ── */
-function renderBuildingUsageDetail(rec) {
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🏗️ การใช้ประโยชน์สิ่งปลูกสร้าง</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสสิ่งปลูกสร้าง</b><span>' + esc(rec['รหัสสิ่งปลูกสร้าง']) + '</span></div>';
-  h += '</div></div>';
-  var usages = rec['รายการใช้ประโยชน์'] || [];
-  h += '<div class="view-sub">รายการใช้ประโยชน์ ' + usages.length + ' รายการ</div>';
-  h += tblStart(['ประเภทการใช้งาน', 'เต็มพื้นที่', 'ชั้นที่', 'กว้าง x ยาว (ม.)', 'พื้นที่รวม (ตร.ม.)', 'ขนาดคงเหลือ (ตร.ม.)', 'ลักษณะการใช้', 'หมายเหตุ']);
-  if (!usages.length) { h += tblEnd(true, 8); }
-  else {
-    usages.forEach(function(u) {
-      h += '<tr><td>' + esc(u['ประเภทการใช้งาน']) + '</td>' +
-           '<td>' + esc(u['เต็มพื้นที่ทุกชั้น'] === 'Y' ? 'ใช่' : 'ไม่') + '</td>' +
-           '<td>' + esc(u['ชั้นที่']) + '</td>' +
-           '<td>' + esc(u['กว้าง(ม.)']) + ' x ' + esc(u['ยาว(ม.)']) + '</td>' +
-           '<td>' + esc(u['พื้นที่รวม(ตร.ม.)']) + '</td>' +
-           '<td>' + esc(u['ขนาดพื้นที่คงเหลือ(ตร.ม.)']) + '</td>' +
-           '<td>' + esc(u['ลักษณะการใช้']) + '</td>' +
-           '<td>' + esc(u['หมายเหตุ']) + '</td></tr>';
-    });
-    h += tblEnd(false, 8);
-  }
-  return h;
-}
-
-/* ── ป้าย ── */
-function renderSignDetail(rec) {
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🪧 ป้าย: ' + esc(rec['รหัสป้าย']) + '</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสป้าย</b><span>' + esc(rec['รหัสป้าย']) + '</span></div>';
-  h += '<div class="k"><b>รหัสแปลงที่ดิน</b><span>' + esc(rec['รหัสแปลงที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>ชื่อสถานประกอบการค้า/กิจการ</b><span>' + esc(rec['ชื่อสถานประกอบการค้า/กิจการ']) + '</span></div>';
-  h += '<div class="k"><b>วันที่ติดตั้งป้าย</b><span>' + esc(rec['วันที่ติดตั้งป้าย']) + '</span></div>';
-  h += '<div class="k"><b>ป้ายแสดง</b><span>' + esc(rec['ป้ายแสดง']) + '</span></div>';
-  h += '<div class="k"><b>ประเภทป้าย</b><span>' + esc(rec['ประเภทป้าย']) + '</span></div>';
-  h += '<div class="k"><b>ขนาด (กว้าง x ยาว ซม.)</b><span>' + esc(rec['กว้าง (ซม.)']) + ' x ' + esc(rec['ยาว (ซม.)']) + '</span></div>';
-  h += '<div class="k"><b>เนื้อที่ป้าย (ตร.ซม.)</b><span>' + esc(rec['เนื้อที่ป้าย (ตร.ซม.)']) + '</span></div>';
-  h += '<div class="k"><b>จำนวนด้าน</b><span>' + esc(rec['จำนวนด้าน']) + '</span></div>';
-  h += '<div class="k"><b>จำนวนหน่วย</b><span>' + esc(rec['จำนวนหน่วย']) + '</span></div>';
-  h += '<div class="k"><b>ข้อความภายในป้าย</b><span>' + esc(rec['ข้อความภายในป้าย']) + '</span></div>';
-  h += '<div class="k"><b>งวดที่ติดตั้งป้าย</b><span>' + esc(rec['งวดที่ติดตั้งป้าย']) + '</span></div>';
-  h += '<div class="k"><b>อัตราภาษีป้าย</b><span>' + esc(rec['อัตราภาษีป้าย']) + '</span></div>';
-  h += '<div class="k"><b>รวมเงินภาษี (บาท)</b><span>' + esc(rec['รวมเงินภาษี (บาท)']) + '</span></div>';
-  h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['บ้านเลขที่']) + '</span></div>';
-  h += '<div class="k"><b>หมู่</b><span>' + esc(rec['หมู่']) + '</span></div>';
-  h += '<div class="k"><b>ตรอก/ซอย</b><span>' + esc(rec['ตรอก/ซอย']) + '</span></div>';
-  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
-  h += '<div class="k"><b>ชุมชน</b><span>' + esc(rec['ชุมชน']) + '</span></div>';
-  h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบล']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
-  h += '</div>';
-
-  var ownerLinks = psnList(rec['เลขบัตรเจ้าของป้าย']).map(function(p) {
-    var oi = findIdx('ltax_owner', 'เลขบัตรประชาชน', p);
-    return oi >= 0 ? '<a href="#" onclick="viewData(\'ltax_owner\',' + oi + '); return false;">' + esc(p) + '</a>'
-                   : esc(p) + ' <span style="color:#c62828;">(ยังไม่กรอกเจ้าของ)</span>';
-  });
-  if (ownerLinks.length) h += '<div class="k"><b>เจ้าของป้าย</b><span>' + ownerLinks.join(', ') + '</span></div>';
-  h += '</div>';
-  return h;
+function clearRefOwners() {
+  if (!confirm('ล้างข้อมูลอ้างอิงเจ้าของทรัพย์สินทั้งหมด? (ข้อมูลที่สำรวจแล้วในเครื่องจะไม่หาย ลบเฉพาะข้อมูลอ้างอิงที่นำเข้าไว้)')) return;
+  localStorage.removeItem('ltax_ref_owner');
+  refreshRefStats();
 }
 
 /* =========================================================
@@ -1164,6 +758,7 @@ if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
 }
 
 refreshSummary();
+refreshRefStats();
 </script>
 
 </div>
@@ -1229,14 +824,26 @@ refreshSummary();
     background: #fff3cd; border: 1px solid #e6c65a; color: #7a5c00;
     padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
   }
+
+  .ref-search-box { position: relative; }
+  .ref-results {
+    border: 1px solid #b0b0b0; border-top: none; border-radius: 0 0 3px 3px;
+    max-height: 240px; overflow-y: auto; display: none; background: #fff;
+    position: absolute; left: 0; right: 0; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  }
+  .ref-item { padding: 8px 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+  .ref-item:hover { background: #eef3fa; }
+  .ref-item .nm { font-weight: bold; color: #1b4f8a; }
+  .ref-item .id { color: #888; font-size: 12px; }
+  .ref-item .ad { font-size: 12px; color: #888; }
+  .ref-empty { padding: 8px 10px; color: #888; font-size: 13px; }
 </style>
 
 
 <header>
-  <div><b>LTAX</b> ONLINE :: เพิ่มเจ้าของทรัพย์สิน</div>
+  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Online) :: เพิ่มเจ้าของทรัพย์สิน</div>
   <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
 </header>
-<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>ทะเบียนเจ้าของทรัพย์สิน (AST001)</b> <span style="float:right;">แบบเพิ่ม/แก้ไขข้อมูลเจ้าของ</span></div>
 
 <div class="container">
   <div class="panel">
@@ -1244,6 +851,15 @@ refreshSummary();
     <div class="panel-body">
 
       <div class="section-title">ข้อมูลเจ้าของทรัพย์สิน</div>
+
+      <div class="row">
+        <label>ค้นหาจากข้อมูลอ้างอิงเดิม</label>
+        <div class="field ref-search-box">
+          <input type="text" id="refSearch" placeholder="พิมพ์เลขบัตรประชาชน หรือ ชื่อ-นามสกุล..." oninput="onRefSearchInput()" autocomplete="off">
+          <div id="refResults" class="ref-results"></div>
+          <div class="hint">เลือกรายการเพื่อเติมข้อมูลเจ้าของอัตโนมัติ (ต้องนำเข้าข้อมูลอ้างอิงจากหน้าแรกก่อน)</div>
+        </div>
+      </div>
 
       <div class="row">
         <label>ประเภทบุคคล <span class="req">*</span></label>
@@ -1422,38 +1038,6 @@ refreshSummary();
     <textarea id="previewBox" readonly></textarea>
   </div>
 </div>
-
-
-<style>
-/* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
-#ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
-#ltaxModal .box{background:#fff;border-radius:12px;max-width:92%;width:330px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.35);overflow:hidden;}
-#ltaxModal .head{background:linear-gradient(135deg,#367fa9,#1b4f8a);color:#fff;padding:14px 10px 26px;font-size:16px;font-weight:700;}
-#ltaxModal .tick{width:62px;height:62px;border-radius:50%;background:#28a745;color:#fff;font-size:34px;line-height:62px;margin:-31px auto 12px;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);}
-#ltaxModal .info{font-size:13px;color:#333;margin:4px 14px 14px;word-break:break-word;line-height:1.5;}
-#ltaxModal .btns{padding:0 14px 14px;}
-#ltaxModal .btn{display:block;width:100%;margin:7px 0 0;padding:11px;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;}
-#ltaxModal .btn-next{background:#367fa9;color:#fff;}
-#ltaxModal .btn-more{background:#28a745;color:#fff;}
-#ltaxModal .btn-home{background:#eef4f8;color:#1b4f8a;}
-#ltaxModal .btn-close{background:#f4f6f8;color:#8a8f94;}
-</style>
-
-<div id="ltaxModal">
-  <div class="box">
-    <div class="head">บันทึกข้อมูลเรียบร้อย</div>
-    <div class="tick">&#10003;</div>
-    <div class="info" id="ltaxModalInfo"></div>
-    <div class="btns">
-      <button type="button" class="btn btn-next" id="ltaxModalNext">กรอกชุดถัดไป (ต่อไป)</button>
-      <button type="button" class="btn btn-more" id="ltaxModalMore">เพิ่มรายการใหม่</button>
-      <button type="button" class="btn btn-home" id="ltaxModalHome">กลับหน้าแรก</button>
-      <button type="button" class="btn btn-home" id="ltaxModalNoSign" style="display:none;">ไม่มีป้าย (จบชุด)</button>
-      <button type="button" class="btn btn-close" id="ltaxModalClose">ปิด</button>
-    </div>
-  </div>
-</div>
-
 
 
 
@@ -2888,6 +2472,161 @@ refreshSummary();
 
 </template>
 
+<template id="tpl-ltax_asset">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tahoma', 'Segoe UI', sans-serif; background: #eef1f5; font-size: 14px; color: #333; }
+
+  header {
+    background: #153d6b;
+    color: #fff; padding: 8px 20px; font-size: 15px; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+  }
+  header .org { font-weight: normal; font-size: 12px; color: #cfe0f5; }
+  header .org b { color: #ffd75e; }
+  .content-info {
+    background: #eaf2fb; color: #1b4f8a; font-size: 12px;
+    padding: 4px 20px; border-bottom: 1px solid #c9d8ea;
+  }
+
+  .container { max-width: 1040px; margin: 15px auto; padding: 0 10px; }
+
+  .panel {
+    background: #fff; border: 1px solid #d2d6de; border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 14px;
+  }
+  .panel-head {
+    background: linear-gradient(#3c8dbc, #367fa9); color: #fff;
+    font-weight: bold; padding: 9px 14px; border-radius: 3px 3px 0 0; font-size: 15px;
+    border-bottom: 3px solid #2f6a8d;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .panel-body { padding: 16px; }
+
+  .section-title {
+    background: #f5f9fc; color: #153d6b; font-weight: bold;
+    padding: 6px 10px; border-left: 4px solid #367fa9;
+    border-top: 1px solid #e1e9f0; border-right: 1px solid #e1e9f0;
+    margin: 18px 0 10px 0; font-size: 14px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .owner-selector-bar {
+    background: #eaf2fb; border: 1px solid #b8c9dd; border-radius: 4px;
+    padding: 10px 14px; margin-bottom: 16px;
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .owner-selector-bar label { font-weight: bold; color: #1b4f8a; flex-shrink: 0; }
+  .owner-selector-bar select {
+    flex: 1; min-width: 240px; padding: 6px 10px; border: 1px solid #3c8dbc; border-radius: 3px;
+    font-size: 14px; font-family: inherit; background: #fff;
+  }
+
+  .view-kv { display: table; width: 100%; font-size: 13px; margin-bottom: 8px; }
+  .view-kv .k { display: table-row; }
+  .view-kv .k b {
+    display: table-cell; width: 28%; padding: 6px 10px; color: #1b4f8a;
+    background: #f5f9fc; border: 1px solid #d2d6de; font-weight: 600; vertical-align: top;
+  }
+  .view-kv .k span { display: table-cell; padding: 6px 10px; border: 1px solid #d2d6de; background: #fff; }
+
+  table.reg-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; margin-bottom: 12px; }
+  table.reg-tbl th {
+    background: #3c8dbc; color: #fff; border: 1px solid #367fa9;
+    padding: 6px 8px; text-align: left; font-weight: 600;
+  }
+  table.reg-tbl td { border: 1px solid #d2d6de; padding: 6px 8px; }
+  table.reg-tbl tr:nth-child(even) { background: #f9fbfd; }
+  table.reg-tbl tr.sub-row { background: #f0f6fc; font-size: 12px; }
+  table.reg-tbl tr.sub-row td { padding: 4px 8px 4px 24px; color: #555; }
+  table.reg-tbl td.num { text-align: right; }
+  table.reg-tbl td.center { text-align: center; }
+  table.reg-tbl .none { color: #999; text-align: center; padding: 12px; }
+
+  .summary-card {
+    background: linear-gradient(135deg, #f5f9fc, #eaf2fb);
+    border: 1px solid #b8c9dd; border-radius: 6px; padding: 12px 16px; margin-top: 14px;
+    display: flex; justify-content: space-around; flex-wrap: wrap; gap: 12px; text-align: center;
+  }
+  .summary-card .item { flex: 1; min-width: 130px; }
+  .summary-card .item .num { font-size: 20px; font-weight: bold; color: #1b4f8a; }
+  .summary-card .item .lbl { font-size: 12px; color: #666; margin-top: 2px; }
+
+  .btn-bar { text-align: center; margin: 16px 0 24px 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 22px; font-size: 14px; border-radius: 4px; border: 1px solid;
+    cursor: pointer; font-family: inherit; font-weight: bold; text-decoration: none; display: inline-block;
+  }
+  .btn-print { background: #00796b; border-color: #004d40; color: #fff; }
+  .btn-print:hover { background: #004d40; }
+  .btn-back-home { background: #6c757d; border-color: #545b62; color: #fff; }
+  .btn-back-home:hover { background: #545b62; }
+  .btn-edit-owner { background: #1976d2; border-color: #0d47a1; color: #fff; }
+  .btn-edit-owner:hover { background: #0d47a1; }
+
+  /* badge สถานะชุด */
+  .chain-badge { display: inline-block; padding: 4px 12px; border-radius: 14px; font-size: 12px; font-weight: bold; margin: 4px 0; }
+  .chain-badge.ok { background: #d4edda; color: #155724; border: 1px solid #b7e0c0; }
+  .chain-badge.no { background: #fff3cd; color: #8a6d3b; border: 1px solid #f0e0b0; }
+  .chain-badge.mid { background: #ffe9e3; color: #c0392b; border: 1px solid #f5c6cb; }
+
+  @media print {
+    body { background: #fff; font-size: 11pt; color: #000; }
+    header, .content-info, .owner-selector-bar, .btn-bar, .no-print { display: none !important; }
+    .container { max-width: 100%; margin: 0; padding: 0; }
+    .panel { border: none; box-shadow: none; margin: 0; }
+    .panel-head { background: none; color: #000; font-size: 16pt; padding: 0 0 10px 0; border-bottom: 2px solid #000; }
+    .panel-body { padding: 0; }
+    .section-title { background: #eee; color: #000; border-left: 3px solid #000; border-top: none; border-right: none; font-size: 12pt; page-break-after: avoid; }
+    table.reg-tbl th { background: #ddd !important; color: #000 !important; border: 1px solid #888; }
+    table.reg-tbl td { border: 1px solid #888; }
+    .view-kv .k b { background: #f0f0f0; color: #000; border: 1px solid #888; }
+    .view-kv .k span { border: 1px solid #888; }
+    .summary-card { border: 1px solid #888; background: #f9f9f9; }
+    .summary-card .item .num { color: #000; }
+    .page-break { page-break-before: always; }
+  }
+</style>
+
+
+<header class="no-print">
+  <div><b>LTAX</b> ONLINE :: ทะเบียนทรัพย์สินและเจ้าของ (AST001)</div>
+  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ / ปีภาษี 2569</div>
+</header>
+<div class="content-info no-print">ระบบทะเบียนทรัพย์สิน : <b>ทะเบียนรวมเจ้าของ-ที่ดิน-สิ่งปลูกสร้าง-ป้าย (AST001)</b> <span style="float:right;">โหมดดู/พิมพ์รายงาน</span></div>
+
+<div class="container">
+
+  <div class="owner-selector-bar no-print">
+    <label for="regOwnerSel">เลือกเจ้าของทรัพย์สิน:</label>
+    <select id="regOwnerSel" onchange="onSelectOwnerChange()"></select>
+    <button type="button" class="btn btn-print" onclick="window.print()">🖨️ พิมพ์ทะเบียน</button>
+    <button type="button" class="btn btn-back-home" onclick="goBack()">🏠 กลับหน้าแรก</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span>📋 ทะเบียนทรัพย์สินและเจ้าของ (AST001)</span>
+      <span id="regPrintDate" style="font-size:12px; font-weight:normal;"></span>
+    </div>
+    <div class="panel-body" id="regBody">
+      <div style="text-align:center; color:#888; padding:40px;">กำลังโหลดข้อมูล...</div>
+    </div>
+  </div>
+
+  <div class="btn-bar no-print">
+    <button type="button" class="btn btn-print" onclick="window.print()">🖨️ พิมพ์ทะเบียนทรัพย์สิน</button>
+    <button type="button" class="btn btn-edit-owner" id="btnEditCurOwner" onclick="editCurOwner()">✏️ แก้ไขข้อมูลเจ้าของ</button>
+    <button type="button" class="btn btn-back-home" onclick="goBack()">🏠 กลับหน้าแรก</button>
+  </div>
+
+</div>
+
+
+
+</template>
+
 <template id="tpl-ltax_photo">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -3128,10 +2867,38 @@ var PREFIXES = {
   '8': [ '0 โปรดเลือกคำนำหน้า', 'G11 อื่นๆ' ]
 };
 
-/* จังหวัด/อำเภอ/ตำบล — ครบทุกจังหวัด (77 จ. / 928 อ. / 7,436 ต. จาก admin_data.js)
-   โหลดจาก window.ADMIN_DATA (ไฟล์ admin_data.js) — รหัสตามระบบ DLA */
-var ADMIN_DATA = window.ADMIN_DATA || { provinces: [], byProvince: {}, byDistrict: {} };
-var PROVINCES = ADMIN_DATA.provinces.map(function(p) { return [p.c, p.n]; });
+/* จังหวัด (รหัส 2 หลัก ตามระบบ DLA) */
+var PROVINCES = [
+  ['10','กรุงเทพมหานคร'],['11','สมุทรปราการ'],['12','นนทบุรี'],['13','ปทุมธานี'],
+  ['14','พระนครศรีอยุธยา'],['15','อ่างทอง'],['16','ลพบุรี'],['17','สิงห์บุรี'],
+  ['18','ชัยนาท'],['19','สระบุรี'],['20','ชลบุรี'],['21','ระยอง'],['22','จันทบุรี'],
+  ['23','ตราด'],['24','ฉะเชิงเทรา'],['25','ปราจีนบุรี'],['26','นครนายก'],['27','สระแก้ว'],
+  ['30','นครราชสีมา'],['31','บุรีรัมย์'],['32','สุรินทร์'],['33','ศรีสะเกษ'],['34','อุบลราชธานี'],
+  ['35','ยโสธร'],['36','ชัยภูมิ'],['37','อำนาจเจริญ'],['38','บึงกาฬ'],['39','หนองบัวลำภู'],
+  ['40','ขอนแก่น'],['41','อุดรธานี'],['42','เลย'],['43','หนองคาย'],['44','มหาสารคาม'],
+  ['45','ร้อยเอ็ด'],['46','กาฬสินธุ์'],['47','สกลนคร'],['48','นครพนม'],['49','มุกดาหาร'],
+  ['50','เชียงใหม่'],['51','ลำพูน'],['52','ลำปาง'],['53','อุตรดิตถ์'],['54','แพร่'],
+  ['55','น่าน'],['56','พะเยา'],['57','เชียงราย'],['58','แม่ฮ่องสอน'],
+  ['60','นครสวรรค์'],['61','อุทัยธานี'],['62','กำแพงเพชร'],['63','ตาก'],['64','สุโขทัย'],
+  ['65','พิษณุโลก'],['66','พิจิตร'],['67','เพชรบูรณ์'],
+  ['70','ราชบุรี'],['71','กาญจนบุรี'],['72','สุพรรณบุรี'],['73','นครปฐม'],['74','สมุทรสาคร'],
+  ['75','สมุทรสงคราม'],['76','เพชรบุรี'],['77','ประจวบคีรีขันธ์'],
+  ['80','นครศรีธรรมราช'],['81','กระบี่'],['82','พังงา'],['83','ภูเก็ต'],['84','สุราษฎร์ธานี'],
+  ['85','ระนอง'],['86','ชุมพร'],
+  ['90','สงขลา'],['91','สตูล'],['92','ปัตตานี'],['93','ยะลา'],['94','นราธิวาส']
+];
+
+/* อำเภอ/ตำบล ตัวอย่าง (ยังมีเฉพาะ จ.ศรีสะเกษ) - จะเติมให้ครบตามระบบจริง */
+var ADMIN = {
+  '33': {
+    '3305': { name: 'ขุขันธ์', districts: {
+      '330501': 'ปรือใหญ่', '330502': 'ปรือใหญ่ 2'
+    }},
+    '3301': { name: 'เมืองศรีสะเกษ', districts: {
+      '330101': 'เมืองใต้', '330102': 'เมืองเหนือ'
+    }}
+  }
+};
 
 var REQUIRED = ['personType','psnId','prefixName','firstName','addrNo','provinceId','amphurId','districtId','currNo','currProvinceId','currAmphurId','currDistrictId','sendAddr'];
 
@@ -3167,27 +2934,34 @@ function onProvinceChange(pSel, aSel, dSel) {
   aBox.innerHTML = '<option value="">--</option>';
   dBox.innerHTML = '<option value="">--</option>';
   if (!prov) return;
-  var list = ADMIN_DATA.byProvince[prov] || [];
-  list.forEach(function(a) {
-    var opt = document.createElement('option');
-    opt.value = a.c; opt.text = a.n;
-    aBox.appendChild(opt);
-  });
-  if (aBox.options.length > 1) aBox.selectedIndex = 1;
-  onAmphurChange(aSel, dSel);
+  var data = ADMIN[prov];
+  if (data) {
+    for (var a in data) {
+      var opt = document.createElement('option');
+      opt.value = a; opt.text = data[a].name;
+      aBox.appendChild(opt);
+    }
+    if (aBox.options.length > 1) aBox.selectedIndex = 1;
+    onAmphurChange(aSel, dSel);
+  } else {
+    var o = document.createElement('option');
+    o.value = ''; o.text = 'ยังไม่มีข้อมูลอำเภอของจังหวัดนี้ (ต้นแบบ)';
+    aBox.appendChild(o);
+  }
 }
 
 function onAmphurChange(aSel, dSel) {
+  var prov = aSel.indexOf('curr') === 0 ? $('currProvinceId').value : $('provinceId').value;
   var amph = $(aSel).value;
   var dBox = $(dSel);
   dBox.innerHTML = '<option value="">--</option>';
-  if (!amph) return;
-  var list = ADMIN_DATA.byDistrict[amph] || [];
-  list.forEach(function(d) {
+  if (!prov || !amph || !ADMIN[prov] || !ADMIN[prov][amph]) return;
+  var dists = ADMIN[prov][amph].districts;
+  for (var d in dists) {
     var opt = document.createElement('option');
-    opt.value = d.c; opt.text = d.n;
+    opt.value = d; opt.text = dists[d];
     dBox.appendChild(opt);
-  });
+  }
 }
 
 function copyAddress() {
@@ -3203,6 +2977,116 @@ function copyAddress() {
   });
   if ($('provinceId').value) onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
 }
+
+/* =========================================================
+   ค้นหาจากข้อมูลอ้างอิงเดิม (นำเข้าจากหน้าแรก — localStorage 'ltax_ref_owner')
+   ========================================================= */
+function getRefOwners() {
+  try { return JSON.parse(localStorage.getItem('ltax_ref_owner') || '[]'); } catch(e) { return []; }
+}
+
+function onRefSearchInput() {
+  var q = $('refSearch').value.trim().toLowerCase();
+  var box = $('refResults');
+  if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  var list = getRefOwners().filter(function(r) {
+    var hay = ((r['เลขบัตรประชาชน'] || '') + ' ' + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '')).toLowerCase();
+    return hay.indexOf(q) >= 0;
+  }).slice(0, 8);
+
+  window.__refFiltered = list;
+
+  if (!list.length) {
+    box.innerHTML = '<div class="ref-empty">ไม่พบข้อมูลอ้างอิงที่ตรงกับ "' + $('refSearch').value.trim() + '" — ยังไม่ได้นำเข้าไฟล์ หรือไม่มีรายชื่อนี้</div>';
+    box.style.display = 'block';
+    return;
+  }
+
+  box.innerHTML = list.map(function(r, i) {
+    var addr = [r['ตำบล'], r['อำเภอ'], r['จังหวัด']].filter(Boolean).join(' / ');
+    return '<div class="ref-item" onclick="applyRefOwner(' + i + ')">' +
+      '<span class="nm">' + (r['คำนำหน้า'] || '') + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '') + '</span>' +
+      ' <span class="id">(' + (r['เลขบัตรประชาชน'] || '') + ')</span>' +
+      (addr ? '<div class="ad">' + addr + '</div>' : '') +
+      '</div>';
+  }).join('');
+  box.style.display = 'block';
+}
+
+function findProvinceCode(name) {
+  if (!name) return '';
+  for (var i = 0; i < PROVINCES.length; i++) {
+    if (PROVINCES[i][1] === String(name).trim()) return PROVINCES[i][0];
+  }
+  return '';
+}
+function findAmphurCode(provCode, name) {
+  var data = ADMIN[provCode];
+  if (!data || !name) return '';
+  for (var a in data) { if (data[a].name === String(name).trim()) return a; }
+  return '';
+}
+function findDistrictCode(provCode, amphCode, name) {
+  var data = ADMIN[provCode] && ADMIN[provCode][amphCode];
+  if (!data || !name) return '';
+  for (var d in data.districts) { if (data.districts[d] === String(name).trim()) return d; }
+  return '';
+}
+
+function applyRefOwner(i) {
+  var r = (window.__refFiltered || [])[i];
+  if (!r) return;
+
+  $('psnId').value = r['เลขบัตรประชาชน'] || '';
+
+  if (r['คำนำหน้า']) {
+    var pbox = $('prefixName'), pv = r['คำนำหน้า'], matched = false;
+    for (var k = 0; k < pbox.options.length; k++) {
+      if (pbox.options[k].text === pv || pbox.options[k].value === pv) { pbox.value = pbox.options[k].value; matched = true; break; }
+    }
+    if (!matched) setSelectOrAdd(pbox, pv);
+  }
+
+  $('firstName').value = r['ชื่อ'] || '';
+  $('lastName').value = r['นามสกุล'] || '';
+  $('addrNo').value = r['เลขที่บ้าน'] || '';
+  $('addrVillage').value = r['หมู่ที่'] || '';
+  $('addrRoad').value = r['ถนน'] || '';
+  $('addrAlley').value = r['ซอย'] || '';
+  $('postalCode').value = r['รหัสไปรษณีย์'] || '';
+  if (r['โทรศัพท์']) $('tel').value = r['โทรศัพท์'];
+
+  var provCode = findProvinceCode(r['จังหวัด']);
+  if (provCode) {
+    $('provinceId').value = provCode;
+    onProvinceChange('provinceId', 'amphurId', 'districtId');
+    var amphCode = findAmphurCode(provCode, r['อำเภอ']);
+    if (amphCode) {
+      $('amphurId').value = amphCode;
+      onAmphurChange('amphurId', 'districtId');
+      var distCode = findDistrictCode(provCode, amphCode, r['ตำบล']);
+      if (distCode) $('districtId').value = distCode;
+      else if (r['ตำบล']) setSelectOrAdd($('districtId'), r['ตำบล']);
+    } else if (r['อำเภอ']) {
+      setSelectOrAdd($('amphurId'), r['อำเภอ']);
+    }
+  } else if (r['จังหวัด']) {
+    alert('พบจังหวัด "' + r['จังหวัด'] + '" ซึ่งยังไม่มีในรายการอำเภอ/ตำบลของระบบนี้ — กรุณาเลือกจังหวัด/อำเภอ/ตำบลเอง');
+  }
+
+  $('refResults').style.display = 'none';
+  $('refSearch').value = '';
+  window.__dirty = true;
+}
+
+document.addEventListener('click', function(e) {
+  var box = $('refResults');
+  var input = $('refSearch');
+  if (box && box.style.display !== 'none' && e.target !== input && !box.contains(e.target)) {
+    box.style.display = 'none';
+  }
+});
 
 /* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
 window.__editKey = null;
@@ -3267,33 +3151,23 @@ function loadEditRecord() {
   if (r['หมู่ที่']) $('addrVillage').value = r['หมู่ที่'];
   if (r['ซอย']) $('addrAlley').value = r['ซอย'];
   if (r['ถนน']) $('addrRoad').value = r['ถนน'];
-  if (r['จังหวัด']) { $('provinceId').value = r['จังหวัด']; onProvinceChange('provinceId','amphurId','districtId'); }
-  if (r['อำเภอ']) { $('amphurId').value = r['อำเภอ']; onAmphurChange('amphurId','districtId'); }
-  if (r['ตำบล']) $('districtId').value = r['ตำบล'];
+  setSelectOrAdd($('provinceId'), r['จังหวัด']);
+  setSelectOrAdd($('amphurId'), r['อำเภอ']);
+  onProvinceChange('provinceId', 'amphurId', 'districtId');
+  setSelectOrAdd($('districtId'), r['ตำบล']);
   if (r['รหัสไปรษณีย์']) $('postalCode').value = r['รหัสไปรษณีย์'];
   if (r['โทรศัพท์']) $('tel').value = r['โทรศัพท์'];
-  if (r['อีเมล']) $('email').value = r['อีเมล'];
-  if (r['สถานะบุคคล']) $('personStatus').value = r['สถานะบุคคล'];
-  if (r['ที่อยู่เพื่อส่งจดหมาย']) $('sendAddr').value = r['ที่อยู่เพื่อส่งจดหมาย'];
 
-  /* ที่อยู่ปัจจุบัน — ถ้ามีค่าใน record ใช้ของเดิม ถ้าไม่มี (ข้อมูลเก่า) คัดลอกจากที่อยู่ตามบัตร */
-  var currMap = [
-    ['บ้านเลขที่ปัจจุบัน','currNo','addrNo'], ['หมู่ที่ปัจจุบัน','currVillage','addrVillage'],
-    ['ถนนปัจจุบัน','currRoad','addrRoad'], ['ซอยปัจจุบัน','currAlley','addrAlley'],
-    ['รหัสไปรษณีย์ปัจจุบัน','currPostalCode','postalCode']
-  ];
-  currMap.forEach(function(m) {
-    $(m[1]).value = (r[m[0]] || $(m[2]).value);
-  });
-  if (r['จังหวัดปัจจุบัน'] || $('provinceId').value) {
-    $('currProvinceId').value = r['จังหวัดปัจจุบัน'] || $('provinceId').value;
-    onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
-  }
-  if (r['อำเภอปัจจุบัน'] || $('amphurId').value) {
-    $('currAmphurId').value = r['อำเภอปัจจุบัน'] || $('amphurId').value;
-    onAmphurChange('currAmphurId','currDistrictId');
-  }
-  $('currDistrictId').value = r['ตำบลปัจจุบัน'] || $('districtId').value;
+  /* ฟอร์มบังคับให้กรอกที่อยู่ปัจจุบัน — คัดลอกจากที่อยู่ตามบัตรเมื่อแก้ไข */
+  if (!$('currNo').value) $('currNo').value = $('addrNo').value;
+  if (!$('currVillage').value) $('currVillage').value = $('addrVillage').value;
+  if (!$('currRoad').value) $('currRoad').value = $('addrRoad').value;
+  if (!$('currAlley').value) $('currAlley').value = $('addrAlley').value;
+  if (!$('currPostalCode').value) $('currPostalCode').value = $('postalCode').value;
+  setSelectOrAdd($('currProvinceId'), $('provinceId').value);
+  setSelectOrAdd($('currAmphurId'), $('amphurId').value);
+  onProvinceChange('currProvinceId', 'currAmphurId', 'currDistrictId');
+  setSelectOrAdd($('currDistrictId'), $('districtId').value);
   if (!$('sendAddr').value) $('sendAddr').value = '1';
 
   window.__editKey = key;
@@ -3312,7 +3186,6 @@ function collect() {
     'คำนำหน้า': sel('prefixName'),
     'ชื่อ': sel('firstName').trim(),
     'นามสกุล': sel('lastName').trim(),
-    'สถานะบุคคล': sel('personStatus'),
     'สัญชาติ': '',
     'เลขที่บ้าน': sel('addrNo'),
     'หมู่ที่': sel('addrVillage'),
@@ -3322,17 +3195,7 @@ function collect() {
     'อำเภอ': sel('amphurId'),
     'จังหวัด': sel('provinceId'),
     'รหัสไปรษณีย์': sel('postalCode'),
-    'บ้านเลขที่ปัจจุบัน': sel('currNo'),
-    'หมู่ที่ปัจจุบัน': sel('currVillage'),
-    'ซอยปัจจุบัน': sel('currAlley'),
-    'ถนนปัจจุบัน': sel('currRoad'),
-    'ตำบลปัจจุบัน': sel('currDistrictId'),
-    'อำเภอปัจจุบัน': sel('currAmphurId'),
-    'จังหวัดปัจจุบัน': sel('currProvinceId'),
-    'รหัสไปรษณีย์ปัจจุบัน': sel('currPostalCode'),
-    'โทรศัพท์': sel('tel'),
-    'อีเมล': sel('email'),
-    'ที่อยู่เพื่อส่งจดหมาย': sel('sendAddr')
+    'โทรศัพท์': sel('tel')
   };
 }
 
@@ -3349,7 +3212,6 @@ function saveOwner() {
   }
   var data = collect();
   LTAX_store('ltax_owner', data);
-  showSavedModal('เลขบัตรประชาชน: ' + data['เลขบัตรประชาชน'], 'ltax_land', { ctx: { psnId: data['เลขบัตรประชาชน'], fullName: (data['ชื่อ'] || '') + ' ' + (data['นามสกุล'] || '') } });
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -3399,47 +3261,10 @@ function resetForm() {
   $('currProvinceId').value = '33';
   onPersonTypeChange();
   onProvinceChange('provinceId','amphurId','districtId');
-  $('amphurId').value = '3305'; onAmphurChange('amphurId','districtId'); $('districtId').value = '330506';
   onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
-  $('currAmphurId').value = '3305'; onAmphurChange('currAmphurId','currDistrictId'); $('currDistrictId').value = '330506';
   loadEditRecord();
 })();
 
-
-
-/* ---------- modal ยืนยันการบันทึก + flow ชุดข้อมูล ---------- */
-function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
-function goHome() { if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; }
-function goNextForm(fid, ctx) {
-  var c = ltaxReadCtx();
-  for (var k in (ctx || {})) if (ctx[k]) c[k] = ctx[k];
-  try { sessionStorage.setItem('ltax_next', JSON.stringify(c)); } catch(e) {}
-  if (window.openForm) { try { window.openForm(fid); return; } catch(e) {} }
-  var F = {
-    ltax_owner: 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html',
-    ltax_land: 'ฟอร์ม_เพิ่มที่ดิน.html',
-    ltax_land_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์ที่ดิน.html',
-    ltax_building: 'ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html',
-    ltax_building_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html',
-    ltax_sign: 'ฟอร์ม_เพิ่มป้าย.html'
-  };
-  window.location.href = F[fid] || 'index.html';
-}
-function showSavedModal(info, next, opts) {
-  opts = opts || {};
-  $('ltaxModalInfo').textContent = info;
-  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
-  nb.textContent = opts.askSign ? 'มีป้าย — กรอกป้าย' : (isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)');
-  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next, opts.ctx); };
-  var ns = $('ltaxModalNoSign');
-  if (opts.askSign) { ns.style.display = 'block'; ns.onclick = function() { hideSavedModal(); goHome(); }; }
-  else ns.style.display = 'none';
-  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
-  $('ltaxModalHome').onclick = function() { hideSavedModal(); goHome(); };
-  $('ltaxModalClose').onclick = hideSavedModal;
-  $('ltaxModal').style.display = 'flex';
-}
-function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
 </script>
 
 <script type="text/plain" id="js-ltax_land">
@@ -5231,6 +5056,418 @@ function applyNextCtx() {
 }
 </script>
 
+<script type="text/plain" id="js-ltax_asset">
+
+/* =========================================================
+   ทะเบียนทรัพย์สินและเจ้าของ (AST001) — รวมทุกหมวดของเจ้าของรายเดียว
+   ========================================================= */
+
+function $(id) { return document.getElementById(id); }
+
+function getList(key) {
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { return []; }
+}
+
+function esc(v) {
+  return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function psnList(v) {
+  return String(v == null ? '' : v).split(';').map(function(s) { return s.trim(); }).filter(Boolean);
+}
+
+function hasPsn(recField, psnId) {
+  return psnList(recField).indexOf(String(psnId)) >= 0;
+}
+
+function fmtArea(r) {
+  return (r['ไร่'] || '0') + '-' + (r['งาน'] || '0') + '-' + (r['ตร.วา'] || '0') + ' ไร่-งาน-วา';
+}
+
+function fmtNum(n) {
+  var num = parseFloat(n);
+  if (isNaN(num)) return '-';
+  return num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/* ── แปลงรหัส จ/อ/ต เป็นชื่อภาษาไทย (จาก ADMIN_DATA) ── */
+function codeToProv(c) {
+  if (!c) return '';
+  var ad = window.ADMIN_DATA;
+  if (!ad || !ad.provinces) return c;
+  for (var i = 0; i < ad.provinces.length; i++) {
+    if (ad.provinces[i].c === String(c)) return ad.provinces[i].n;
+  }
+  return c;
+}
+
+function codeToAmph(provCode, c) {
+  if (!c) return '';
+  var ad = window.ADMIN_DATA;
+  if (!ad || !ad.byProvince) return c;
+  var list = ad.byProvince[provCode] || [];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].c === String(c)) return list[i].n;
+  }
+  // ค้นทั่วประเทศกรณีไม่มี provCode
+  for (var p in ad.byProvince) {
+    var sub = ad.byProvince[p] || [];
+    for (var j = 0; j < sub.length; j++) {
+      if (sub[j].c === String(c)) return sub[j].n;
+    }
+  }
+  return c;
+}
+
+function codeToDist(amphCode, c) {
+  if (!c) return '';
+  var ad = window.ADMIN_DATA;
+  if (!ad || !ad.byDistrict) return c;
+  var list = ad.byDistrict[amphCode] || [];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].c === String(c)) return list[i].n;
+  }
+  // ค้นทั่วประเทศกรณีไม่มี amphCode
+  for (var a in ad.byDistrict) {
+    var sub = ad.byDistrict[a] || [];
+    for (var j = 0; j < sub.length; j++) {
+      if (sub[j].c === String(c)) return sub[j].n;
+    }
+  }
+  return c;
+}
+
+/* ── ตรวจสถานะชุด (chainState) ── */
+function getChainState(psnId) {
+  if (typeof window.chainState === 'function') {
+    try { return window.chainState(psnId); } catch(e) {}
+  }
+  var lands = getList('ltax_land').filter(function(l) { return hasPsn(l['เลขบัตรเจ้าของที่ดิน'], psnId); });
+  if (!lands.length) return { level: 0, msg: 'ยังไม่มีที่ดิน', ok: false };
+  var lcodes = lands.map(function(l) { return String(l['รหัสแปลงที่ดิน'] || '').trim(); }).filter(Boolean);
+  var lus = getList('ltax_land_usage').filter(function(u) { return lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) >= 0; });
+  if (!lus.length) return { level: 1, msg: 'ยังไม่มีการใช้ประโยชน์ที่ดิน', ok: false };
+  var blds = getList('ltax_building').filter(function(b) {
+    return hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId) && lcodes.indexOf(String(b['รหัสแปลงที่ดิน'] || '').trim()) >= 0;
+  });
+  if (!blds.length) return { level: 2, msg: 'ยังไม่มีสิ่งปลูกสร้าง', ok: false };
+  return { level: 5, msg: 'มีข้อมูลครบทุกหมวดหลัก', ok: true };
+}
+
+function renderChainBadge(psnId) {
+  var s = getChainState(psnId);
+  var cls = s.ok ? 'ok' : (s.level <= 1 ? 'mid' : 'no');
+  var icon = s.ok ? '✓' : '▶';
+  return '<span class="chain-badge ' + cls + '">' + icon + ' ' + s.msg + '</span>';
+}
+
+/* ── เรนเดอร์ทะเบียนเจ้าของ 1 ราย ── */
+var curPsnId = '';
+var curOwnerIdx = -1;
+
+function renderRegistry(psnId) {
+  curPsnId = String(psnId || '').trim();
+  var owners = getList('ltax_owner');
+  curOwnerIdx = -1;
+  var owner = null;
+  for (var i = 0; i < owners.length; i++) {
+    if (String(owners[i]['เลขบัตรประชาชน'] || '').trim() === curPsnId) {
+      owner = owners[i];
+      curOwnerIdx = i;
+      break;
+    }
+  }
+
+  var body = $('regBody');
+  if (!owner) {
+    body.innerHTML = '<div style="text-align:center; color:#c62828; padding:40px;">' +
+      'ไม่พบข้อมูลเจ้าของทรัพย์สินรหัส/เลขบัตร: <b>' + esc(curPsnId) + '</b><br>' +
+      '<span style="font-size:12px; color:#888;">(กรุณาเลือกรายชื่อเจ้าของจากกล่องด้านบน หรือเพิ่มเจ้าของก่อน)</span></div>';
+    return;
+  }
+
+  var h = '';
+
+  // 1. ข้อมูลเจ้าของ
+  var provName = codeToProv(owner['จังหวัด']);
+  var amphName = codeToAmph(owner['จังหวัด'], owner['อำเภอ']);
+  var distName = codeToDist(owner['อำเภอ'], owner['ตำบล']);
+  var addr = [
+    owner['เลขที่บ้าน'] ? 'บ้านเลขที่ ' + owner['เลขที่บ้าน'] : '',
+    owner['หมู่ที่'] ? 'หมู่ ' + owner['หมู่ที่'] : '',
+    owner['ถนน'] ? 'ถ.' + owner['ถนน'] : '',
+    owner['ซอย'] ? 'ซ.' + owner['ซอย'] : '',
+    distName ? 'ต.' + distName : '',
+    amphName ? 'อ.' + amphName : '',
+    provName ? 'จ.' + provName : '',
+    owner['รหัสไปรษณีย์']
+  ].filter(Boolean).join(' ');
+
+  var curProvName = codeToProv(owner['จังหวัดปัจจุบัน'] || owner['จังหวัด']);
+  var curAmphName = codeToAmph(owner['จังหวัดปัจจุบัน'] || owner['จังหวัด'], owner['อำเภอปัจจุบัน'] || owner['อำเภอ']);
+  var curDistName = codeToDist(owner['อำเภอปัจจุบัน'] || owner['อำเภอ'], owner['ตำบลปัจจุบัน'] || owner['ตำบล']);
+  var curAddr = [
+    owner['บ้านเลขที่ปัจจุบัน'] ? 'บ้านเลขที่ ' + owner['บ้านเลขที่ปัจจุบัน'] : '',
+    owner['หมู่ที่ปัจจุบัน'] ? 'หมู่ ' + owner['หมู่ที่ปัจจุบัน'] : '',
+    owner['ถนนปัจจุบัน'] ? 'ถ.' + owner['ถนนปัจจุบัน'] : '',
+    owner['ซอยปัจจุบัน'] ? 'ซ.' + owner['ซอยปัจจุบัน'] : '',
+    curDistName ? 'ต.' + curDistName : '',
+    curAmphName ? 'อ.' + curAmphName : '',
+    curProvName ? 'จ.' + curProvName : '',
+    owner['รหัสไปรษณีย์ปัจจุบัน'] || owner['รหัสไปรษณีย์']
+  ].filter(Boolean).join(' ');
+
+  var personTypeStr = owner['ประเภทบุคคล'] === '1' ? '1. บุคคลธรรมดา' : (owner['ประเภทบุคคล'] === '2' ? '2. นิติบุคคล' : owner['ประเภทบุคคล']);
+  var statusStr = owner['สถานะบุคคล'] === '1' ? 'มีชีวิต' : (owner['สถานะบุคคล'] === '2' ? 'ถึงแก่กรรม' : (owner['สถานะบุคคล'] === '3' ? 'ล้มละลาย' : '-'));
+
+  h += '<div class="section-title">👤 ข้อมูลเจ้าของทรัพย์สิน</div>';
+  h += '<div class="view-kv">';
+  h += '<div class="k"><b>ชื่อ-นามสกุล / หน่วยงาน</b><span><b>' + esc((owner['คำนำหน้า'] || '') + ' ' + (owner['ชื่อ'] || '') + ' ' + (owner['นามสกุล'] || '')) + '</b> ' + renderChainBadge(curPsnId) + '</span></div>';
+  h += '<div class="k"><b>เลขประจำตัวประชาชน / นิติบุคคล</b><span>' + esc(owner['เลขบัตรประชาชน']) + '</span></div>';
+  h += '<div class="k"><b>ประเภทบุคคล / สถานะ</b><span>' + esc(personTypeStr) + ' &nbsp;|&nbsp; สถานะ: ' + esc(statusStr) + '</span></div>';
+  h += '<div class="k"><b>ที่อยู่ตามทะเบียนบ้าน</b><span>' + esc(addr || '-') + '</span></div>';
+  if (curAddr && curAddr !== addr) {
+    h += '<div class="k"><b>ที่อยู่ปัจจุบัน</b><span>' + esc(curAddr) + '</span></div>';
+  }
+  h += '<div class="k"><b>การติดต่อ / ส่งจดหมาย</b><span>โทร: ' + esc(owner['โทรศัพท์'] || '-') + ' &nbsp;|&nbsp; อีเมล: ' + esc(owner['อีเมล'] || '-') + ' &nbsp;|&nbsp; ส่งที่: ' + (owner['ที่อยู่เพื่อส่งจดหมาย'] === '2' ? 'ที่อยู่ปัจจุบัน' : 'ที่อยู่ตามบัตร') + '</span></div>';
+  h += '</div>';
+
+  // 2. ที่ดิน
+  var lands = getList('ltax_land').filter(function(l) { return hasPsn(l['เลขบัตรเจ้าของที่ดิน'], curPsnId); });
+  var landUsages = getList('ltax_land_usage');
+  var totalLandAreaWah = 0;
+  var totalLandPrice = 0;
+
+  h += '<div class="section-title">🏞️ รายการที่ดิน (' + lands.length + ' แปลง)</div>';
+  h += '<table class="reg-tbl"><thead><tr>' +
+       '<th width="40">ลำดับ</th>' +
+       '<th width="110">รหัสแปลง</th>' +
+       '<th width="90">เอกสาร</th>' +
+       '<th width="90">เลขที่ดิน</th>' +
+       '<th width="80">หน้าสำรวจ</th>' +
+       '<th>เนื้อที่ (ไร่-งาน-วา)</th>' +
+       '<th width="100">รวมเนื้อที่ (ตร.ว.)</th>' +
+       '<th width="120" style="text-align:right;">ราคาประเมินรวม (บาท)</th>' +
+       '</tr></thead><tbody>';
+
+  if (!lands.length) {
+    h += '<tr><td colspan="8" class="none">ยังไม่มีข้อมูลที่ดินของเจ้าของรายนี้</td></tr>';
+  } else {
+    lands.forEach(function(l, idx) {
+      var lCode = String(l['รหัสแปลงที่ดิน'] || '').trim();
+      var wah = parseFloat(l['รวมเนื้อที่ทั้งหมด (ตร.ว.)']) || 0;
+      var price = parseFloat(l['รวมราคาประเมินที่ดิน (บาท)']) || 0;
+      totalLandAreaWah += wah;
+      totalLandPrice += price;
+
+      h += '<tr>' +
+           '<td class="center">' + (idx + 1) + '</td>' +
+           '<td><b>' + esc(lCode) + '</b></td>' +
+           '<td>' + esc((l['ประเภทเอกสาร'] || '') + ' ' + (l['เลขที่เอกสาร'] || '')) + '</td>' +
+           '<td>' + esc(l['เลขที่ดิน'] || '-') + '</td>' +
+           '<td>' + esc(l['หน้าสำรวจ'] || '-') + '</td>' +
+           '<td>' + esc(fmtArea(l)) + '</td>' +
+           '<td class="num">' + (wah ? wah.toLocaleString('th-TH') : '-') + '</td>' +
+           '<td class="num">' + (price ? fmtNum(price) : '-') + '</td>' +
+           '</tr>';
+
+      // รายการใช้ประโยชน์ของแปลงนี้ (ถ้ามี)
+      var usages = [];
+      landUsages.forEach(function(u) {
+        if (String(u['รหัสแปลงที่ดิน'] || '').trim() === lCode) {
+          (u['รายการใช้ประโยชน์'] || []).forEach(function(item) { usages.push(item); });
+        }
+      });
+      if (usages.length) {
+        var uDesc = usages.map(function(u) {
+          return '• ' + (u['ประเภทการใช้ประโยชน์'] || '-') + ' (' + (u['ไร่'] || 0) + '-' + (u['งาน'] || 0) + '-' + (u['ตร.วา'] || 0) + ' วา) โดย: ' + (u['ผู้ทำประโยชน์'] || '-');
+        }).join(' &nbsp;|&nbsp; ');
+        h += '<tr class="sub-row"><td colspan="8"><b>การใช้ประโยชน์:</b> ' + esc(uDesc) + '</td></tr>';
+      }
+    });
+  }
+  h += '</tbody></table>';
+
+  // 3. สิ่งปลูกสร้าง
+  var blds = getList('ltax_building').filter(function(b) { return hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], curPsnId); });
+  var bldUsages = getList('ltax_building_usage');
+  var totalBldPrice = 0;
+
+  h += '<div class="section-title">🏠 รายการสิ่งปลูกสร้าง (' + blds.length + ' หลัง)</div>';
+  h += '<table class="reg-tbl"><thead><tr>' +
+       '<th width="40">ลำดับ</th>' +
+       '<th width="120">รหัสสิ่งปลูกสร้าง</th>' +
+       '<th width="100">แปลงที่ตั้ง</th>' +
+       '<th width="80">บ้านเลขที่</th>' +
+       '<th>ประเภทอาคาร / โครงสร้าง</th>' +
+       '<th width="100">ขนาด (กxย ม.)</th>' +
+       '<th width="60" class="center">ชั้น</th>' +
+       '<th width="60" class="center">อายุ(ปี)</th>' +
+       '<th width="120" style="text-align:right;">ราคาประเมินสุทธิ (บาท)</th>' +
+       '</tr></thead><tbody>';
+
+  if (!blds.length) {
+    h += '<tr><td colspan="9" class="none">ยังไม่มีข้อมูลสิ่งปลูกสร้างของเจ้าของรายนี้</td></tr>';
+  } else {
+    blds.forEach(function(b, idx) {
+      var bCode = String(b['รหัสสิ่งปลูกสร้าง'] || '').trim();
+      var price = parseFloat(b['คงเหลือราคาประเมิน']) || 0;
+      totalBldPrice += price;
+
+      h += '<tr>' +
+           '<td class="center">' + (idx + 1) + '</td>' +
+           '<td><b>' + esc(bCode) + '</b></td>' +
+           '<td>' + esc(b['รหัสแปลงที่ดิน'] || '-') + '</td>' +
+           '<td>' + esc(b['เลขที่บ้าน'] || '-') + '</td>' +
+           '<td>' + esc((b['ประเภทอาคาร'] || '-') + ' / ' + (b['โครงสร้าง'] || '-')) + '</td>' +
+           '<td>' + esc((b['กว้าง(ม.)'] || '-') + ' x ' + (b['ยาว(ม.)'] || '-')) + '</td>' +
+           '<td class="center">' + esc(b['จำนวนชั้น'] || '1') + '</td>' +
+           '<td class="center">' + esc(b['อายุสิ่งปลูกสร้าง'] || '-') + '</td>' +
+           '<td class="num">' + (price ? fmtNum(price) : '-') + '</td>' +
+           '</tr>';
+
+      // รายการใช้ประโยชน์อาคาร (ถ้ามี)
+      var usages = [];
+      bldUsages.forEach(function(u) {
+        if (String(u['รหัสสิ่งปลูกสร้าง'] || '').trim() === bCode) {
+          (u['รายการใช้ประโยชน์'] || []).forEach(function(item) { usages.push(item); });
+        }
+      });
+      if (usages.length) {
+        var uDesc = usages.map(function(u) {
+          return '• ' + (u['ประเภทการใช้งาน'] || '-') + ' (ชั้น ' + (u['ชั้นที่'] || '-') + ', ' + (u['พื้นที่รวม(ตร.ม.)'] || '-') + ' ตร.ม.) ' + (u['ลักษณะการใช้'] || '');
+        }).join(' &nbsp;|&nbsp; ');
+        h += '<tr class="sub-row"><td colspan="9"><b>การใช้ประโยชน์อาคาร:</b> ' + esc(uDesc) + '</td></tr>';
+      }
+    });
+  }
+  h += '</tbody></table>';
+
+  // 4. ป้าย
+  var signs = getList('ltax_sign').filter(function(s) { return hasPsn(s['เลขบัตรเจ้าของป้าย'], curPsnId); });
+  var totalSignTax = 0;
+
+  h += '<div class="section-title">🪧 รายการป้าย (' + signs.length + ' ป้าย)</div>';
+  h += '<table class="reg-tbl"><thead><tr>' +
+       '<th width="40">ลำดับ</th>' +
+       '<th width="100">รหัสป้าย</th>' +
+       '<th width="100">แปลงที่ดิน</th>' +
+       '<th>ชื่อกิจการ / ข้อความป้าย</th>' +
+       '<th width="140">ประเภทป้าย</th>' +
+       '<th width="100">ขนาด (กxย ซม.)</th>' +
+       '<th width="50" class="center">ด้าน</th>' +
+       '<th width="110" style="text-align:right;">ภาษีป้าย (บาท)</th>' +
+       '</tr></thead><tbody>';
+
+  if (!signs.length) {
+    h += '<tr><td colspan="8" class="none">ไม่มีข้อมูลป้ายของเจ้าของรายนี้</td></tr>';
+  } else {
+    signs.forEach(function(s, idx) {
+      var tax = parseFloat(s['รวมเงินภาษี (บาท)']) || 0;
+      totalSignTax += tax;
+
+      h += '<tr>' +
+           '<td class="center">' + (idx + 1) + '</td>' +
+           '<td><b>' + esc(s['รหัสป้าย']) + '</b></td>' +
+           '<td>' + esc(s['รหัสแปลงที่ดิน'] || '-') + '</td>' +
+           '<td><b>' + esc(s['ชื่อสถานประกอบการค้า/กิจการ'] || '-') + '</b><br><span style="color:#666; font-size:11px;">' + esc(s['ข้อความภายในป้าย'] || '') + '</span></td>' +
+           '<td>' + esc(s['ประเภทป้าย'] || '-') + '</td>' +
+           '<td>' + esc((s['กว้าง (ซม.)'] || '-') + ' x ' + (s['ยาว (ซม.)'] || '-')) + '</td>' +
+           '<td class="center">' + esc(s['จำนวนด้าน'] || '1') + '</td>' +
+           '<td class="num">' + (tax ? fmtNum(tax) : '-') + '</td>' +
+           '</tr>';
+    });
+  }
+  h += '</tbody></table>';
+
+  // 5. การ์ดสรุปยอดรวม
+  h += '<div class="summary-card">' +
+       '<div class="item"><div class="num">' + lands.length + '</div><div class="lbl">ที่ดิน (แปลง)</div></div>' +
+       '<div class="item"><div class="num">' + (totalLandAreaWah ? totalLandAreaWah.toLocaleString('th-TH') : '0') + '</div><div class="lbl">เนื้อที่ที่ดินรวม (ตร.ว.)</div></div>' +
+       '<div class="item"><div class="num">' + (totalLandPrice ? fmtNum(totalLandPrice) : '0') + '</div><div class="lbl">ราคาประเมินที่ดินรวม (บาท)</div></div>' +
+       '<div class="item"><div class="num">' + blds.length + '</div><div class="lbl">สิ่งปลูกสร้าง (หลัง)</div></div>' +
+       '<div class="item"><div class="num">' + (totalBldPrice ? fmtNum(totalBldPrice) : '0') + '</div><div class="lbl">ราคาประเมินอาคารรวม (บาท)</div></div>' +
+       '<div class="item"><div class="num">' + signs.length + '</div><div class="lbl">ป้าย (ป้าย)</div></div>' +
+       '<div class="item"><div class="num">' + (totalSignTax ? fmtNum(totalSignTax) : '0') + '</div><div class="lbl">ภาษีป้ายรวม (บาท)</div></div>' +
+       '</div>';
+
+  body.innerHTML = h;
+
+  // อัปเดตปุ่มแก้ไข
+  var btnEdit = $('btnEditCurOwner');
+  if (btnEdit) btnEdit.style.display = curOwnerIdx >= 0 ? 'inline-block' : 'none';
+}
+
+function onSelectOwnerChange() {
+  var sel = $('regOwnerSel');
+  if (sel && sel.value) {
+    renderRegistry(sel.value);
+  }
+}
+
+function editCurOwner() {
+  if (curOwnerIdx < 0) { alert('กรุณาเลือกเจ้าของก่อน'); return; }
+  if (window.openFormEdit) {
+    window.openFormEdit('ltax_owner', curOwnerIdx);
+  } else if (window.openForm) {
+    window.openForm('ltax_owner', '?editKey=ltax_owner&editIdx=' + curOwnerIdx);
+  } else {
+    window.location.href = 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html?editKey=ltax_owner&editIdx=' + curOwnerIdx;
+  }
+}
+
+function goBack() {
+  if (window.__goHome) { window.__goHome(); return; }
+  window.location.href = 'index.html';
+}
+
+/* ── init ── */
+(function() {
+  // วันที่พิมพ์
+  var d = new Date();
+  var thDate = 'ข้อมูล ณ วันที่ ' + d.getDate() + '/' + (d.getMonth() + 1) + '/' + (d.getFullYear() + 543) + ' ' +
+               String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ' น.';
+  var pEl = $('regPrintDate');
+  if (pEl) pEl.textContent = thDate;
+
+  // อ่าน query string (psnId)
+  var q = window.__editQuery || window.location.search;
+  window.__editQuery = null;
+  var params = new URLSearchParams(q);
+  var targetPsn = params.get('psnId') || '';
+
+  // เติม dropdown รายชื่อเจ้าของ
+  var owners = getList('ltax_owner');
+  var sel = $('regOwnerSel');
+  if (sel) {
+    sel.innerHTML = '';
+    if (!owners.length) {
+      sel.innerHTML = '<option value="">-- ยังไม่มีข้อมูลเจ้าของทรัพย์สิน --</option>';
+    } else {
+      owners.forEach(function(o, idx) {
+        var opt = document.createElement('option');
+        var psn = String(o['เลขบัตรประชาชน'] || '').trim();
+        opt.value = psn;
+        opt.text = (idx + 1) + '. ' + (o['คำนำหน้า'] || '') + (o['ชื่อ'] || '') + ' ' + (o['นามสกุล'] || '') + ' (' + psn + ')';
+        sel.appendChild(opt);
+      });
+      if (targetPsn) {
+        sel.value = targetPsn;
+      }
+    }
+  }
+
+  var firstPsn = targetPsn || (owners[0] ? String(owners[0]['เลขบัตรประชาชน'] || '').trim() : '');
+  if (firstPsn) {
+    renderRegistry(firstPsn);
+  } else {
+    var b = $('regBody');
+    if (b) b.innerHTML = '<div style="text-align:center; color:#888; padding:40px;">ยังไม่มีข้อมูลเจ้าของทรัพย์สินในเครื่อง — กรุณากรอกแบบ "เพิ่มเจ้าของทรัพย์สิน" ก่อน</div>';
+  }
+})();
+
+</script>
+
 <script type="text/plain" id="js-ltax_photo">
 
 /* =========================================================
@@ -5804,18 +6041,17 @@ function doSearch() {
 
   var total = groups.reduce(function(s, g) { return s + g.hits.length; }, 0);
   var h = '<div style="font-size:13px; color:#555; margin-bottom:8px;">พบ ' + total + ' รายการ</div>';
-  h += '<table class="search-result"><thead><tr><th width="120">หมวด</th><th>รายการ</th><th>รายละเอียด</th><th width="90"></th></tr></thead><tbody>';
+  h += '<table class="search-result"><thead><tr><th width="120">หมวด</th><th>รายการ</th><th>รายละเอียด</th><th width="150"></th></tr></thead><tbody>';
   groups.forEach(function(g) {
     h += '<tr class="grp"><td colspan="4">' + g.meta.label + ' (' + g.hits.length + ')</td></tr>';
     g.hits.forEach(function(hit) {
       var key = hit.rec[g.meta.key] || ('#' + (hit.idx + 1));
-      var descCell = g.meta.desc(hit.rec) || '';
-      if (g.key === 'ltax_owner') descCell += ' ' + chainBadge(String(hit.rec['เลขบัตรประชาชน'] || '').trim());
-      h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + descCell + '</td>' +
-           '<td style="white-space:nowrap;">' +
-           '<a class="btn btn-view" href="#" onclick="viewData(\'' + g.key + '\',' + hit.idx + '); return false;">ดูข้อมูล</a> ' +
-           '<a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">แก้ไข</a>' +
-           '</td></tr>';
+      var actionBtns = '<a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">ดู / แก้ไข</a>';
+      if (g.key === 'ltax_owner') {
+        actionBtns += '<br><a class="btn btn-registry" href="#" onclick="openAssetRegistry(\'' + String(key).replace(/'/g, "\\'") + '\'); return false;">ทะเบียนทรัพย์สิน</a>';
+      }
+      h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + (g.meta.desc(hit.rec) || '') + '</td>' +
+           '<td>' + actionBtns + '</td></tr>';
     });
   });
   h += '</tbody></table>';
@@ -5828,456 +6064,157 @@ function clearSearch() {
   $('searchResult').innerHTML = '';
 }
 
+function openAssetRegistry(psnId) {
+  openForm('ltax_asset', '?psnId=' + encodeURIComponent(psnId));
+}
+
 /* =========================================================
-   ดูข้อมูล (อ่านอย่างเดียว) — แบบเดียวกับหน้า AST001
+   นำเข้าข้อมูลอ้างอิง (เจ้าของทรัพย์สินเดิม) — เก็บใน localStorage 'ltax_ref_owner'
+   ใช้เติมอัตโนมัติ (autofill) ในฟอร์มเพิ่มเจ้าของทรัพย์สิน
    ========================================================= */
-var _lastSearchScroll = 0;
+var REF_OWNER_HEADER_ALIASES = {
+  'เลขบัตรประชาชน': ['เลขบัตรประชาชน', 'เลขบัตร', 'เลขประจำตัวประชาชน', 'เลขที่บัตรประชาชน', 'psnid', 'id'],
+  'คำนำหน้า':      ['คำนำหน้า', 'คำนำหน้าชื่อ', 'prefix'],
+  'ชื่อ':          ['ชื่อ', 'firstname', 'first name'],
+  'นามสกุล':       ['นามสกุล', 'lastname', 'last name'],
+  'เลขที่บ้าน':     ['เลขที่บ้าน', 'บ้านเลขที่'],
+  'หมู่ที่':        ['หมู่ที่', 'หมู่'],
+  'ถนน':          ['ถนน'],
+  'ซอย':          ['ซอย'],
+  'ตำบล':          ['ตำบล'],
+  'อำเภอ':         ['อำเภอ'],
+  'จังหวัด':        ['จังหวัด'],
+  'รหัสไปรษณีย์':   ['รหัสไปรษณีย์', 'ไปรษณีย์'],
+  'โทรศัพท์':       ['โทรศัพท์', 'เบอร์โทร', 'tel', 'phone']
+};
 
-function esc(v) {
-  return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function viewData(key, idx) {
-  var list = getList(key);
-  var rec = list[idx];
-  if (!rec) { alert('ไม่พบข้อมูล'); return; }
-  _lastSearchScroll = window.pageYOffset;
-  $('searchResult').style.display = 'none';
-  var box = $('viewDetail');
-  box.style.display = 'block';
-  box.innerHTML = '<div style="margin-bottom:10px;">' +
-    '<a class="btn btn-back" href="#" onclick="closeView(); return false;">← กลับผลการค้นหา</a> ' +
-    '<a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + key + '\',' + idx + '); return false;">✏️ แก้ไข</a>' +
-    '</div>' + renderDetail(key, rec);
-  window.scrollTo(0, 0);
-}
-
-function closeView() {
-  $('viewDetail').style.display = 'none';
-  $('viewDetail').innerHTML = '';
-  $('searchResult').style.display = '';
-  window.scrollTo(0, _lastSearchScroll);
-}
-
-function renderDetail(key, rec) {
-  if (key === 'ltax_owner') return renderOwnerDetail(rec);
-  if (key === 'ltax_land') return renderLandDetail(rec);
-  if (key === 'ltax_land_usage') return renderLandUsageDetail(rec);
-  if (key === 'ltax_building') return renderBuildingDetail(rec);
-  if (key === 'ltax_building_usage') return renderBuildingUsageDetail(rec);
-  if (key === 'ltax_sign') return renderSignDetail(rec);
-  return '<div class="view-panel">' + renderKv(rec) + '</div>';
-}
-
-function renderKv(rec) {
-  var h = '<div class="view-kv">';
-  for (var k in rec) {
-    if (!rec.hasOwnProperty(k)) continue;
-    if (k.indexOf('_data') >= 0) continue;        // ข้ามรูป base64
-    if (k === 'Path รูปภาพ' || k === 'Path รูปที่ดิน') continue;
-    var v = rec[k];
-    if (Array.isArray(v)) continue;
-    h += '<div class="k"><b>' + esc(k) + '</b><span>' + esc(v) + '</span></div>';
+function splitCSVLine(line) {
+  var out = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (inQ) {
+      if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === ',') { out.push(cur); cur = ''; }
+      else cur += c;
+    }
   }
-  return h + '</div>';
+  out.push(cur);
+  return out;
 }
 
-/* ── ตัวช่วย: หาเจ้าของจากเลขบัตรที่อาจคั่นด้วย ';' ── */
-function psnList(v) {
-  return String(v == null ? '' : v).split(';').map(function(s) { return s.trim(); }).filter(Boolean);
-}
-function hasPsn(recField, psnId) {
-  return psnList(recField).indexOf(String(psnId)) >= 0;
-}
-
-/* สถานะชุดข้อมูลของเจ้าของ (B/C: ครบทั้ง 6 หมวดแล้วหรือยัง) */
-function chainState(psnId) {
-  psnId = String(psnId || '').trim();
-  if (!psnId) return { level: -1, msg: 'ไม่มีเลขบัตร', ok: false };
-  var lands = getList('ltax_land').filter(function(l) { return hasPsn(l['เลขบัตรเจ้าของที่ดิน'], psnId); });
-  if (!lands.length) return { level: 0, msg: 'ยังไม่มีที่ดิน — กรอกที่ดิน', ok: false };
-  var lcodes = lands.map(function(l) { return String(l['รหัสแปลงที่ดิน'] || '').trim(); }).filter(Boolean);
-  var lus = getList('ltax_land_usage').filter(function(u) { return lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) >= 0; });
-  if (!lus.length) return { level: 1, msg: 'ยังไม่ได้กรอกการใช้ประโยชน์ที่ดิน', ok: false };
-  var blds = getList('ltax_building').filter(function(b) {
-    return hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId) && lcodes.indexOf(String(b['รหัสแปลงที่ดิน'] || '').trim()) >= 0;
+function parseCSV(text) {
+  var lines = text.replace(/\r/g, '').split('\n').filter(function(l) { return l.trim() !== ''; });
+  if (!lines.length) return [];
+  var headers = splitCSVLine(lines[0]);
+  return lines.slice(1).map(function(line) {
+    var cells = splitCSVLine(line);
+    var obj = {};
+    headers.forEach(function(h, i) { obj[h.trim()] = (cells[i] || '').trim(); });
+    return obj;
   });
-  if (!blds.length) return { level: 2, msg: 'ยังไม่ได้กรอกสิ่งปลูกสร้าง', ok: false };
-  /* ★ ตรวจเชิงลึก: แปลงที่มีอาคาร ต้องแบ่งที่ตั้งสิ่งปลูกสร้าง (ประเภท 2/3/4) ในการใช้ที่ดิน */
-  var homeTypes = { '2': 1, '3': 1, '4': 1 };
-  var hasHomeUsage = lus.some(function(u) {
-    if (lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) < 0) return false;
-    var used = u['รายการใช้ประโยชน์'] || [];
-    return used.some(function(x) { return homeTypes[String(x['ประเภทการใช้ประโยชน์'] || '').trim()]; });
+}
+
+function normalizeRefRow(row) {
+  var out = {};
+  var lowerMap = {};
+  Object.keys(row).forEach(function(k) { lowerMap[k.trim().toLowerCase()] = row[k]; });
+  Object.keys(REF_OWNER_HEADER_ALIASES).forEach(function(canon) {
+    var aliases = REF_OWNER_HEADER_ALIASES[canon];
+    for (var i = 0; i < aliases.length; i++) {
+      var key = aliases[i].toLowerCase();
+      if (lowerMap.hasOwnProperty(key)) { out[canon] = String(lowerMap[key]).trim(); return; }
+    }
+    out[canon] = '';
   });
-  if (!hasHomeUsage) return { level: 2, msg: 'แปลงมีอาคาร แต่ยังไม่ได้แบ่งที่ตั้งสิ่งปลูกสร้างในการใช้ที่ดิน', ok: false };
-  /* ★ ตรวจเชิงลึก: อาคารต้องมี "เนื้อที่ที่ดิน" (กันบ้านลอย) */
-  var bldNoLand = blds.filter(function(b) { return !String(b['เนื้อที่ที่ดิน'] || '').trim(); });
-  if (bldNoLand.length) return { level: 2, msg: 'อาคาร ' + String(bldNoLand[0]['รหัสสิ่งปลูกสร้าง'] || '').trim() + ' ยังไม่มีเนื้อที่ที่ดิน', ok: false };
-  var bcodes = blds.map(function(b) { return String(b['รหัสสิ่งปลูกสร้าง'] || '').trim(); }).filter(Boolean);
-  var bus = getList('ltax_building_usage').filter(function(u) { return bcodes.indexOf(String(u['รหัสสิ่งปลูกสร้าง'] || '').trim()) >= 0; });
-  if (!bus.length) return { level: 3, msg: 'ยังไม่ได้กรอกการใช้ประโยชน์สิ่งปลูกสร้าง', ok: false };
-  var signs = getList('ltax_sign').filter(function(s) { return hasPsn(s['เลขบัตรเจ้าของป้าย'], psnId); });
-  if (!signs.length) return { level: 4, msg: 'ครบ 5 หมวดแล้ว (ไม่มีป้าย)', ok: true };
-  return { level: 5, msg: 'ครบทั้ง 6 หมวด', ok: true };
-}
-function chainBadge(psnId) {
-  var s = chainState(psnId);
-  var cls = s.ok ? 'ok' : (s.level <= 1 ? 'mid' : 'no');
-  var icon = s.ok ? '✓' : '▶';
-  var steps = s.level >= 0 ? ' <span class="step">(' + (s.level + 1) + '/6)</span>' : '';
-  return '<span class="chain-badge ' + cls + '">' + icon + ' ' + s.msg + steps + '</span>';
-}
-function findIdx(listKey, field, val) {
-  var list = getList(listKey);
-  for (var i = 0; i < list.length; i++) {
-    if (String(list[i][field] || '').trim() === String(val).trim()) return i;
-  }
-  return -1;
-}
-function fmtArea(r) {
-  return (r['ไร่'] || '0') + '-' + (r['งาน'] || '0') + '-' + (r['ตร.วา'] || '0') + ' ไร่-งาน-วา';
-}
-function tblStart(cols) {
-  var h = '<div class="table-responsive"><table class="view-tbl"><thead><tr>';
-  cols.forEach(function(c) { h += '<th>' + esc(c) + '</th>'; });
-  return h + '</tr></thead><tbody>';
-}
-function tblEnd(empty, colCount) {
-  if (empty) return '<tr><td class="none" colspan="' + colCount + '">ยังไม่พบข้อมูล</td></tr></tbody></table></div>';
-  return '</tbody></table></div>';
-}
-function viewLink(key, idx, label) {
-  return '<a class="btn btn-view" href="#" onclick="viewData(\'' + key + '\',' + idx + '); return false;">' + label + '</a>';
+  return out;
 }
 
-/* ── เจ้าของ: ข้อมูล + ตารางที่ดิน/อาคาร/ป้าย (แบบ AST001) ── */
-function renderOwnerDetail(rec) {
-  var psnId = String(rec['เลขบัตรประชาชน'] || '').trim();
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">👤 ข้อมูลเจ้าของทรัพย์สิน</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>ประเภทบุคคล</b><span>' + esc(rec['ประเภทบุคคล'] === '1' ? 'บุคคลธรรมดา' : (rec['ประเภทบุคคล'] === '2' ? 'นิติบุคคล' : rec['ประเภทบุคคล'])) + '</span></div>';
-  h += '<div class="k"><b>เลขประจำตัวประชาชน</b><span>' + esc(rec['เลขบัตรประชาชน']) + '</span></div>';
-  h += '<div class="k"><b>คำนำหน้าชื่อ/หน่วยงาน</b><span>' + esc(rec['คำนำหน้า']) + '</span></div>';
-  h += '<div class="k"><b>ชื่อ</b><span>' + esc(rec['ชื่อ']) + '</span></div>';
-  h += '<div class="k"><b>นามสกุล</b><span>' + esc(rec['นามสกุล']) + '</span></div>';
-  h += '<div class="k"><b>สถานะบุคคล</b><span>' + esc(rec['สถานะบุคคล'] === '1' ? 'มีชีวิต' : (rec['สถานะบุคคล'] === '2' ? 'ถึงแก่กรรม' : (rec['สถานะบุคคล'] === '3' ? 'ล้มละลาย' : rec['สถานะบุคคล']))) + '</span></div>';
-  h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['เลขที่บ้าน']) + '</span></div>';
-  h += '<div class="k"><b>หมู่ที่/ชุมชน</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
-  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
-  h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอย']) + '</span></div>';
-  h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบล']) + '</span></div>';
-  h += '<div class="k"><b>อำเภอ</b><span>' + esc(rec['อำเภอ']) + '</span></div>';
-  h += '<div class="k"><b>จังหวัด</b><span>' + esc(rec['จังหวัด']) + '</span></div>';
-  h += '<div class="k"><b>รหัสไปรษณีย์</b><span>' + esc(rec['รหัสไปรษณีย์']) + '</span></div>';
-  h += '<div class="k"><b>โทรศัพท์</b><span>' + esc(rec['โทรศัพท์']) + '</span></div>';
-  h += '<div class="k"><b>อีเมล</b><span>' + esc(rec['อีเมล']) + '</span></div>';
-  h += '<div class="k"><b>ที่อยู่เพื่อส่งจดหมาย</b><span>' + esc(rec['ที่อยู่เพื่อส่งจดหมาย'] === '2' ? 'ที่อยู่ปัจจุบัน' : 'ที่อยู่ตามบัตรประชาชน') + '</span></div>';
-  h += '</div></div>';
-  h += '<div style="margin:2px 0 10px;">' + chainBadge(psnId) + '</div>';
+function processRefRows(rows) {
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem('ltax_ref_owner') || '[]'); } catch(e) { list = []; }
+  var byId = {};
+  list.forEach(function(r, i) { if (r['เลขบัตรประชาชน']) byId[r['เลขบัตรประชาชน']] = i; });
 
-  // ── ที่อยู่ปัจจุบัน (แยกชุด ตามฟอร์มกรม) ──
-  if (rec['บ้านเลขที่ปัจจุบัน']) {
-    h += '<div class="view-panel"><div class="view-title">📍 ที่อยู่ปัจจุบัน</div><div class="view-kv">';
-    h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['บ้านเลขที่ปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>หมู่ที่/ชุมชน</b><span>' + esc(rec['หมู่ที่ปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนนปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอยปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบลปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>อำเภอ</b><span>' + esc(rec['อำเภอปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>จังหวัด</b><span>' + esc(rec['จังหวัดปัจจุบัน']) + '</span></div>';
-    h += '<div class="k"><b>รหัสไปรษณีย์</b><span>' + esc(rec['รหัสไปรษณีย์ปัจจุบัน']) + '</span></div>';
-    h += '</div></div>';
-  }
-
-  // ── ที่ดินที่ผูกกับเจ้าของนี้ ──
-  var lands = [];
-  getList('ltax_land').forEach(function(l, i) { if (hasPsn(l['เลขบัตรเจ้าของที่ดิน'], psnId)) lands.push({ rec: l, idx: i }); });
-  h += '<div class="view-sub">ที่ดิน ' + lands.length + ' แปลง</div>';
-  h += tblStart(['ลำดับ', 'รหัสแปลงที่ดิน', 'ประเภทเอกสารสิทธิ์', 'เลขที่เอกสารสิทธิ์', 'เลขที่ดิน', 'เนื้อที่']);
-  if (!lands.length) { h += tblEnd(true, 6); }
-  else {
-    lands.forEach(function(x, i) {
-      h += '<tr><td>' + (i + 1) + '</td><td><b>' + esc(x.rec['รหัสแปลงที่ดิน']) + '</b></td>' +
-           '<td>' + esc(x.rec['ประเภทเอกสาร']) + '</td><td>' + esc(x.rec['เลขที่เอกสาร']) + '</td>' +
-           '<td>' + esc(x.rec['เลขที่ดิน']) + '</td><td>' + esc(fmtArea(x.rec)) + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-
-  // ── สิ่งปลูกสร้างที่ผูกกับเจ้าของนี้ ──
-  var blds = [];
-  getList('ltax_building').forEach(function(b, i) { if (hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId)) blds.push({ rec: b, idx: i }); });
-  h += '<div class="view-sub">สิ่งปลูกสร้าง ' + blds.length + ' หลัง</div>';
-  h += tblStart(['รหัสสิ่งปลูกสร้าง', 'แปลงที่ตั้ง', 'เลขที่', 'ประเภทอาคาร', 'ขนาด (กว้างxยาว ม.)', 'ชั้น', '']);
-  if (!blds.length) { h += tblEnd(true, 7); }
-  else {
-    blds.forEach(function(x) {
-      h += '<tr><td><b>' + esc(x.rec['รหัสสิ่งปลูกสร้าง']) + '</b></td>' +
-           '<td>' + esc(x.rec['รหัสแปลงที่ดิน']) + '</td><td>' + esc(x.rec['เลขที่บ้าน']) + '</td>' +
-           '<td>' + esc(x.rec['ประเภทอาคาร']) + '</td>' +
-           '<td>' + esc(x.rec['กว้าง(ม.)']) + ' x ' + esc(x.rec['ยาว(ม.)']) + '</td>' +
-           '<td>' + esc(x.rec['จำนวนชั้น']) + '</td>' +
-           '<td>' + viewLink('ltax_building', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 7);
-  }
-
-  // ── ป้ายที่ผูกกับเจ้าของนี้ ──
-  var signs = [];
-  getList('ltax_sign').forEach(function(s, i) { if (hasPsn(s['เลขบัตรเจ้าของป้าย'], psnId)) signs.push({ rec: s, idx: i }); });
-  h += '<div class="view-sub">ป้าย ' + signs.length + ' ป้าย</div>';
-  h += tblStart(['รหัสป้าย', 'ข้อความภายในป้าย', 'ลักษณะของป้าย', 'ขนาด (ซม.)', 'ด้าน', '']);
-  if (!signs.length) { h += tblEnd(true, 6); }
-  else {
-    signs.forEach(function(x) {
-      h += '<tr><td><b>' + esc(x.rec['รหัสป้าย']) + '</b></td>' +
-           '<td>' + esc(x.rec['ข้อความภายในป้าย']) + '</td>' +
-           '<td>' + esc(x.rec['ประเภทป้าย']) + '</td>' +
-           '<td>' + esc(x.rec['กว้าง (ซม.)']) + ' x ' + esc(x.rec['ยาว (ซม.)']) + '</td>' +
-           '<td>' + esc(x.rec['จำนวนด้าน']) + '</td>' +
-           '<td>' + viewLink('ltax_sign', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-
-  return h;
-}
-
-/* ── ที่ดิน: ข้อมูลแปลง + เจ้าของ + การใช้ประโยชน์ ── */
-function renderLandDetail(rec) {
-  var landCode = String(rec['รหัสแปลงที่ดิน'] || '').trim();
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🏞️ ที่ดิน: ' + esc(landCode) + '</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสแปลงที่ดิน</b><span>' + esc(landCode) + '</span></div>';
-  h += '<div class="k"><b>รหัสกลุ่มที่ดิน</b><span>' + esc(rec['รหัสกลุ่มที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>ประเภทเอกสารสิทธิ์</b><span>' + esc(rec['ประเภทเอกสาร']) + '</span></div>';
-  h += '<div class="k"><b>เลขที่เอกสารสิทธิ์</b><span>' + esc(rec['เลขที่เอกสาร']) + '</span></div>';
-  h += '<div class="k"><b>หน้าสำรวจ</b><span>' + esc(rec['หน้าสำรวจ']) + '</span></div>';
-  h += '<div class="k"><b>เล่มที่</b><span>' + esc(rec['เล่มที่']) + '</span></div>';
-  h += '<div class="k"><b>หน้าที่</b><span>' + esc(rec['หน้าที่']) + '</span></div>';
-  h += '<div class="k"><b>ระวาง</b><span>' + esc(rec['ระวาง']) + '</span></div>';
-  h += '<div class="k"><b>แผนที่ระวางภูมิประเทศ</b><span>' + esc(rec['แผนที่ระวางภูมิประเทศ']) + '</span></div>';
-  h += '<div class="k"><b>ระวางUTM</b><span>' + esc(rec['ระวางUTM']) + '</span></div>';
-  h += '<div class="k"><b>แผ่นที่ระวางUTM</b><span>' + esc(rec['แผ่นที่ระวางUTM']) + '</span></div>';
-  h += '<div class="k"><b>มาตราส่วน</b><span>' + esc(rec['มาตราส่วน']) + '</span></div>';
-  h += '<div class="k"><b>เลขที่ดิน</b><span>' + esc(rec['เลขที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>หมู่ที่</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
-  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
-  h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอย']) + '</span></div>';
-  h += '<div class="k"><b>เนื้อที่</b><span>' + esc(fmtArea(rec)) + '</span></div>';
-  h += '<div class="k"><b>รวมเนื้อที่ทั้งหมด (ตร.ว.)</b><span>' + esc(rec['รวมเนื้อที่ทั้งหมด (ตร.ว.)']) + '</span></div>';
-  h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบล']) + '</span></div>';
-  h += '<div class="k"><b>อำเภอ</b><span>' + esc(rec['อำเภอ']) + '</span></div>';
-  h += '<div class="k"><b>ราคาประเมิน (บาท/ตร.วา)</b><span>' + esc(rec['ราคาต่อตร.วา']) + '</span></div>';
-  h += '<div class="k"><b>รวมราคาประเมิน (บาท)</b><span>' + esc(rec['รวมราคาประเมินที่ดิน (บาท)']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
-  h += '</div>';
-
-  // เจ้าของแปลง
-  var ownerLinks = psnList(rec['เลขบัตรเจ้าของที่ดิน']).map(function(p) {
-    var oi = findIdx('ltax_owner', 'เลขบัตรประชาชน', p);
-    return oi >= 0 ? '<a href="#" onclick="viewData(\'ltax_owner\',' + oi + '); return false;">' + esc(p) + '</a>'
-                   : esc(p) + ' <span style="color:#c62828;">(ยังไม่กรอกเจ้าของ)</span>';
+  var added = 0, updated = 0, skipped = 0;
+  rows.forEach(function(raw) {
+    var r = normalizeRefRow(raw);
+    var psn = String(r['เลขบัตรประชาชน'] || '').replace(/[^0-9]/g, '').trim();
+    if (!psn) { skipped++; return; }
+    r['เลขบัตรประชาชน'] = psn;
+    if (byId.hasOwnProperty(psn)) { list[byId[psn]] = r; updated++; }
+    else { list.push(r); byId[psn] = list.length - 1; added++; }
   });
-  if (ownerLinks.length) {
-    h += '<div class="k"><b>เจ้าของแปลง</b><span>' + ownerLinks.join(', ') + '</span></div>';
-  }
-  h += '</div>';
 
-  // สิ่งปลูกสร้างบนแปลงนี้
-  var blds = [];
-  getList('ltax_building').forEach(function(b, i) {
-    if (psnList(b['รหัสแปลงที่ดิน']).indexOf(landCode) >= 0) blds.push({ rec: b, idx: i });
+  try {
+    localStorage.setItem('ltax_ref_owner', JSON.stringify(list));
+  } catch(e) {
+    alert('บันทึกข้อมูลอ้างอิงไม่สำเร็จ (พื้นที่เก็บในเครื่องเต็ม): ' + e);
+    return;
+  }
+
+  refreshRefStats();
+  alert('นำเข้าสำเร็จ — เพิ่มใหม่ ' + added + ' รายการ, อัปเดต ' + updated + ' รายการ' +
+        (skipped ? ', ข้าม ' + skipped + ' แถว (ไม่มีเลขบัตรประชาชน)' : ''));
+  $('refOwnerFile').value = '';
+}
+
+function loadXLSXLib(cb) {
+  if (window.XLSX) { cb(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload = cb;
+  s.onerror = function() {
+    alert('โหลดตัวอ่านไฟล์ Excel ไม่ได้ — ต้องมีอินเทอร์เน็ตตอนนำเข้าไฟล์ .xlsx/.xls ครั้งแรก\nลองต่อเน็ตแล้วนำเข้าใหม่ หรือแปลงไฟล์เป็น .csv แทน');
+  };
+  document.head.appendChild(s);
+}
+
+function importRefOwners() {
+  var input = $('refOwnerFile');
+  var file = input.files && input.files[0];
+  if (!file) { alert('เลือกไฟล์ก่อน'); return; }
+  var name = file.name.toLowerCase();
+
+  if (name.endsWith('.csv')) {
+    var reader = new FileReader();
+    reader.onload = function(e) { processRefRows(parseCSV(e.target.result)); };
+    reader.onerror = function() { alert('อ่านไฟล์ CSV ไม่สำเร็จ'); };
+    reader.readAsText(file, 'utf-8');
+    return;
+  }
+
+  loadXLSXLib(function() {
+    if (!window.XLSX) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        var sheet = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        processRefRows(rows);
+      } catch(err) {
+        alert('อ่านไฟล์ Excel ไม่สำเร็จ: ' + err);
+      }
+    };
+    reader.onerror = function() { alert('อ่านไฟล์ Excel ไม่สำเร็จ'); };
+    reader.readAsArrayBuffer(file);
   });
-  h += '<div class="view-sub">สิ่งปลูกสร้างบนแปลงนี้ ' + blds.length + ' หลัง</div>';
-  h += tblStart(['รหัสสิ่งปลูกสร้าง', 'เลขที่', 'ประเภทอาคาร', 'ขนาด (กว้างxยาว ม.)', 'ชั้น', '']);
-  if (!blds.length) { h += tblEnd(true, 6); }
-  else {
-    blds.forEach(function(x) {
-      h += '<tr><td><b>' + esc(x.rec['รหัสสิ่งปลูกสร้าง']) + '</b></td>' +
-           '<td>' + esc(x.rec['เลขที่บ้าน']) + '</td><td>' + esc(x.rec['ประเภทอาคาร']) + '</td>' +
-           '<td>' + esc(x.rec['กว้าง(ม.)']) + ' x ' + esc(x.rec['ยาว(ม.)']) + '</td>' +
-           '<td>' + esc(x.rec['จำนวนชั้น']) + '</td>' +
-           '<td>' + viewLink('ltax_building', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-
-  // การใช้ประโยชน์ที่ดิน
-  var usages = [];
-  getList('ltax_land_usage').forEach(function(u, i) { if (String(u['รหัสแปลงที่ดิน'] || '').trim() === landCode) usages.push({ rec: u, idx: i }); });
-  h += '<div class="view-sub">การใช้ประโยชน์ที่ดิน ' + usages.length + ' รายการ</div>';
-  h += tblStart(['ประเภทการใช้ประโยชน์', 'พื้นที่ (ไร่-งาน-วา)', 'ผู้ทำประโยชน์', 'ใช้โดย', '']);
-  if (!usages.length) { h += tblEnd(true, 5); }
-  else {
-    usages.forEach(function(x) {
-      var u = x.rec;
-      h += '<tr><td>' + esc(u['ประเภทการใช้ประโยชน์']) + '</td>' +
-           '<td>' + esc(u['ไร่'] + '-' + u['งาน'] + '-' + u['ตร.วา']) + '</td>' +
-           '<td>' + esc(u['ผู้ทำประโยชน์']) + '</td>' +
-           '<td>' + esc(u['ใช้โดย']) + '</td>' +
-           '<td>' + viewLink('ltax_land_usage', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 5);
-  }
-
-  return h;
 }
 
-/* ── การใช้ประโยชน์ที่ดิน ── */
-function renderLandUsageDetail(rec) {
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🌱 การใช้ประโยชน์ที่ดิน</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสแปลงที่ดิน</b><span>' + esc(rec['รหัสแปลงที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>พื้นที่แปลงคงเหลือ (ตร.ว.)</b><span>' + esc(rec['พื้นที่แปลงคงเหลือ (ตร.ว.)']) + '</span></div>';
-  h += '</div></div>';
-  var usages = rec['รายการใช้ประโยชน์'] || [];
-  h += '<div class="view-sub">รายการใช้ประโยชน์ ' + usages.length + ' รายการ</div>';
-  h += tblStart(['ประเภท', 'พื้นที่ (ไร่-งาน-วา)', 'ผู้ทำประโยชน์', 'ใช้โดย', 'การเกษตรที่ทำ', 'หมายเหตุ']);
-  if (!usages.length) { h += tblEnd(true, 6); }
-  else {
-    usages.forEach(function(u) {
-      h += '<tr><td>' + esc(u['ประเภทการใช้ประโยชน์']) + '</td>' +
-           '<td>' + esc(u['ไร่'] + '-' + u['งาน'] + '-' + u['ตร.วา']) + '</td>' +
-           '<td>' + esc(u['ผู้ทำประโยชน์']) + '</td>' +
-           '<td>' + esc(u['ใช้โดย']) + '</td>' +
-           '<td>' + esc(u['การเกษตรที่ทำ']) + '</td>' +
-           '<td>' + esc(u['หมายเหตุ']) + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-  return h;
+function refreshRefStats() {
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem('ltax_ref_owner') || '[]'); } catch(e) { list = []; }
+  var el = $('refOwnerStats');
+  if (el) el.textContent = 'ข้อมูลอ้างอิงเจ้าของทรัพย์สิน: ' + list.length + ' รายการ';
 }
 
-/* ── สิ่งปลูกสร้าง: ข้อมูล + เจ้าของ + การใช้ประโยชน์ ── */
-function renderBuildingDetail(rec) {
-  var bldCode = String(rec['รหัสสิ่งปลูกสร้าง'] || '').trim();
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🏠 สิ่งปลูกสร้าง: ' + esc(bldCode) + '</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสสิ่งปลูกสร้าง</b><span>' + esc(bldCode) + '</span></div>';
-  h += '<div class="k"><b>แปลงที่ตั้ง</b><span>' + esc(rec['รหัสแปลงที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>เลขที่</b><span>' + esc(rec['เลขที่บ้าน']) + '</span></div>';
-  h += '<div class="k"><b>หมู่ที่</b><span>' + esc(rec['หมู่ที่']) + '</span></div>';
-  h += '<div class="k"><b>หมู่บ้าน/ชุมชน</b><span>' + esc(rec['หมู่บ้าน/ชุมชน']) + '</span></div>';
-  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
-  h += '<div class="k"><b>ซอย</b><span>' + esc(rec['ซอย']) + '</span></div>';
-  h += '<div class="k"><b>ประเภทอาคาร</b><span>' + esc(rec['ประเภทอาคาร']) + '</span></div>';
-  h += '<div class="k"><b>โครงสร้าง</b><span>' + esc(rec['โครงสร้าง']) + '</span></div>';
-  h += '<div class="k"><b>จำนวนชั้น</b><span>' + esc(rec['จำนวนชั้น']) + '</span></div>';
-  h += '<div class="k"><b>ขนาด (กว้าง x ยาว ม.)</b><span>' + esc(rec['กว้าง(ม.)']) + ' x ' + esc(rec['ยาว(ม.)']) + '</span></div>';
-  h += '<div class="k"><b>ขนาดพื้นที่ทั้งอาคาร (ตร.ม.)</b><span>' + esc(rec['ขนาดพื้นที่ทั้งอาคาร(ตร.ม.)']) + '</span></div>';
-  h += '<div class="k"><b>เนื้อที่ที่ดิน</b><span>' + esc(rec['เนื้อที่ที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>อายุสิ่งปลูกสร้าง (ปี)</b><span>' + esc(rec['อายุสิ่งปลูกสร้าง']) + '</span></div>';
-  h += '<div class="k"><b>ปีที่สร้าง</b><span>' + esc(rec['ปีที่สร้าง']) + '</span></div>';
-  h += '<div class="k"><b>ราคาประเมิน (บาท/ตร.ม.)</b><span>' + esc(rec['ราคาประเมินต่อตร.ม.']) + '</span></div>';
-  h += '<div class="k"><b>ราคาประเมินทุนทรัพย์ (บาท)</b><span>' + esc(rec['ราคาประเมินทุนทรัพย์']) + '</span></div>';
-  h += '<div class="k"><b>หักค่าเสื่อม (บาท)</b><span>' + esc(rec['หักค่าเสื่อม']) + '</span></div>';
-  h += '<div class="k"><b>คงเหลือราคาประเมิน (บาท)</b><span>' + esc(rec['คงเหลือราคาประเมิน']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
-  h += '</div>';
-
-  var ownerLinks = psnList(rec['เลขบัตรเจ้าของสิ่งปลูกสร้าง'] || rec['เลขบัตรเจ้าของที่ดิน']).map(function(p) {
-    var oi = findIdx('ltax_owner', 'เลขบัตรประชาชน', p);
-    return oi >= 0 ? '<a href="#" onclick="viewData(\'ltax_owner\',' + oi + '); return false;">' + esc(p) + '</a>'
-                   : esc(p) + ' <span style="color:#c62828;">(ยังไม่กรอกเจ้าของ)</span>';
-  });
-  if (ownerLinks.length) h += '<div class="k"><b>เจ้าของ</b><span>' + ownerLinks.join(', ') + '</span></div>';
-  h += '</div>';
-
-  // การใช้ประโยชน์สิ่งปลูกสร้าง
-  var usages = [];
-  getList('ltax_building_usage').forEach(function(u, i) { if (String(u['รหัสสิ่งปลูกสร้าง'] || '').trim() === bldCode) usages.push({ rec: u, idx: i }); });
-  h += '<div class="view-sub">การใช้ประโยชน์สิ่งปลูกสร้าง ' + usages.length + ' รายการ</div>';
-  h += tblStart(['ประเภทการใช้งาน', 'ชั้นที่', 'พื้นที่ (ตร.ม.)', 'ขนาดคงเหลือ (ตร.ม.)', 'ลักษณะการใช้', '']);
-  if (!usages.length) { h += tblEnd(true, 6); }
-  else {
-    usages.forEach(function(x) {
-      var u = x.rec;
-      var us = u['รายการใช้ประโยชน์'] || [];
-      h += '<tr><td>' + esc(us.length ? us.map(function(z) { return z['ประเภทการใช้งาน']; }).join(', ') : u['ประเภทการใช้งาน']) + '</td>' +
-           '<td>' + esc(us.length ? us.map(function(z) { return z['ชั้นที่']; }).join(', ') : u['ชั้นที่']) + '</td>' +
-           '<td>' + esc(us.length ? us.map(function(z) { return z['พื้นที่รวม(ตร.ม.)']; }).join(', ') : u['พื้นที่รวม(ตร.ม.)']) + '</td>' +
-           '<td>' + esc(us.length ? us.map(function(z) { return z['ขนาดพื้นที่คงเหลือ(ตร.ม.)']; }).join(', ') : u['ขนาดพื้นที่คงเหลือ(ตร.ม.)']) + '</td>' +
-           '<td>' + esc(us.length ? us.map(function(z) { return z['ลักษณะการใช้']; }).join(', ') : u['ลักษณะการใช้']) + '</td>' +
-           '<td>' + viewLink('ltax_building_usage', x.idx, 'ดู') + '</td></tr>';
-    });
-    h += tblEnd(false, 6);
-  }
-
-  return h;
-}
-
-/* ── การใช้ประโยชน์สิ่งปลูกสร้าง ── */
-function renderBuildingUsageDetail(rec) {
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🏗️ การใช้ประโยชน์สิ่งปลูกสร้าง</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสสิ่งปลูกสร้าง</b><span>' + esc(rec['รหัสสิ่งปลูกสร้าง']) + '</span></div>';
-  h += '</div></div>';
-  var usages = rec['รายการใช้ประโยชน์'] || [];
-  h += '<div class="view-sub">รายการใช้ประโยชน์ ' + usages.length + ' รายการ</div>';
-  h += tblStart(['ประเภทการใช้งาน', 'เต็มพื้นที่', 'ชั้นที่', 'กว้าง x ยาว (ม.)', 'พื้นที่รวม (ตร.ม.)', 'ขนาดคงเหลือ (ตร.ม.)', 'ลักษณะการใช้', 'หมายเหตุ']);
-  if (!usages.length) { h += tblEnd(true, 8); }
-  else {
-    usages.forEach(function(u) {
-      h += '<tr><td>' + esc(u['ประเภทการใช้งาน']) + '</td>' +
-           '<td>' + esc(u['เต็มพื้นที่ทุกชั้น'] === 'Y' ? 'ใช่' : 'ไม่') + '</td>' +
-           '<td>' + esc(u['ชั้นที่']) + '</td>' +
-           '<td>' + esc(u['กว้าง(ม.)']) + ' x ' + esc(u['ยาว(ม.)']) + '</td>' +
-           '<td>' + esc(u['พื้นที่รวม(ตร.ม.)']) + '</td>' +
-           '<td>' + esc(u['ขนาดพื้นที่คงเหลือ(ตร.ม.)']) + '</td>' +
-           '<td>' + esc(u['ลักษณะการใช้']) + '</td>' +
-           '<td>' + esc(u['หมายเหตุ']) + '</td></tr>';
-    });
-    h += tblEnd(false, 8);
-  }
-  return h;
-}
-
-/* ── ป้าย ── */
-function renderSignDetail(rec) {
-  var h = '<div class="view-panel">';
-  h += '<div class="view-title">🪧 ป้าย: ' + esc(rec['รหัสป้าย']) + '</div>';
-  h += '<div class="view-kv">';
-  h += '<div class="k"><b>รหัสป้าย</b><span>' + esc(rec['รหัสป้าย']) + '</span></div>';
-  h += '<div class="k"><b>รหัสแปลงที่ดิน</b><span>' + esc(rec['รหัสแปลงที่ดิน']) + '</span></div>';
-  h += '<div class="k"><b>ชื่อสถานประกอบการค้า/กิจการ</b><span>' + esc(rec['ชื่อสถานประกอบการค้า/กิจการ']) + '</span></div>';
-  h += '<div class="k"><b>วันที่ติดตั้งป้าย</b><span>' + esc(rec['วันที่ติดตั้งป้าย']) + '</span></div>';
-  h += '<div class="k"><b>ป้ายแสดง</b><span>' + esc(rec['ป้ายแสดง']) + '</span></div>';
-  h += '<div class="k"><b>ประเภทป้าย</b><span>' + esc(rec['ประเภทป้าย']) + '</span></div>';
-  h += '<div class="k"><b>ขนาด (กว้าง x ยาว ซม.)</b><span>' + esc(rec['กว้าง (ซม.)']) + ' x ' + esc(rec['ยาว (ซม.)']) + '</span></div>';
-  h += '<div class="k"><b>เนื้อที่ป้าย (ตร.ซม.)</b><span>' + esc(rec['เนื้อที่ป้าย (ตร.ซม.)']) + '</span></div>';
-  h += '<div class="k"><b>จำนวนด้าน</b><span>' + esc(rec['จำนวนด้าน']) + '</span></div>';
-  h += '<div class="k"><b>จำนวนหน่วย</b><span>' + esc(rec['จำนวนหน่วย']) + '</span></div>';
-  h += '<div class="k"><b>ข้อความภายในป้าย</b><span>' + esc(rec['ข้อความภายในป้าย']) + '</span></div>';
-  h += '<div class="k"><b>งวดที่ติดตั้งป้าย</b><span>' + esc(rec['งวดที่ติดตั้งป้าย']) + '</span></div>';
-  h += '<div class="k"><b>อัตราภาษีป้าย</b><span>' + esc(rec['อัตราภาษีป้าย']) + '</span></div>';
-  h += '<div class="k"><b>รวมเงินภาษี (บาท)</b><span>' + esc(rec['รวมเงินภาษี (บาท)']) + '</span></div>';
-  h += '<div class="k"><b>บ้านเลขที่</b><span>' + esc(rec['บ้านเลขที่']) + '</span></div>';
-  h += '<div class="k"><b>หมู่</b><span>' + esc(rec['หมู่']) + '</span></div>';
-  h += '<div class="k"><b>ตรอก/ซอย</b><span>' + esc(rec['ตรอก/ซอย']) + '</span></div>';
-  h += '<div class="k"><b>ถนน</b><span>' + esc(rec['ถนน']) + '</span></div>';
-  h += '<div class="k"><b>ชุมชน</b><span>' + esc(rec['ชุมชน']) + '</span></div>';
-  h += '<div class="k"><b>ตำบล</b><span>' + esc(rec['ตำบล']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุ</b><span>' + esc(rec['หมายเหตุ']) + '</span></div>';
-  h += '<div class="k"><b>หมายเหตุเจ้าหน้าที่</b><span>' + esc(rec['หมายเหตุเจ้าหน้าที่']) + '</span></div>';
-  h += '</div>';
-
-  var ownerLinks = psnList(rec['เลขบัตรเจ้าของป้าย']).map(function(p) {
-    var oi = findIdx('ltax_owner', 'เลขบัตรประชาชน', p);
-    return oi >= 0 ? '<a href="#" onclick="viewData(\'ltax_owner\',' + oi + '); return false;">' + esc(p) + '</a>'
-                   : esc(p) + ' <span style="color:#c62828;">(ยังไม่กรอกเจ้าของ)</span>';
-  });
-  if (ownerLinks.length) h += '<div class="k"><b>เจ้าของป้าย</b><span>' + ownerLinks.join(', ') + '</span></div>';
-  h += '</div>';
-  return h;
+function clearRefOwners() {
+  if (!confirm('ล้างข้อมูลอ้างอิงเจ้าของทรัพย์สินทั้งหมด? (ข้อมูลที่สำรวจแล้วในเครื่องจะไม่หาย ลบเฉพาะข้อมูลอ้างอิงที่นำเข้าไว้)')) return;
+  localStorage.removeItem('ltax_ref_owner');
+  refreshRefStats();
 }
 
 /* =========================================================
@@ -6552,6 +6489,7 @@ if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
 }
 
 refreshSummary();
+refreshRefStats();
 
 </script>
 </body>

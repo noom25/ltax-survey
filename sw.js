@@ -1,8 +1,8 @@
 /* LTAX Offline — Service Worker
    cache-first: ครั้งแรกต้องมีเน็ตเพื่อติดตั้ง ครั้งต่อ ๆ ไปเปิดได้แม้ไม่มีเน็ต
-   version: 20260821-000252
+   version: 20260822-004304
 */
-var VERSION = "20260821-000252";
+var VERSION = "20260822-004304";
 var CACHE = "ltax-offline-" + VERSION;
 
 var ASSETS = [
@@ -18,6 +18,7 @@ var ASSETS = [
   "ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html",
   "ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html",
   "ฟอร์ม_เพิ่มป้าย.html",
+  "ฟอร์ม_ทะเบียนทรัพย์สิน.html",
   "ถ่ายรูป.html"
 ];
 
