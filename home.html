@@ -57,10 +57,13 @@
   .btn-main:hover { background: #1b5e20; }
   .btn-danger { background: #c62828; border-color: #8e1d1d; color: #fff; }
   .btn-danger:hover { background: #8e1d1d; }
-  .btn-edit { background: #1976d2; border-color: #0d47a1; color: #fff; padding: 4px 14px; font-size: 13px; }
+  .btn-edit { background: #1976d2; border-color: #0d47a1; color: #fff; padding: 4px 12px; font-size: 12px; }
   .btn-edit:hover { background: #0d47a1; }
-  .btn-registry { background: #00897b; border-color: #00695c; color: #fff; padding: 4px 14px; font-size: 13px; display: inline-block; margin-top: 4px; }
+  .btn-registry { background: #00897b; border-color: #00695c; color: #fff; padding: 4px 12px; font-size: 12px; display: inline-block; }
   .btn-registry:hover { background: #00695c; }
+  .btn-delete-row { background: #c62828; border-color: #8e1d1d; color: #fff; padding: 4px 12px; font-size: 12px; }
+  .btn-delete-row:hover { background: #8e1d1d; }
+  .action-group { display: inline-flex; gap: 5px; flex-wrap: wrap; white-space: nowrap; }
   .btn-install { background: #00897b; border-color: #00695c; color: #fff; }
   .btn-install:hover { background: #00695c; }
 
@@ -297,15 +300,17 @@ function doSearch() {
 
   var total = groups.reduce(function(s, g) { return s + g.hits.length; }, 0);
   var h = '<div style="font-size:13px; color:#555; margin-bottom:8px;">พบ ' + total + ' รายการ</div>';
-  h += '<table class="search-result"><thead><tr><th width="120">หมวด</th><th>รายการ</th><th>รายละเอียด</th><th width="150"></th></tr></thead><tbody>';
+  h += '<table class="search-result"><thead><tr><th width="100">หมวด</th><th>รายการ</th><th>รายละเอียด</th><th width="240">จัดการ</th></tr></thead><tbody>';
   groups.forEach(function(g) {
     h += '<tr class="grp"><td colspan="4">' + g.meta.label + ' (' + g.hits.length + ')</td></tr>';
     g.hits.forEach(function(hit) {
       var key = hit.rec[g.meta.key] || ('#' + (hit.idx + 1));
-      var actionBtns = '<a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">ดู / แก้ไข</a>';
+      var actionBtns = '<div class="action-group"><a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">ดู / แก้ไข</a>';
       if (g.key === 'ltax_owner') {
-        actionBtns += '<br><a class="btn btn-registry" href="#" onclick="openAssetRegistry(\'' + String(key).replace(/'/g, "\\'") + '\'); return false;">ทะเบียนทรัพย์สิน</a>';
+        actionBtns += '<a class="btn btn-registry" href="#" onclick="openAssetRegistry(\'' + String(key).replace(/'/g, "\\'") + '\'); return false;">ทะเบียน</a>';
       }
+      actionBtns += '<a class="btn btn-delete-row" href="#" onclick="deleteRecord(\'' + g.key + '\',' + hit.idx + '); return false;">ลบ</a>';
+      actionBtns += '</div>';
       h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + (g.meta.desc(hit.rec) || '') + '</td>' +
            '<td>' + actionBtns + '</td></tr>';
     });
@@ -322,6 +327,27 @@ function clearSearch() {
 
 function openAssetRegistry(psnId) {
   openForm('ltax_asset', '?psnId=' + encodeURIComponent(psnId));
+}
+
+function saveList(key, arr) {
+  try { localStorage.setItem(key, JSON.stringify(arr)); } catch(e) {}
+}
+
+function deleteRecord(lkey, idx) {
+  var meta = SEARCH_META[lkey];
+  var label = meta ? meta.label : lkey;
+  var list = getList(lkey);
+  if (idx < 0 || idx >= list.length) { alert('ไม่พบรายการที่จะลบ'); return; }
+  var rec = list[idx];
+  var recKey = rec[meta.key] || ('#' + (idx + 1));
+  var recDesc = meta.desc(rec) || '';
+  if (!confirm('ยืนยันลบ ' + label + ':\n\n' + recKey + ' — ' + recDesc + '\n\n⚠ การลบจะกระทบข้อมูลที่ผูกกับรายการนี้ (ถ้ามี) เช่น ที่ดิน/อาคารของเจ้าของนี้')) return;
+  list.splice(idx, 1);
+  saveList(lkey, list);
+  // ลบข้อมูลรวมที่ cache ไว้ด้วย
+  try { localStorage.removeItem('ltax_data_all'); } catch(e) {}
+  // ปรับ index ใหม่ — search ใหม่
+  doSearch();
 }
 
 /* =========================================================
