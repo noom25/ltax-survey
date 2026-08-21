@@ -64,6 +64,42 @@ bot_upload_data v1\
       SW register + controller หลัง reload / cache `ltax-offline-*` ถูกสร้างครอบคลุมฟอร์มทั้ง 6 + หน้าถ่ายรูป
 - [x] **ทดสอบออฟไลน์จริง**: เปิดหน้า → SW ทำงาน → **ปิด server** → refresh แล้วหน้าหลัก/ฟอร์ม/หน้าถ่ายรูปยังเปิดได้จาก cache ครบ
 
+## งานรอบล่าสุด (dropdown จ-อ-ต ครบ 77 จังหวัด) — เสร็จแล้ว
+- [x] **`admin_data.js`** — ข้อมูล จ/อ/ต ครบประเทศ (`window.ADMIN_DATA` = provinces 77 / byProvince 77 keys / byDistrict 928 keys)
+      สร้างจาก `geo_src\` (provinces/districts/subdistricts.json จาก thailand-geography-data) ด้วย `geo_src\build_admin_data.py`
+      ตรวจตรง DLA: 3305=ขุขันธ์, 330506=ปรือใหญ่, 33=ศรีสะเกษ, s33 อ=22, s3305 ต=22
+- [x] **ฟอร์ม 3 ตัวใช้ ADMIN_DATA** (pattern ฟอร์มเจ้าของเป็นต้นแบบ):
+      · เจ้าของ: 77 จ. ครบ (เดิม 75 + เฉพาะ ศก.) + init default ขุขันธ์/ปรือใหญ่ + loadEditRecord เรียงลำดับ จ→อ→ต
+      · ที่ดิน: เพิ่ม dropdown `provinceId` (เดิมไม่มี) + collect ไม่ hardcode '33' + REQUIRED เพิ่ม provinceId
+      · ป้าย: จ อ ต เต็ม (เดิมอำเภอฝัง "ขุขันธ์") + เก็บรหัส จ/อ/ต ไว้อ่านกลับ + saveSign dynamic + REQUIRED เพิ่ม
+- [x] **build_pwa.py** — เพิ่ม `<script src="admin_data.js"></script>` + asset ใน sw.js → index.html 256,959 B (7 ฟอร์ม)
+- [x] **ทดสอบ Selenium ผ่าน** (CDP 9222): 77 จ. ครบทุกฟอร์ม / เลือก เชียงใหม่-ลำพูน-พิษณุโลก ได้ อ/ต ครบ / บันทึกเก็บรหัสถูก / JS errors 0
+- [x] **Deploy GitHub Pages ผ่าน gh api** — commit `0d63b15`, 15 ไฟล์ (admin_data.js เข้ารวม) — ตรวจเว็บจริงผ่าน
+- [x] สรุปงานละเอียดใน `สรุปงาน_เพิ่มจตครบประเทศ.md`
+
+## งานรอบล่าสุด (Fix flow "ที่ดินให้สิ่งปลูกสร้าง" — กันบ้านลอย) — เสร็จแล้ว ✅
+- [x] **ตรวจพบปัญหา**: ข้อมูลทดสอบเครื่องอื่น "บ้านลอย" — อาคารไม่มี `เนื้อที่ที่ดิน`, ใช้ที่ดินเต็มแปลงไม่แบ่งที่ตั้งสิ่งปลูกสร้าง
+- [x] **แก้ 5 จุด** (รายละเอียดใน `สรุปงาน_fix_flow_ที่ดินให้สิ่งปลูกสร้าง.md`):
+      1. ฟอร์มอาคาร — REQUIRED เพิ่ม `landAreaStr` (บังคับกรอก กันบ้านลอย)
+      2. ฟอร์มใช้ที่ดิน — แก้บั๊ก key `พื้นที่แปลงคงเหลือ (ตร.วา)`→`(ตร.ว.)` + fallback ข้อมูลเก่า
+      3. อาคาร — `autoFillLandArea()` auto-fill เนื้อที่ที่ดิน (ไร่-งาน-ตร.วา) จากแปลงเมื่อเปิดจาก flow
+      4. ใช้ที่ดิน — `recalcRemain()` อ่าน key `รวมเนื้อที่ทั้งหมด (ตร.ว.)` ที่ถูกตรง
+      5. home.html — `chainState()` ตรวจเชิงลึก: แปลงมีอาคารต้องแบ่งที่ตั้ง (2/3/4) + อาคารต้องมีเนื้อที่ที่ดิน
+- [x] **build_pwa.py** → index.html ใหม่ (295,148 B, SW `20260821-000252`)
+- [x] **ทดสอบ Selenium ผ่าน 9/9** (`Temp\opencode\ltax_sample\test_flow5.py`)
+- [x] **Deploy** — commit `6dfa4afb85` (9 ไฟล์: index/sw/manifest/home/ฟอร์ม2/icons3) ผ่านสคริปต์ `Temp\opencode\deploy_flow5.py`
+- [x] **เทียบฟอร์มเรา vs LTAX กรม** (capture + bot mapping): ฟิลด์/ตัวเลือกตรง ~100% — เหลือตัวเลือก: เพิ่ม รหัส ผ.ท.4 / เปลี่ยนชื่อ "อายุสิ่งปลูกสร้าง (ปี)" / capture เพิ่มตอนมีข้อมูล / ทดสอบ json_to_excel กับข้อมูลจริง
+
+## งานรอบล่าสุด (popup "บันทึกข้อมูลเรียบร้อย ✓") — เสร็จแล้ว (ขั้น A)
+- [x] **modal ยืนยันบันทึกทุกฟอร์ม (6)** — `#ltaxModal` theme กรม (ติ๊กเขียว ✓) + ปุ่ม: กรอกชุดถัดไป / เพิ่มรายการใหม่ / กลับหน้าแรก / ปิด
+      ลำดับถัดไป: เจ้าของ→ที่ดิน→ใช้ที่ดิน→อาคาร→ใช้อาคาร→ป้าย→(เจ้าของคนถัดไป)
+      แทรกด้วย `insert_modal.py` (Temp\opencode) เรียกหลัง `LTAX_store(...)`; นำทางใช้ `window.openForm` (SPA) / ฟอร์มแยก
+- [x] **ทดสอบ Selenium ผ่าน 3 เคส**: modal เด้ง / ถัดไปเปิดที่ดิน / กลับหน้าแรก / เพิ่มรายการใหม่ (reset+confirm)
+- [x] **Deploy GitHub Pages** — commit `9b4f5e0` (web จริงตรวจแล้ว 6 modal + 6 ฟังก์ชัน)
+- [x] สรุปงานละเอียด: `สรุปงาน_ป็อปอัพบันทึกเรียบร้อย.md`
+- [x] **B: บังคับ flow ชุดข้อมูล** — เสร็จ (เห็นหัวข้อ "งานรอบล่าสุด (B+C)" ด้านล่าง)
+- [x] **C: สถานะชุดบนหน้าแรก** — เสร็จ (เห็นหัวข้อ "งานรอบล่าสุด (B+C)" ด้านล่าง)
+
 ## โฟลว์การทำงาน (สำคัญ)
 1. คอมฯ ดับเบิลคลิก `start_server.bat` → ขึ้น URL เช่น `http://192.168.x.x:8000`
 2. มือถือต่อ WiFi เดียวกัน เปิด URL → ทำงานตามลำดับ: **ถ่ายรูป** (เลือกหมวด+รหัส หรือถ่ายด่วนไปก่อน) → กรอก 6 ฟอร์ม
@@ -82,9 +118,11 @@ bot_upload_data v1\
 - [x] GitHub Pages เปิด: Deploy from branch `main`, path `/` (test ผ่าน: หน้าโหลด / SW+controller / cache / ฟอร์มทั้ง 7 / validation บน https)
 - [x] ทดสอบ Selenium ผ่าน URL จริง: เปิดฟอร์มทั้ง 7 + SW ลงทะเบียน + cache `ltax-offline-*` ถูกสร้าง + ตรวจ required fields ได้
 - **วิธีอัปเดตเว็บ** (หลังแก้ฟอร์ม/home/ถ่ายรูป แล้วรัน build):
-  1. `python build_pwa.py` → ได้ `web\index.html` ใหม่
-  2. copy ไฟล์ทั้งหมดใน `web\` (ยกเว้น server.py/start_server.bat) ไปทับที่ `C:\LTAX_Automation\ltax-survey\`
-  3. เปิด PowerShell ที่โฟลเดอร์นั้น: `git add -A` → `git commit -m "update"` → `git push origin main`
+  1. copy ฟอร์มที่แก้ + admin_data.js ไปโฟลเดอร์ `web\` (ถ้าแก้ฟอร์ม: copy ฟอร์ม; ถ้าแก้ข้อมูลขยาย: copy admin_data.js ด้วย)
+  2. `python build_pwa.py` → ได้ `web\index.html` ใหม่
+  3. วิธีที่ 1 (มี git CLI): `git add -A` → `git commit -m "update"` → `git push origin main`
+     วิธีที่ 2 (gh api REST, ใช้ได้แม้ไม่มี git CLI): `powershell -ExecutionPolicy Bypass -File "$env:TEMP\opencode\deploy_ltax.ps1"`
+     — script ทำ blobs(ฐาน64, body **ห้ามมี BOM**) → tree → commit → PATCH refs/heads/main อัปโหลดทุกไฟล์ web\ recursive
   4. รอ ~1 นาที แล้วเปิด URL ใหม่ (SW จะโหลดเวอร์ชันใหม่ให้อัตโนมัติ)
 - **ข้อจำกัดบน GitHub Pages:** ไม่มี server → ปุ่ม "ส่งข้อมูลไปคอมฯ" ใช้ไม่ได้ (ต้องเปิดผ่าน LAN server) —
   ส่งข้อมูลกลับคอมฯ โดย: กด "รวมข้อมูล (JSON)" → ดาวน์โหลดไฟล์ `ltax_data_all.json` → แชร์ AirDrop/Line/เมล → คอมฯ รัน `python json_to_excel.py`
@@ -121,8 +159,25 @@ bot_upload_data v1\
       คลิก "ดู" ต่อในตารางได้ + ปุ่มกลับผลการค้นหา (home.html + build_pwa.py fallback web\ → root) — test Selenium ผ่านครบ
 - [x] mobile_offline + zip สำหรับแอป Documents (ยังเป็นเวอร์ชันเก่า — รัน build_pwa.py --sync เพื่ออัป)
 - [x] คู่มือการใช้งาน.md ฉบับสมบูรณ์ (ยังไม่ได้เพิ่มหัวข้อ PWA/ถ่ายรูปชุด)
+- [x] **dropdown จ-อ-ต ครบ 77 จ. (admin_data.js + ฟอร์มเจ้าของ/ที่ดิน/ป้าย)** — deploy commit 0d63b15
+- [x] **popup "บันทึกข้อมูลเรียบร้อย ✓" + ปุ่มชุดถัดไป/เพิ่มใหม่/หน้าแรก (6 ฟอร์ม)** — deploy commit 9b4f5e0 (ขั้น A เสร็จ)
+- [x] **B: ระบบ flow บังคับชุดข้อมูล (ต่อเนื่องในฟอร์มเดียวกัน)** — เสร็จ: บันทึกเจ้าของ → modal "กรอกชุดถัดไป" เปิดที่ดินอัตโนมัติ
+      (ผูก sessionStorage `ltax_next` = {psnId, fullName, parcelCode, buildingCode}) → ใช้ที่ดิน → อาคาร → ใช้อาคาร →
+      modal ถาม "มีป้าย — กรอกป้าย" / "ไม่มีป้าย (จบชุด)" → กลับหน้าแรก — auto-fill ข้ามฟอร์มครบทุกขั้น
+- [x] **C: badge สถานะชุดบนหน้าแรก** — เสร็จ: `chainState(psnId)` + `chainBadge(psnId)` แสดงในผลค้นหา + หน้าดูข้อมูลเจ้าของ
+      (✓ ครบ 5/6 หมวด / ▶ เหลือขั้นไหน ระบุ msg)
+- [x] **งาน B+C deploy แล้ว** — commit `e95b5b7` (15 ไฟล์) — test Selenium เต็ม flow 6 ฟอร์มผ่าน + JS errors 0 + ตรวจเว็บจริงผ่าน
+- [x] สรุปงานละเอียด: `สรุปงาน_flow_บังคับชุดข้อมูล_แบดจ์สถานะ.md`
+- [x] สรุปงานรอบ จ-อ-ต: `สรุปงาน_เพิ่มจตครบประเทศ.md`
+- [x] **สรุปงาน Fix flow ที่ดินให้สิ่งปลูกสร้าง: `สรุปงาน_fix_flow_ที่ดินให้สิ่งปลูกสร้าง.md`** (5 จุด + test 9/9 + deploy 6dfa4afb85 + เทียบฟอร์มกรม)
+- [x] **bot_upload_json: บอทอัป LTAX อ่าน `ltax_data_all.json` ตรง ๆ (ไม่ผ่าน Excel)** — โฟลเดอร์ใหม่ `C:\LTAX_Automation\bot_upload_json\`
+      (แยก 100% จาก v1: json_loader.py อ่าน JSON→DataFrame + flatten รายการใช้ประโยชน์ + แยกรูป base64→ไฟล์,
+       ltax_common.py รวม helper/login/navigation จุดเดียว, bot_owner/land/land_usage/building/building_usage/sign,
+       run_all_json.py master เหมือน v1 run_all — ทดสอบ offline ผ่าน: import ทั้งหมด, dry-run ชุดทดสอบ, แยกรูปจำลอง 4 ไฟล์,
+       mapping ครอบคลุมครบทุกหมวด; ยังไม่รันจริงกับ LTAX Online — ต้อง login+OTP ผู้ใช้อยู่หน้าจอ)
 - [ ] **ยังไม่ได้ลองใช้งานจริงบนมือถือ** (ผู้ใช้จะลอง iPhone เปิด https://noom25.github.io/ltax-survey/ + ติดตั้งเป็นแอป)
 - [ ] ยังไม่ได้รันบอทอัปจริงกับ LTAX Online (ต้อง login+OTP ผู้ใช้อยู่หน้าจอ)
+- [ ] ยังไม่ได้รัน `run_all_json.py` จริง (ต้อง login+OTP ผู้ใช้อยู่หน้าจอ) — ควรทดสอบกับข้อมูลชุดใหม่ (ไม่ใช่ "บ้านลอย" ชุดทดสอบ)
 - [ ] ยังไม่ได้อัปเดต คู่มือการใช้งาน.md ให้ครอบคลุม PWA + หน้าถ่ายรูป
 
 ## สภาพแวดล้อมทดสอบ
