@@ -318,7 +318,7 @@ function doSearch() {
     h += '<tr class="grp"><td colspan="4">' + g.meta.label + ' (' + g.hits.length + ')</td></tr>';
     g.hits.forEach(function(hit) {
       var key = hit.rec[g.meta.key] || ('#' + (hit.idx + 1));
-      var actionBtns = '<div class="action-group"><a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">ดู / แก้ไข</a>';
+      var actionBtns = '<div class="action-group"><a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">แก้ไข</a>';
       if (g.key === 'ltax_owner') {
         actionBtns += '<a class="btn btn-registry" href="#" onclick="openAssetRegistry(\'' + String(key).replace(/'/g, "\\'") + '\'); return false;">ทะเบียน</a>';
       }
@@ -6072,7 +6072,7 @@ function doSearch() {
     h += '<tr class="grp"><td colspan="4">' + g.meta.label + ' (' + g.hits.length + ')</td></tr>';
     g.hits.forEach(function(hit) {
       var key = hit.rec[g.meta.key] || ('#' + (hit.idx + 1));
-      var actionBtns = '<div class="action-group"><a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">ดู / แก้ไข</a>';
+      var actionBtns = '<div class="action-group"><a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">แก้ไข</a>';
       if (g.key === 'ltax_owner') {
         actionBtns += '<a class="btn btn-registry" href="#" onclick="openAssetRegistry(\'' + String(key).replace(/'/g, "\\'") + '\'); return false;">ทะเบียน</a>';
       }
