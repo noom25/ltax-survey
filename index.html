@@ -906,7 +906,7 @@ refreshRefStats();
       <div class="row">
         <label>ถอดรหัสชื่อ ผ.ท.4</label>
         <div class="field">
-          <input type="text" id="assetReg4" name="assetOwner.assetReg4" readonly>
+          <input type="text" id="assetReg4" name="assetOwner.assetReg4" placeholder="เช่น ท700/8660">
         </div>
       </div>
 
@@ -1064,6 +1064,38 @@ refreshRefStats();
     <textarea id="previewBox" readonly></textarea>
   </div>
 </div>
+
+
+
+<style>
+/* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
+#ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
+#ltaxModal .box{background:#fff;border-radius:12px;max-width:92%;width:330px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.35);overflow:hidden;}
+#ltaxModal .head{background:linear-gradient(135deg,#367fa9,#1b4f8a);color:#fff;padding:14px 10px 26px;font-size:16px;font-weight:700;}
+#ltaxModal .tick{width:62px;height:62px;border-radius:50%;background:#28a745;color:#fff;font-size:34px;line-height:62px;margin:-31px auto 12px;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+#ltaxModal .info{font-size:13px;color:#333;margin:4px 14px 14px;word-break:break-word;line-height:1.5;}
+#ltaxModal .btns{padding:0 14px 14px;}
+#ltaxModal .btn{display:block;width:100%;margin:7px 0 0;padding:11px;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;}
+#ltaxModal .btn-next{background:#367fa9;color:#fff;}
+#ltaxModal .btn-more{background:#28a745;color:#fff;}
+#ltaxModal .btn-home{background:#eef4f8;color:#1b4f8a;}
+#ltaxModal .btn-close{background:#f4f6f8;color:#8a8f94;}
+</style>
+
+<div id="ltaxModal">
+  <div class="box">
+    <div class="head">บันทึกข้อมูลเรียบร้อย</div>
+    <div class="tick">&#10003;</div>
+    <div class="info" id="ltaxModalInfo"></div>
+    <div class="btns">
+      <button type="button" class="btn btn-next" id="ltaxModalNext">กรอกชุดถัดไป (ต่อไป)</button>
+      <button type="button" class="btn btn-more" id="ltaxModalMore">เพิ่มรายการใหม่</button>
+      <button type="button" class="btn btn-home" id="ltaxModalHome">กลับหน้าแรก</button>
+      <button type="button" class="btn btn-close" id="ltaxModalClose">ปิด</button>
+    </div>
+  </div>
+</div>
+
 
 
 
@@ -1385,6 +1417,7 @@ refreshRefStats();
 </div>
 
 
+
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
 #ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
@@ -1507,7 +1540,7 @@ refreshRefStats();
         </div>
       </div>
 
-      <div class="section-title">รายการการใช้ประโยชน์ (หลายรายการได้)</div>
+      <div class="section-title">รายการการใช้ประโยชน์ (หลายรายการได้ — ผลรวมทุกแถวต้องเท่ากับเนื้อที่แปลงพอดี)</div>
 
       <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
         <thead>
@@ -1527,6 +1560,7 @@ refreshRefStats();
         <label></label>
         <div class="field">
           <button type="button" class="btn btn-ok" onclick="addUsage()" style="padding:5px 18px; font-weight:normal;"> + เพิ่มรายการ </button>
+          <div class="hint" id="crossHint" style="color:#b26a00;"></div>
         </div>
       </div>
 
@@ -1584,6 +1618,13 @@ refreshRefStats();
       <div class="row">
         <label>ชื่อ-สกุล ผู้ทำประโยชน์</label>
         <div class="field"><input type="text" id="usedBy" name="landUsed.usedBy"></div>
+      </div>
+      <div class="row">
+        <label>เลขบัตรผู้ทำประโยชน์</label>
+        <div class="field">
+          <input type="text" id="usedById" maxlength="13" placeholder="13 หลัก" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          <div class="hint">ใส่เฉพาะกรณีผู้ทำประโยชน์ไม่ใช่เจ้าของที่ดิน (ประเภท 2-(2) / 2-(3)) — ผู้นั้นต้องมีชุดข้อมูลของตัวเองด้วย: ฟอร์มเจ้าของทรัพย์สิน → สิ่งปลูกสร้าง (ผูกรหัสแปลงนี้) โดยไม่ต้องกรอกฟอร์มที่ดินซ้ำ</div>
+        </div>
       </div>
 
       <div id="hideAgri" style="display:none;">
@@ -2463,6 +2504,7 @@ refreshRefStats();
 </div>
 
 
+
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
 #ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
@@ -2869,6 +2911,8 @@ refreshRefStats();
 <!-- สคริปต์ของฟอร์ม — แยกเก็บ ไม่รันตอนโหลด (รันเมื่อเปิดฟอร์ม) -->
 <script type="text/plain" id="js-ltax_owner">
 
+
+
 /* =========================================================
    ข้อมูลอ้างอิง (ต้นแบบ - ยังไม่ครบทุกค่า)
    หมายเหตุ: รายการคำนำหน้า / อำเภอ / ตำบล จะ sync ให้ตรงกับ
@@ -2894,37 +2938,9 @@ var PREFIXES = {
 };
 
 /* จังหวัด (รหัส 2 หลัก ตามระบบ DLA) */
-var PROVINCES = [
-  ['10','กรุงเทพมหานคร'],['11','สมุทรปราการ'],['12','นนทบุรี'],['13','ปทุมธานี'],
-  ['14','พระนครศรีอยุธยา'],['15','อ่างทอง'],['16','ลพบุรี'],['17','สิงห์บุรี'],
-  ['18','ชัยนาท'],['19','สระบุรี'],['20','ชลบุรี'],['21','ระยอง'],['22','จันทบุรี'],
-  ['23','ตราด'],['24','ฉะเชิงเทรา'],['25','ปราจีนบุรี'],['26','นครนายก'],['27','สระแก้ว'],
-  ['30','นครราชสีมา'],['31','บุรีรัมย์'],['32','สุรินทร์'],['33','ศรีสะเกษ'],['34','อุบลราชธานี'],
-  ['35','ยโสธร'],['36','ชัยภูมิ'],['37','อำนาจเจริญ'],['38','บึงกาฬ'],['39','หนองบัวลำภู'],
-  ['40','ขอนแก่น'],['41','อุดรธานี'],['42','เลย'],['43','หนองคาย'],['44','มหาสารคาม'],
-  ['45','ร้อยเอ็ด'],['46','กาฬสินธุ์'],['47','สกลนคร'],['48','นครพนม'],['49','มุกดาหาร'],
-  ['50','เชียงใหม่'],['51','ลำพูน'],['52','ลำปาง'],['53','อุตรดิตถ์'],['54','แพร่'],
-  ['55','น่าน'],['56','พะเยา'],['57','เชียงราย'],['58','แม่ฮ่องสอน'],
-  ['60','นครสวรรค์'],['61','อุทัยธานี'],['62','กำแพงเพชร'],['63','ตาก'],['64','สุโขทัย'],
-  ['65','พิษณุโลก'],['66','พิจิตร'],['67','เพชรบูรณ์'],
-  ['70','ราชบุรี'],['71','กาญจนบุรี'],['72','สุพรรณบุรี'],['73','นครปฐม'],['74','สมุทรสาคร'],
-  ['75','สมุทรสงคราม'],['76','เพชรบุรี'],['77','ประจวบคีรีขันธ์'],
-  ['80','นครศรีธรรมราช'],['81','กระบี่'],['82','พังงา'],['83','ภูเก็ต'],['84','สุราษฎร์ธานี'],
-  ['85','ระนอง'],['86','ชุมพร'],
-  ['90','สงขลา'],['91','สตูล'],['92','ปัตตานี'],['93','ยะลา'],['94','นราธิวาส']
-];
-
-/* อำเภอ/ตำบล ตัวอย่าง (ยังมีเฉพาะ จ.ศรีสะเกษ) - จะเติมให้ครบตามระบบจริง */
-var ADMIN = {
-  '33': {
-    '3305': { name: 'ขุขันธ์', districts: {
-      '330501': 'ปรือใหญ่', '330502': 'ปรือใหญ่ 2'
-    }},
-    '3301': { name: 'เมืองศรีสะเกษ', districts: {
-      '330101': 'เมืองใต้', '330102': 'เมืองเหนือ'
-    }}
-  }
-};
+/* จังหวัด/อำเภอ/ตำบล — ครบทุกจังหวัด (77 จ. / 928 อ. / 7,436 ต. จาก admin_data.js)
+   โหลดจาก window.ADMIN_DATA (ไฟล์ admin_data.js — โหมดเปิดไฟล์เดี่ยวต้องมีไฟล์นี้อยู่ด้วยกัน) */
+var ADMIN_DATA = window.ADMIN_DATA || { provinces: [], byProvince: {}, byDistrict: {} };
 
 var REQUIRED = ['personType','psnId','prefixName','firstName','addrNo','provinceId','amphurId','districtId','currNo','currProvinceId','currAmphurId','currDistrictId','sendAddr'];
 
@@ -2960,48 +2976,43 @@ function onProvinceChange(pSel, aSel, dSel) {
   aBox.innerHTML = '<option value="">--</option>';
   dBox.innerHTML = '<option value="">--</option>';
   if (!prov) return;
-  var data = ADMIN[prov];
-  if (data) {
-    for (var a in data) {
-      var opt = document.createElement('option');
-      opt.value = a; opt.text = data[a].name;
-      aBox.appendChild(opt);
-    }
-    if (aBox.options.length > 1) aBox.selectedIndex = 1;
-    onAmphurChange(aSel, dSel);
-  } else {
-    var o = document.createElement('option');
-    o.value = ''; o.text = 'ยังไม่มีข้อมูลอำเภอของจังหวัดนี้ (ต้นแบบ)';
-    aBox.appendChild(o);
-  }
+  (ADMIN_DATA.byProvince[prov] || []).forEach(function(a) {
+    var opt = document.createElement('option');
+    opt.value = a.c; opt.text = a.n;
+    aBox.appendChild(opt);
+  });
+  if (aBox.options.length > 1 && !aBox.value) aBox.selectedIndex = 1;
+  if (aBox.value) onAmphurChange(aSel, dSel);
 }
 
 function onAmphurChange(aSel, dSel) {
-  var prov = aSel.indexOf('curr') === 0 ? $('currProvinceId').value : $('provinceId').value;
   var amph = $(aSel).value;
   var dBox = $(dSel);
   dBox.innerHTML = '<option value="">--</option>';
-  if (!prov || !amph || !ADMIN[prov] || !ADMIN[prov][amph]) return;
-  var dists = ADMIN[prov][amph].districts;
-  for (var d in dists) {
+  if (!amph) return;
+  (ADMIN_DATA.byDistrict[amph] || []).forEach(function(d) {
     var opt = document.createElement('option');
-    opt.value = d; opt.text = dists[d];
+    opt.value = d.c; opt.text = d.n;
     dBox.appendChild(opt);
-  }
+  });
 }
 
 function copyAddress() {
   if (!$('copyAddr').checked) return;
   var map = [
     ['addrNo','currNo'], ['addrVillage','currVillage'], ['addrRoad','currRoad'],
-    ['addrAlley','currAlley'], ['postalCode','currPostalCode'],
-    ['provinceId','currProvinceId'], ['amphurId','currAmphurId'], ['districtId','currDistrictId']
+    ['addrAlley','currAlley'], ['postalCode','currPostalCode']
   ];
   map.forEach(function(m) {
     var from = $(m[0]), to = $(m[1]);
     if (from && to) to.value = from.value;
   });
-  if ($('provinceId').value) onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
+  /* จ/อ/ต คัดลอกตามลำดับ cascade: จังหวัด → สร้าง options อำเภอ → อำเภอ → สร้าง options ตำบล → ตำบล
+     (การ rebuild options จะล้างค่าที่ตั้งไว้ก่อนหน้า — ห้ามตั้งค่าทั้งหมดก่อนแล้วค่อยเรียก cascade) */
+  var prov = $('provinceId').value, amph = $('amphurId').value, dist = $('districtId').value;
+  if (prov) { $('currProvinceId').value = prov; onProvinceChange('currProvinceId','currAmphurId','currDistrictId'); }
+  if (amph) { $('currAmphurId').value = amph; onAmphurChange('currAmphurId','currDistrictId'); }
+  if (dist) $('currDistrictId').value = dist;
 }
 
 /* =========================================================
@@ -3042,21 +3053,28 @@ function onRefSearchInput() {
 
 function findProvinceCode(name) {
   if (!name) return '';
-  for (var i = 0; i < PROVINCES.length; i++) {
-    if (PROVINCES[i][1] === String(name).trim()) return PROVINCES[i][0];
+  var t = String(name).trim();
+  for (var i = 0; i < ADMIN_DATA.provinces.length; i++) {
+    if (ADMIN_DATA.provinces[i].n === t || ADMIN_DATA.provinces[i].c === t) return ADMIN_DATA.provinces[i].c;
   }
   return '';
 }
 function findAmphurCode(provCode, name) {
-  var data = ADMIN[provCode];
-  if (!data || !name) return '';
-  for (var a in data) { if (data[a].name === String(name).trim()) return a; }
+  if (!provCode || !name) return '';
+  var t = String(name).trim();
+  var list = ADMIN_DATA.byProvince[provCode] || [];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].n === t || list[i].c === t) return list[i].c;
+  }
   return '';
 }
 function findDistrictCode(provCode, amphCode, name) {
-  var data = ADMIN[provCode] && ADMIN[provCode][amphCode];
-  if (!data || !name) return '';
-  for (var d in data.districts) { if (data.districts[d] === String(name).trim()) return d; }
+  if (!amphCode || !name) return '';
+  var t = String(name).trim();
+  var list = ADMIN_DATA.byDistrict[amphCode] || [];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].n === t || list[i].c === t) return list[i].c;
+  }
   return '';
 }
 
@@ -3178,8 +3196,9 @@ function loadEditRecord() {
   if (r['ซอย']) $('addrAlley').value = r['ซอย'];
   if (r['ถนน']) $('addrRoad').value = r['ถนน'];
   setSelectOrAdd($('provinceId'), r['จังหวัด']);
+  onProvinceChange('provinceId','amphurId','districtId');
   setSelectOrAdd($('amphurId'), r['อำเภอ']);
-  onProvinceChange('provinceId', 'amphurId', 'districtId');
+  onAmphurChange('amphurId','districtId');
   setSelectOrAdd($('districtId'), r['ตำบล']);
   if (r['รหัสไปรษณีย์']) $('postalCode').value = r['รหัสไปรษณีย์'];
   if (r['โทรศัพท์']) $('tel').value = r['โทรศัพท์'];
@@ -3191,8 +3210,9 @@ function loadEditRecord() {
   if (!$('currAlley').value) $('currAlley').value = $('addrAlley').value;
   if (!$('currPostalCode').value) $('currPostalCode').value = $('postalCode').value;
   setSelectOrAdd($('currProvinceId'), $('provinceId').value);
+  onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
   setSelectOrAdd($('currAmphurId'), $('amphurId').value);
-  onProvinceChange('currProvinceId', 'currAmphurId', 'currDistrictId');
+  onAmphurChange('currAmphurId','currDistrictId');
   setSelectOrAdd($('currDistrictId'), $('districtId').value);
   if (!$('sendAddr').value) $('sendAddr').value = '1';
 
@@ -3238,6 +3258,10 @@ function saveOwner() {
   }
   var data = collect();
   LTAX_store('ltax_owner', data);
+  var px = $('prefixName');
+  var pxText = px.options[px.selectedIndex] ? px.options[px.selectedIndex].text : '';
+  var fullName = (pxText + ' ' + $('firstName').value.trim() + ' ' + $('lastName').value.trim()).trim();
+  showSavedModal(fullName + ' (' + data['เลขบัตรประชาชน'] + ')', 'ltax_land', { ctx: { psnId: data['เลขบัตรประชาชน'], fullName: fullName } });
   $('previewBox').value = JSON.stringify(data, null, 2);
   $('preview').style.display = 'block';
   window.__saved = true;
@@ -3279,21 +3303,73 @@ function resetForm() {
 /* init */
 (function() {
   var pBox = $('provinceId'), cBox = $('currProvinceId');
-  PROVINCES.forEach(function(p) {
-    var o1 = document.createElement('option'); o1.value = p[0]; o1.text = p[1]; pBox.appendChild(o1);
-    var o2 = document.createElement('option'); o2.value = p[0]; o2.text = p[1]; cBox.appendChild(o2);
+  ADMIN_DATA.provinces.forEach(function(p) {
+    var o1 = document.createElement('option'); o1.value = p.c; o1.text = p.n; pBox.appendChild(o1);
+    var o2 = document.createElement('option'); o2.value = p.c; o2.text = p.n; cBox.appendChild(o2);
   });
   $('provinceId').value = '33';
   $('currProvinceId').value = '33';
   onPersonTypeChange();
   onProvinceChange('provinceId','amphurId','districtId');
   onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
+  /* ค่าเริ่มต้นเขตพื้นที่ อบต.: ขุขันธ์ / ปรือใหญ่ */
+  var amphKh = findAmphurCode('33', 'ขุขันธ์');
+  if (amphKh) {
+    $('amphurId').value = amphKh; onAmphurChange('amphurId','districtId');
+    $('currAmphurId').value = amphKh; onAmphurChange('currAmphurId','currDistrictId');
+    var dPrue = findDistrictCode('33', amphKh, 'ปรือใหญ่');
+    if (dPrue) { $('districtId').value = dPrue; $('currDistrictId').value = dPrue; }
+  }
   loadEditRecord();
 })();
+
+
+
+/* ---------- modal ยืนยันการบันทึก + flow ชุดข้อมูล ---------- */
+function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
+function goHome() { if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; }
+function goNextForm(fid, ctx) {
+  var c = ltaxReadCtx();
+  for (var k in (ctx || {})) if (ctx[k]) c[k] = ctx[k];
+  try { sessionStorage.setItem('ltax_next', JSON.stringify(c)); } catch(e) {}
+  if (window.openForm) { try { window.openForm(fid); return; } catch(e) {} }
+  var F = {
+    ltax_owner: 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html',
+    ltax_land: 'ฟอร์ม_เพิ่มที่ดิน.html',
+    ltax_land_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์ที่ดิน.html',
+    ltax_building: 'ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html',
+    ltax_building_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html',
+    ltax_sign: 'ฟอร์ม_เพิ่มป้าย.html'
+  };
+  window.location.href = F[fid] || 'index.html';
+}
+function showSavedModal(info, next, opts) {
+  opts = opts || {};
+  $('ltaxModalInfo').textContent = info;
+  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
+  nb.textContent = isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)';
+  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next, opts.ctx); };
+  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
+  $('ltaxModalHome').onclick = function() { hideSavedModal(); goHome(); };
+  $('ltaxModalClose').onclick = hideSavedModal;
+  $('ltaxModal').style.display = 'flex';
+}
+function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
+function applyNextCtx() {
+  var c = ltaxReadCtx();
+  if (!c || !c.psnId) return;
+  sessionStorage.removeItem('ltax_next');
+  if (window.__editKey) return;
+  if (c.psnId) $('psnId').value = c.psnId;
+  window.__dirty = true;
+}
+setTimeout(applyNextCtx, 0);
 
 </script>
 
 <script type="text/plain" id="js-ltax_land">
+
+
 
 /* =========================================================
    ข้อมูลอ้างอิง (ต้นแบบ - จะ sync ให้ตรงกับระบบ LTAX จริงต่อไป)
@@ -3637,6 +3713,22 @@ var REQUIRED = ['usedType','raiStr','nganStr','squareWahStr'];
 
 var usages = [];
 
+var FOR_LABEL = { '1': 'ใช้เอง', '2': 'ให้เช่า', '3': 'ให้ผู้อื่นทำประโยชน์' };
+
+/* เนื้อที่แปลงรวม (ตร.ว.) จากข้อมูล ltax_land — คืน 0 ถ้าไม่พบแปลงในเครื่อง */
+function parcelTotalWah(pc) {
+  var landList = [];
+  try { landList = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { landList = []; }
+  for (var i = 0; i < landList.length; i++) {
+    if (String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === String(pc || '').trim().toUpperCase()) {
+      var t = num(landList[i]['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+      if (t <= 0) t = num(landList[i]['ไร่']) * 400 + num(landList[i]['งาน']) * 100 + num(landList[i]['ตร.วา']);
+      return t;
+    }
+  }
+  return 0;
+}
+
 function $(id) { return document.getElementById(id); }
 function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
 
@@ -3732,6 +3824,7 @@ function addUsage() {
     'ตร.วา': $('squareWahStr').value,
     'ผู้ทำประโยชน์': $('usedFor').value,
     'ใช้โดย': $('usedBy').value,
+    'เลขบัตรผู้ทำประโยชน์': $('usedById').value.trim(),
     'การเกษตรที่ทำ': $('usedType').value === '1' ? $('agriType').value : '',
     'หมายเหตุ': $('note').value,
     'Path รูปที่ดิน': $('formFile').files.length ? $('formFile').files[0].name : '',
@@ -3752,7 +3845,7 @@ function removeUsage(i) {
 function clearUsageEntry() {
   $('usedType').value = '';
   $('raiStr').value = '0'; $('nganStr').value = '0'; $('squareWahStr').value = '0.00';
-  $('usedFor').value = ''; $('usedBy').value = ''; $('agriType').value = '';
+  $('usedFor').value = ''; $('usedBy').value = ''; $('usedById').value = ''; $('agriType').value = '';
   $('note').value = ''; $('formFile').value = '';
   photoData = ''; $('photoStatus').textContent = '';
   $('areaWarn').innerHTML = '';
@@ -3764,19 +3857,40 @@ function renderUsage() {
   var tb = $('usageTable');
   if (!usages.length) {
     tb.innerHTML = '<tr><td colspan="5" style="border:1px solid #ccc; padding:8px; text-align:center; color:#888;">ยังไม่พบข้อมูล — กด "เพิ่มรายการ"</td></tr>';
+    updateCrossHint();
     return;
   }
   var h = '';
   usages.forEach(function(u, i) {
+    var who = FOR_LABEL[u['ผู้ทำประโยชน์']] || (u['ผู้ทำประโยชน์'] || '-');
+    if (u['ใช้โดย']) {
+      who += '<br><span style="font-size:11px; color:#666;">' + u['ใช้โดย'] +
+             (u['เลขบัตรผู้ทำประโยชน์'] ? ' (' + u['เลขบัตรผู้ทำประโยชน์'] + ')' : '') + '</span>';
+    }
     h += '<tr>' +
       '<td align="center" style="border:1px solid #ccc; padding:4px 6px;">' + (i + 1) + '</td>' +
       '<td style="border:1px solid #ccc; padding:4px 6px;">' + u['ประเภทการใช้ประโยชน์'] + '</td>' +
       '<td style="border:1px solid #ccc; padding:4px 6px;">' + u['ไร่'] + ' - ' + u['งาน'] + ' - ' + u['ตร.วา'] + '</td>' +
-      '<td style="border:1px solid #ccc; padding:4px 6px;">' + u['ผู้ทำประโยชน์'] + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px;">' + who + '</td>' +
       '<td align="center" style="border:1px solid #ccc; padding:4px 6px;"><a style="cursor:pointer; color:#d33;" onclick="removeUsage(' + i + ')">&#10008;</a></td>' +
       '</tr>';
   });
   tb.innerHTML = h;
+  updateCrossHint();
+}
+
+/* เตือนเมื่อมีแถวที่ "คนอื่น" เป็นผู้ทำประโยชน์ — เขาต้องมีชุดย่อของตัวเอง */
+function updateCrossHint() {
+  var el = $('crossHint');
+  if (!el) return;
+  var others = usages.filter(function(u) {
+    return u['ผู้ทำประโยชน์'] === '3' || u['ประเภทการใช้ประโยชน์'] === '3' || u['ประเภทการใช้ประโยชน์'] === '4';
+  });
+  if (!others.length) { el.innerHTML = ''; return; }
+  var noId = others.some(function(u) { return !u['เลขบัตรผู้ทำประโยชน์']; });
+  el.innerHTML = '⚠ พบการใช้ประโยชน์โดยผู้อื่น ' + others.length + ' แถว — อย่าลืมกรอก "ชุดย่อ" ของผู้นั้น:' +
+    ' ฟอร์มเจ้าของทรัพย์สิน (บัตรเขา) → ฟอร์มสิ่งปลูกสร้าง (บ้านเขา ผูกรหัสแปลงนี้)' +
+    (noId ? ' — <b>ยังไม่ได้ใส่เลขบัตรผู้ทำประโยชน์ในบางแถว</b>' : '');
 }
 
 function collect() {
@@ -3818,6 +3932,22 @@ function saveUsed() {
   }
 
   var data = collect();
+
+  /* ตรวจผลรวมทุกแถว = เนื้อที่แปลง (ระบบกรมจะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว — ต้องครบก่อนส่ง) */
+  var arcCode = data['รหัสแปลงที่ดิน'];
+  var total = parcelTotalWah(arcCode);
+  if (total > 0) {
+    var usedWah = 0;
+    usages.forEach(function(u) { usedWah += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']); });
+    var diff = total - usedWah;
+    if (Math.abs(diff) > 0.01) {
+      var msg = diff > 0
+        ? 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nยังไม่ครบเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. (ขาดอีก ' + diff.toFixed(2) + ' ตร.ว.)'
+        : 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nเกินเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. อยู่ ' + Math.abs(diff).toFixed(2) + ' ตร.ว.';
+      if (!confirm(msg + '\n\nคำเตือน: ระบบ LTAX Online จะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว\nควรแบ่งพื้นที่ให้ครบทุกส่วนก่อนส่งข้อมูล\n\nกด "ตกลง" = บันทึกแบบนี้ / กด "ยกเลิก" = กลับมาแก้ไข')) return;
+    }
+  }
+
   LTAX_store('ltax_land_usage', data);
   showSavedModal('รหัสแปลงที่ดิน: ' + data['รหัสแปลงที่ดิน'] + ' (' + usages.length + ' รายการใช้ประโยชน์)', 'ltax_building', { ctx: { psnId: data['เลขบัตรเจ้าของที่ดิน'], parcelCode: data['รหัสแปลงที่ดิน'] } });
   $('previewBox').value = JSON.stringify(data, null, 2);
@@ -3878,6 +4008,7 @@ function loadEditRecord() {
       'ตร.วา': u['ตร.วา'],
       'ผู้ทำประโยชน์': u['ผู้ทำประโยชน์'],
       'ใช้โดย': u['ใช้โดย'],
+      'เลขบัตรผู้ทำประโยชน์': u['เลขบัตรผู้ทำประโยชน์'],
       'การเกษตรที่ทำ': u['การเกษตรที่ทำ'],
       'หมายเหตุ': u['หมายเหตุ'],
       'Path รูปที่ดิน': u['Path รูปที่ดิน'],
@@ -4712,6 +4843,8 @@ function applyNextCtx() {
 
 <script type="text/plain" id="js-ltax_sign">
 
+
+
 /* อัตราภาษีป้าย (ตามระบบจริง) */
 var RATES = { '5': 10, '6': 52, '7': 52, '1': 5, '2': 26, '3': 50 };
 
@@ -5168,11 +5301,32 @@ function getChainState(psnId) {
   if (typeof window.chainState === 'function') {
     try { return window.chainState(psnId); } catch(e) {}
   }
+  var N = function(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; };
   var lands = getList('ltax_land').filter(function(l) { return hasPsn(l['เลขบัตรเจ้าของที่ดิน'], psnId); });
   if (!lands.length) return { level: 0, msg: 'ยังไม่มีที่ดิน', ok: false };
   var lcodes = lands.map(function(l) { return String(l['รหัสแปลงที่ดิน'] || '').trim(); }).filter(Boolean);
   var lus = getList('ltax_land_usage').filter(function(u) { return lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) >= 0; });
   if (!lus.length) return { level: 1, msg: 'ยังไม่มีการใช้ประโยชน์ที่ดิน', ok: false };
+  /* ตรวจผลรวมการใช้ประโยชน์แต่ละแปลงให้ครบเนื้อที่ (พอประเมินภาษีระบบกรมจะล็อกการแก้ไข) */
+  var warn = '';
+  lands.forEach(function(l) {
+    var lc = String(l['รหัสแปลงที่ดิน'] || '').trim();
+    var t = N(l['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+    if (!(t > 0)) t = N(l['ไร่']) * 400 + N(l['งาน']) * 100 + N(l['ตร.วา']);
+    if (!(t > 0)) return;
+    var used = 0;
+    lus.forEach(function(u) {
+      if (String(u['รหัสแปลงที่ดิน'] || '').trim() !== lc) return;
+      (u['รายการใช้ประโยชน์'] || []).forEach(function(r) {
+        used += N(r['ไร่']) * 400 + N(r['งาน']) * 100 + N(r['ตร.วา']);
+      });
+    });
+    var d = t - used;
+    if (Math.abs(d) > 0.01) {
+      warn += (warn ? ' / ' : '') + lc + (d > 0 ? ' ขาดอีก ' + d.toFixed(0) + ' ตร.ว.' : ' เกิน ' + (-d).toFixed(0) + ' ตร.ว.');
+    }
+  });
+  if (warn) return { level: 2, msg: 'การใช้ประโยชน์ไม่ครบแปลง: ' + warn, ok: false };
   var blds = getList('ltax_building').filter(function(b) {
     return hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId) && lcodes.indexOf(String(b['รหัสแปลงที่ดิน'] || '').trim()) >= 0;
   });

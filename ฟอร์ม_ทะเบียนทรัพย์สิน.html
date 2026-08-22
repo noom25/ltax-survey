@@ -239,11 +239,32 @@ function getChainState(psnId) {
   if (typeof window.chainState === 'function') {
     try { return window.chainState(psnId); } catch(e) {}
   }
+  var N = function(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; };
   var lands = getList('ltax_land').filter(function(l) { return hasPsn(l['เลขบัตรเจ้าของที่ดิน'], psnId); });
   if (!lands.length) return { level: 0, msg: 'ยังไม่มีที่ดิน', ok: false };
   var lcodes = lands.map(function(l) { return String(l['รหัสแปลงที่ดิน'] || '').trim(); }).filter(Boolean);
   var lus = getList('ltax_land_usage').filter(function(u) { return lcodes.indexOf(String(u['รหัสแปลงที่ดิน'] || '').trim()) >= 0; });
   if (!lus.length) return { level: 1, msg: 'ยังไม่มีการใช้ประโยชน์ที่ดิน', ok: false };
+  /* ตรวจผลรวมการใช้ประโยชน์แต่ละแปลงให้ครบเนื้อที่ (พอประเมินภาษีระบบกรมจะล็อกการแก้ไข) */
+  var warn = '';
+  lands.forEach(function(l) {
+    var lc = String(l['รหัสแปลงที่ดิน'] || '').trim();
+    var t = N(l['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+    if (!(t > 0)) t = N(l['ไร่']) * 400 + N(l['งาน']) * 100 + N(l['ตร.วา']);
+    if (!(t > 0)) return;
+    var used = 0;
+    lus.forEach(function(u) {
+      if (String(u['รหัสแปลงที่ดิน'] || '').trim() !== lc) return;
+      (u['รายการใช้ประโยชน์'] || []).forEach(function(r) {
+        used += N(r['ไร่']) * 400 + N(r['งาน']) * 100 + N(r['ตร.วา']);
+      });
+    });
+    var d = t - used;
+    if (Math.abs(d) > 0.01) {
+      warn += (warn ? ' / ' : '') + lc + (d > 0 ? ' ขาดอีก ' + d.toFixed(0) + ' ตร.ว.' : ' เกิน ' + (-d).toFixed(0) + ' ตร.ว.');
+    }
+  });
+  if (warn) return { level: 2, msg: 'การใช้ประโยชน์ไม่ครบแปลง: ' + warn, ok: false };
   var blds = getList('ltax_building').filter(function(b) {
     return hasPsn(b['เลขบัตรเจ้าของสิ่งปลูกสร้าง'], psnId) && lcodes.indexOf(String(b['รหัสแปลงที่ดิน'] || '').trim()) >= 0;
   });

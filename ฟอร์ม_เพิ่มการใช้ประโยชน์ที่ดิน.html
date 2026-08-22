@@ -90,7 +90,7 @@
         </div>
       </div>
 
-      <div class="section-title">รายการการใช้ประโยชน์ (หลายรายการได้)</div>
+      <div class="section-title">รายการการใช้ประโยชน์ (หลายรายการได้ — ผลรวมทุกแถวต้องเท่ากับเนื้อที่แปลงพอดี)</div>
 
       <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
         <thead>
@@ -110,6 +110,7 @@
         <label></label>
         <div class="field">
           <button type="button" class="btn btn-ok" onclick="addUsage()" style="padding:5px 18px; font-weight:normal;"> + เพิ่มรายการ </button>
+          <div class="hint" id="crossHint" style="color:#b26a00;"></div>
         </div>
       </div>
 
@@ -167,6 +168,13 @@
       <div class="row">
         <label>ชื่อ-สกุล ผู้ทำประโยชน์</label>
         <div class="field"><input type="text" id="usedBy" name="landUsed.usedBy"></div>
+      </div>
+      <div class="row">
+        <label>เลขบัตรผู้ทำประโยชน์</label>
+        <div class="field">
+          <input type="text" id="usedById" maxlength="13" placeholder="13 หลัก" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          <div class="hint">ใส่เฉพาะกรณีผู้ทำประโยชน์ไม่ใช่เจ้าของที่ดิน (ประเภท 2-(2) / 2-(3)) — ผู้นั้นต้องมีชุดข้อมูลของตัวเองด้วย: ฟอร์มเจ้าของทรัพย์สิน → สิ่งปลูกสร้าง (ผูกรหัสแปลงนี้) โดยไม่ต้องกรอกฟอร์มที่ดินซ้ำ</div>
+        </div>
       </div>
 
       <div id="hideAgri" style="display:none;">
@@ -227,6 +235,22 @@
 var REQUIRED = ['usedType','raiStr','nganStr','squareWahStr'];
 
 var usages = [];
+
+var FOR_LABEL = { '1': 'ใช้เอง', '2': 'ให้เช่า', '3': 'ให้ผู้อื่นทำประโยชน์' };
+
+/* เนื้อที่แปลงรวม (ตร.ว.) จากข้อมูล ltax_land — คืน 0 ถ้าไม่พบแปลงในเครื่อง */
+function parcelTotalWah(pc) {
+  var landList = [];
+  try { landList = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { landList = []; }
+  for (var i = 0; i < landList.length; i++) {
+    if (String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === String(pc || '').trim().toUpperCase()) {
+      var t = num(landList[i]['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+      if (t <= 0) t = num(landList[i]['ไร่']) * 400 + num(landList[i]['งาน']) * 100 + num(landList[i]['ตร.วา']);
+      return t;
+    }
+  }
+  return 0;
+}
 
 function $(id) { return document.getElementById(id); }
 function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
@@ -323,6 +347,7 @@ function addUsage() {
     'ตร.วา': $('squareWahStr').value,
     'ผู้ทำประโยชน์': $('usedFor').value,
     'ใช้โดย': $('usedBy').value,
+    'เลขบัตรผู้ทำประโยชน์': $('usedById').value.trim(),
     'การเกษตรที่ทำ': $('usedType').value === '1' ? $('agriType').value : '',
     'หมายเหตุ': $('note').value,
     'Path รูปที่ดิน': $('formFile').files.length ? $('formFile').files[0].name : '',
@@ -343,7 +368,7 @@ function removeUsage(i) {
 function clearUsageEntry() {
   $('usedType').value = '';
   $('raiStr').value = '0'; $('nganStr').value = '0'; $('squareWahStr').value = '0.00';
-  $('usedFor').value = ''; $('usedBy').value = ''; $('agriType').value = '';
+  $('usedFor').value = ''; $('usedBy').value = ''; $('usedById').value = ''; $('agriType').value = '';
   $('note').value = ''; $('formFile').value = '';
   photoData = ''; $('photoStatus').textContent = '';
   $('areaWarn').innerHTML = '';
@@ -355,19 +380,40 @@ function renderUsage() {
   var tb = $('usageTable');
   if (!usages.length) {
     tb.innerHTML = '<tr><td colspan="5" style="border:1px solid #ccc; padding:8px; text-align:center; color:#888;">ยังไม่พบข้อมูล — กด "เพิ่มรายการ"</td></tr>';
+    updateCrossHint();
     return;
   }
   var h = '';
   usages.forEach(function(u, i) {
+    var who = FOR_LABEL[u['ผู้ทำประโยชน์']] || (u['ผู้ทำประโยชน์'] || '-');
+    if (u['ใช้โดย']) {
+      who += '<br><span style="font-size:11px; color:#666;">' + u['ใช้โดย'] +
+             (u['เลขบัตรผู้ทำประโยชน์'] ? ' (' + u['เลขบัตรผู้ทำประโยชน์'] + ')' : '') + '</span>';
+    }
     h += '<tr>' +
       '<td align="center" style="border:1px solid #ccc; padding:4px 6px;">' + (i + 1) + '</td>' +
       '<td style="border:1px solid #ccc; padding:4px 6px;">' + u['ประเภทการใช้ประโยชน์'] + '</td>' +
       '<td style="border:1px solid #ccc; padding:4px 6px;">' + u['ไร่'] + ' - ' + u['งาน'] + ' - ' + u['ตร.วา'] + '</td>' +
-      '<td style="border:1px solid #ccc; padding:4px 6px;">' + u['ผู้ทำประโยชน์'] + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px;">' + who + '</td>' +
       '<td align="center" style="border:1px solid #ccc; padding:4px 6px;"><a style="cursor:pointer; color:#d33;" onclick="removeUsage(' + i + ')">&#10008;</a></td>' +
       '</tr>';
   });
   tb.innerHTML = h;
+  updateCrossHint();
+}
+
+/* เตือนเมื่อมีแถวที่ "คนอื่น" เป็นผู้ทำประโยชน์ — เขาต้องมีชุดย่อของตัวเอง */
+function updateCrossHint() {
+  var el = $('crossHint');
+  if (!el) return;
+  var others = usages.filter(function(u) {
+    return u['ผู้ทำประโยชน์'] === '3' || u['ประเภทการใช้ประโยชน์'] === '3' || u['ประเภทการใช้ประโยชน์'] === '4';
+  });
+  if (!others.length) { el.innerHTML = ''; return; }
+  var noId = others.some(function(u) { return !u['เลขบัตรผู้ทำประโยชน์']; });
+  el.innerHTML = '⚠ พบการใช้ประโยชน์โดยผู้อื่น ' + others.length + ' แถว — อย่าลืมกรอก "ชุดย่อ" ของผู้นั้น:' +
+    ' ฟอร์มเจ้าของทรัพย์สิน (บัตรเขา) → ฟอร์มสิ่งปลูกสร้าง (บ้านเขา ผูกรหัสแปลงนี้)' +
+    (noId ? ' — <b>ยังไม่ได้ใส่เลขบัตรผู้ทำประโยชน์ในบางแถว</b>' : '');
 }
 
 function collect() {
@@ -409,6 +455,22 @@ function saveUsed() {
   }
 
   var data = collect();
+
+  /* ตรวจผลรวมทุกแถว = เนื้อที่แปลง (ระบบกรมจะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว — ต้องครบก่อนส่ง) */
+  var arcCode = data['รหัสแปลงที่ดิน'];
+  var total = parcelTotalWah(arcCode);
+  if (total > 0) {
+    var usedWah = 0;
+    usages.forEach(function(u) { usedWah += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']); });
+    var diff = total - usedWah;
+    if (Math.abs(diff) > 0.01) {
+      var msg = diff > 0
+        ? 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nยังไม่ครบเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. (ขาดอีก ' + diff.toFixed(2) + ' ตร.ว.)'
+        : 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nเกินเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. อยู่ ' + Math.abs(diff).toFixed(2) + ' ตร.ว.';
+      if (!confirm(msg + '\n\nคำเตือน: ระบบ LTAX Online จะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว\nควรแบ่งพื้นที่ให้ครบทุกส่วนก่อนส่งข้อมูล\n\nกด "ตกลง" = บันทึกแบบนี้ / กด "ยกเลิก" = กลับมาแก้ไข')) return;
+    }
+  }
+
   LTAX_store('ltax_land_usage', data);
   showSavedModal('รหัสแปลงที่ดิน: ' + data['รหัสแปลงที่ดิน'] + ' (' + usages.length + ' รายการใช้ประโยชน์)', 'ltax_building', { ctx: { psnId: data['เลขบัตรเจ้าของที่ดิน'], parcelCode: data['รหัสแปลงที่ดิน'] } });
   $('previewBox').value = JSON.stringify(data, null, 2);
@@ -469,6 +531,7 @@ function loadEditRecord() {
       'ตร.วา': u['ตร.วา'],
       'ผู้ทำประโยชน์': u['ผู้ทำประโยชน์'],
       'ใช้โดย': u['ใช้โดย'],
+      'เลขบัตรผู้ทำประโยชน์': u['เลขบัตรผู้ทำประโยชน์'],
       'การเกษตรที่ทำ': u['การเกษตรที่ทำ'],
       'หมายเหตุ': u['หมายเหตุ'],
       'Path รูปที่ดิน': u['Path รูปที่ดิน'],
