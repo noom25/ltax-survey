@@ -61,10 +61,11 @@
   }
   .view-kv .k span { display: table-cell; padding: 6px 10px; border: 1px solid #d2d6de; background: #fff; }
 
-  table.reg-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; margin-bottom: 12px; }
+  table.reg-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; margin-bottom: 12px; table-layout: auto; }
   table.reg-tbl th {
     background: #3c8dbc; color: #fff; border: 1px solid #367fa9;
     padding: 6px 8px; text-align: left; font-weight: 600;
+    min-width: 40px; white-space: nowrap;
   }
   table.reg-tbl td { border: 1px solid #d2d6de; padding: 6px 8px; }
   table.reg-tbl tr:nth-child(even) { background: #f9fbfd; }
@@ -109,8 +110,8 @@
     .panel-head { background: none; color: #000; font-size: 16pt; padding: 0 0 10px 0; border-bottom: 2px solid #000; }
     .panel-body { padding: 0; }
     .section-title { background: #eee; color: #000; border-left: 3px solid #000; border-top: none; border-right: none; font-size: 12pt; page-break-after: avoid; }
-    table.reg-tbl th { background: #ddd !important; color: #000 !important; border: 1px solid #888; }
-    table.reg-tbl td { border: 1px solid #888; }
+    table.reg-tbl th { background: #ddd !important; color: #000 !important; border: 1px solid #888; white-space: nowrap; }
+    table.reg-tbl td { border: 1px solid #888; overflow-wrap: break-word; word-break: break-word; }
     .view-kv .k b { background: #f0f0f0; color: #000; border: 1px solid #888; }
     .view-kv .k span { border: 1px solid #888; }
     .summary-card { border: 1px solid #888; background: #f9f9f9; }
@@ -184,10 +185,12 @@ function fmtArea(r) {
   return (r['ไร่'] || '0') + '-' + (r['งาน'] || '0') + '-' + (r['ตร.วา'] || '0') + ' ไร่-งาน-วา';
 }
 
-function fmtNum(n) {
-  var num = parseFloat(n);
-  if (isNaN(num)) return '-';
-  return num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function num(v) { var n = parseFloat(String(v == null ? '' : v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+
+function fmtNum(v) {
+  var val = num(v);
+  if (val === 0 && String(v == null ? '' : v).trim() === '') return '-';
+  return val.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /* ── แปลงรหัส จ/อ/ต เป็นชื่อภาษาไทย (จาก ADMIN_DATA) ── */
@@ -387,8 +390,9 @@ function renderRegistry(psnId) {
   } else {
     lands.forEach(function(l, idx) {
       var lCode = String(l['รหัสแปลงที่ดิน'] || '').trim();
-      var wah = parseFloat(l['รวมเนื้อที่ทั้งหมด (ตร.ว.)']) || 0;
-      var price = parseFloat(l['รวมราคาประเมินที่ดิน (บาท)']) || 0;
+      var wah = num(l['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+      if (!(wah > 0)) wah = num(l['ไร่']) * 400 + num(l['งาน']) * 100 + num(l['ตร.วา']);
+      var price = num(l['รวมราคาประเมินที่ดิน (บาท)']);
       totalLandAreaWah += wah;
       totalLandPrice += price;
 
@@ -413,7 +417,7 @@ function renderRegistry(psnId) {
       if (usages.length) {
         var uDesc = usages.map(function(u) {
           return '• ' + (u['ประเภทการใช้ประโยชน์'] || '-') + ' (' + (u['ไร่'] || 0) + '-' + (u['งาน'] || 0) + '-' + (u['ตร.วา'] || 0) + ' วา) โดย: ' + (u['ผู้ทำประโยชน์'] || '-');
-        }).join(' &nbsp;|&nbsp; ');
+        }).join(' | ');
         h += '<tr class="sub-row"><td colspan="8"><b>การใช้ประโยชน์:</b> ' + esc(uDesc) + '</td></tr>';
       }
     });
@@ -468,7 +472,7 @@ function renderRegistry(psnId) {
       if (usages.length) {
         var uDesc = usages.map(function(u) {
           return '• ' + (u['ประเภทการใช้งาน'] || '-') + ' (ชั้น ' + (u['ชั้นที่'] || '-') + ', ' + (u['พื้นที่รวม(ตร.ม.)'] || '-') + ' ตร.ม.) ' + (u['ลักษณะการใช้'] || '');
-        }).join(' &nbsp;|&nbsp; ');
+        }).join(' | ');
         h += '<tr class="sub-row"><td colspan="9"><b>การใช้ประโยชน์อาคาร:</b> ' + esc(uDesc) + '</td></tr>';
       }
     });

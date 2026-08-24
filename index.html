@@ -91,6 +91,7 @@
 </style>
 <script src="admin_data.js"></script>
 <script src="db.js"></script>
+<script src="db_helpers.js"></script>
 </head>
 <body>
 <div id="view-home">
@@ -250,9 +251,11 @@
   </div>
 </div>
 
+<script src="admin_data.js"></script>
+<script src="db.js"></script>
 <script>
 /* =========================================================
-   ค้นหา / ดูข้อมูลที่กรอกแล้ว (จาก localStorage)
+   ค้นหา / ดูข้อมูลที่กรอกแล้ว (จาก LTAXDB / localStorage)
    ========================================================= */
 var SEARCH_META = {
   'ltax_owner':          { label: 'เจ้าของทรัพย์สิน',       form: 'ltax_owner',          key: 'เลขบัตรประชาชน', desc: function(r){ return r['ชื่อ'] + ' ' + r['นามสกุล']; } },
@@ -276,6 +279,11 @@ function $(id) { return document.getElementById(id); }
 
 function getList(key) {
   try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { return []; }
+}
+// Async: ดึงผ่าน LTAXDB (ใช้คู่กับ getListSync สำหรับฟังก์ชันที่รับ async ได้)
+function getListAsync(key) {
+  if (window.LTAXDB) return LTAXDB.getAllSurveys(key);
+  return Promise.resolve(getList(key));
 }
 
 function checkFormPrerequisites(formId) {
@@ -404,6 +412,8 @@ function openAssetRegistry(psnId) {
 
 function saveList(key, arr) {
   try { localStorage.setItem(key, JSON.stringify(arr)); } catch(e) {}
+  // dual-write ไป LTAXDB ด้วย (fire-and-forget)
+  if (window.LTAXDB) { LTAXDB.set(key, arr).catch(function(err) { console.warn('LTAXDB saveList error:', err); }); }
 }
 
 function deleteRecord(lkey, idx) {
@@ -1133,6 +1143,7 @@ refreshRefStats();
 
 
 
+
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
 #ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
@@ -1485,6 +1496,7 @@ refreshRefStats();
 
 
 
+
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
 #ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
@@ -1747,6 +1759,7 @@ refreshRefStats();
     <textarea id="previewBox" readonly></textarea>
   </div>
 </div>
+
 
 
 <style>
@@ -2062,6 +2075,8 @@ refreshRefStats();
 </div>
 
 
+
+
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
 #ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
@@ -2277,6 +2292,7 @@ refreshRefStats();
     <textarea id="previewBox" readonly></textarea>
   </div>
 </div>
+
 
 
 <style>
@@ -2578,6 +2594,7 @@ refreshRefStats();
 
 
 
+
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
 #ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
@@ -2672,10 +2689,11 @@ refreshRefStats();
   }
   .view-kv .k span { display: table-cell; padding: 6px 10px; border: 1px solid #d2d6de; background: #fff; }
 
-  table.reg-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; margin-bottom: 12px; }
+  table.reg-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; margin-bottom: 12px; table-layout: auto; }
   table.reg-tbl th {
     background: #3c8dbc; color: #fff; border: 1px solid #367fa9;
     padding: 6px 8px; text-align: left; font-weight: 600;
+    min-width: 40px; white-space: nowrap;
   }
   table.reg-tbl td { border: 1px solid #d2d6de; padding: 6px 8px; }
   table.reg-tbl tr:nth-child(even) { background: #f9fbfd; }
@@ -2720,8 +2738,8 @@ refreshRefStats();
     .panel-head { background: none; color: #000; font-size: 16pt; padding: 0 0 10px 0; border-bottom: 2px solid #000; }
     .panel-body { padding: 0; }
     .section-title { background: #eee; color: #000; border-left: 3px solid #000; border-top: none; border-right: none; font-size: 12pt; page-break-after: avoid; }
-    table.reg-tbl th { background: #ddd !important; color: #000 !important; border: 1px solid #888; }
-    table.reg-tbl td { border: 1px solid #888; }
+    table.reg-tbl th { background: #ddd !important; color: #000 !important; border: 1px solid #888; white-space: nowrap; }
+    table.reg-tbl td { border: 1px solid #888; overflow-wrap: break-word; word-break: break-word; }
     .view-kv .k b { background: #f0f0f0; color: #000; border: 1px solid #888; }
     .view-kv .k span { border: 1px solid #888; }
     .summary-card { border: 1px solid #888; background: #f9f9f9; }
@@ -2763,6 +2781,8 @@ refreshRefStats();
   </div>
 
 </div>
+
+
 
 
 
@@ -2979,10 +2999,13 @@ refreshRefStats();
 
 
 
+
 </template>
 
 <!-- สคริปต์ของฟอร์ม — แยกเก็บ ไม่รันตอนโหลด (รันเมื่อเปิดฟอร์ม) -->
 <script type="text/plain" id="js-ltax_owner">
+
+
 
 
 
@@ -3205,21 +3228,31 @@ document.addEventListener('click', function(e) {
   }
 });
 
-/* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
+/* ---------- เก็บข้อมูล: LTAXDB (IndexedDB) ---------- */
 window.__editKey = null;
 window.__editIdx = -1;
+
 function LTAX_store(key, record) {
-  var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-    list[window.__editIdx] = record;
-  } else {
-    list.push(record);
+  if (!window.LTAXDB) {
+    console.error('LTAXDB ไม่พร้อมใช้งาน');
+    return Promise.reject(new Error('LTAXDB ไม่พร้อมใช้งาน'));
   }
-  localStorage.setItem(key, JSON.stringify(list));
-  window.__editKey = null;
-  window.__editIdx = -1;
+  
+  if (window.__editKey === key && window.__editIdx >= 0) {
+    return LTAXDB.updateSurvey(key, window.__editIdx, record)
+      .then(function(updatedRecord) {
+        window.__editKey = null;
+        window.__editIdx = -1;
+        return updatedRecord;
+      });
+  } else {
+    return LTAXDB.saveSurvey(key, record)
+      .then(function(id) {
+        return id;
+      });
+  }
 }
+
 function LTAX_download(filename, record) {
   var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
   var a = document.createElement('a');
@@ -3450,6 +3483,8 @@ setTimeout(applyNextCtx, 0);
 
 
 
+
+
 /* =========================================================
    ข้อมูลอ้างอิง (ต้นแบบ - จะ sync ให้ตรงกับระบบ LTAX จริงต่อไป)
    ========================================================= */
@@ -3555,6 +3590,36 @@ function checkLandPrice() {
 window.__editKey = null;
 window.__editIdx = -1;
 function LTAX_store(key, record) {
+  // ใช้ LTAXDB (IndexedDB) เป็นหลัก + เขียน localStorage ด้วยเพื่อ backward compat
+  if (window.LTAXDB) {
+    var promise;
+    if (window.__editKey === key && window.__editIdx >= 0) {
+      promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
+    } else {
+      promise = LTAXDB.saveSurvey(key, record);
+    }
+    promise.then(function() {
+      // sync กลับ localStorage ให้โค้ดเดิมที่อ่านผ่าน getList() ยังทำงานได้
+      return LTAXDB.getAllSurveys(key);
+    }).then(function(list) {
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
+    }).catch(function(err) {
+      console.error('LTAXDB store error:', err);
+      // fallback: เขียน localStorage ตรงๆ
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+        list[window.__editIdx] = record;
+      } else {
+        list.push(record);
+      }
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e2) {}
+    });
+    window.__editKey = null;
+    window.__editIdx = -1;
+    return;
+  }
+  // Fallback: localStorage ตรงๆ (กรณี LTAXDB ไม่พร้อม)
   var list = [];
   try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
   if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
@@ -3787,6 +3852,8 @@ function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
 </script>
 
 <script type="text/plain" id="js-ltax_land_usage">
+
+
 
 var REQUIRED = ['usedType','raiStr','nganStr','squareWahStr'];
 
@@ -4038,17 +4105,39 @@ function saveUsed() {
 window.__editKey = null;
 window.__editIdx = -1;
 function LTAX_store(key, record) {
+  if (window.LTAXDB) {
+    var promise;
+    if (window.__editKey === key && window.__editIdx >= 0) {
+      promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
+    } else {
+      promise = LTAXDB.saveSurvey(key, record);
+    }
+    promise.then(function() {
+      return LTAXDB.getAllSurveys(key);
+    }).then(function(list) {
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
+    }).catch(function(err) {
+      console.error('LTAXDB store error:', err);
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+        list[window.__editIdx] = record;
+      } else { list.push(record); }
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
+        alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
+      }
+    });
+    window.__editKey = null;
+    window.__editIdx = -1;
+    return;
+  }
   var list = [];
   try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
   if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
     list[window.__editIdx] = record;
-  } else {
-    list.push(record);
-  }
-  try {
-    localStorage.setItem(key, JSON.stringify(list));
-  } catch(e) {
-    alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
+  } else { list.push(record); }
+  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
+    alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม'); 
   }
   window.__editKey = null;
   window.__editIdx = -1;
@@ -4180,6 +4269,10 @@ setTimeout(function() { recalcRemain(); }, 100);
 </script>
 
 <script type="text/plain" id="js-ltax_building">
+
+
+
+
 
 /* ประเภทสิ่งปลูกสร้าง (รหัสจริงจากระบบ 101-614) */
 var BUILDING_TYPES = [
@@ -4446,16 +4539,37 @@ function calAge() { /* since -> age */
 window.__editKey = null;
 window.__editIdx = -1;
 function LTAX_store(key, record) {
+  // ใช้ LTAXDB (IndexedDB) เป็นหลัก + เขียน localStorage ด้วยเพื่อ backward compat
+  if (window.LTAXDB) {
+    var promise;
+    if (window.__editKey === key && window.__editIdx >= 0) {
+      promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
+    } else {
+      promise = LTAXDB.saveSurvey(key, record);
+    }
+    promise.then(function() {
+      return LTAXDB.getAllSurveys(key);
+    }).then(function(list) {
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
+    }).catch(function(err) {
+      console.error('LTAXDB store error:', err);
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+        list[window.__editIdx] = record;
+      } else { list.push(record); }
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e2) {}
+    });
+    window.__editKey = null;
+    window.__editIdx = -1;
+    return;
+  }
   var list = [];
   try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
   if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
     list[window.__editIdx] = record;
-  } else {
-    list.push(record);
-  }
-  try {
-    localStorage.setItem(key, JSON.stringify(list));
-  } catch(e) {
+  } else { list.push(record); }
+  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
     alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
   }
   window.__editKey = null;
@@ -4700,19 +4814,43 @@ function autoFillLandArea(parcelCode) {
 
 <script type="text/plain" id="js-ltax_building_usage">
 
+
+
 function $(id) { return document.getElementById(id); }
 
 var usages = [];
 var editIdx = -1;
 
 function LTAX_store(key, record) {
+  if (window.LTAXDB) {
+    var promise;
+    if (window.__editKey === key && window.__editIdx >= 0) {
+      promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
+    } else {
+      promise = LTAXDB.saveSurvey(key, record);
+    }
+    promise.then(function() {
+      return LTAXDB.getAllSurveys(key);
+    }).then(function(list) {
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
+    }).catch(function(err) {
+      console.error('LTAXDB store error:', err);
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+        list[window.__editIdx] = record;
+      } else { list.push(record); }
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e2) {}
+    });
+    window.__editKey = null;
+    window.__editIdx = -1;
+    return;
+  }
   var list = [];
   try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
   if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
     list[window.__editIdx] = record;
-  } else {
-    list.push(record);
-  }
+  } else { list.push(record); }
   localStorage.setItem(key, JSON.stringify(list));
   window.__editKey = null;
   window.__editIdx = -1;
@@ -5010,6 +5148,8 @@ function applyNextCtx() {
 
 
 
+
+
 /* อัตราภาษีป้าย (ตามระบบจริง) */
 var RATES = { '5': 10, '6': 52, '7': 52, '1': 5, '2': 26, '3': 50 };
 
@@ -5154,16 +5294,38 @@ function recalcTax() {
 window.__editKey = null;
 window.__editIdx = -1;
 function LTAX_store(key, record) {
+  if (window.LTAXDB) {
+    var promise;
+    if (window.__editKey === key && window.__editIdx >= 0) {
+      promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
+    } else {
+      promise = LTAXDB.saveSurvey(key, record);
+    }
+    promise.then(function() {
+      return LTAXDB.getAllSurveys(key);
+    }).then(function(list) {
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
+    }).catch(function(err) {
+      console.error('LTAXDB store error:', err);
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+        list[window.__editIdx] = record;
+      } else { list.push(record); }
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
+        alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
+      }
+    });
+    window.__editKey = null;
+    window.__editIdx = -1;
+    return;
+  }
   var list = [];
   try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
   if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
     list[window.__editIdx] = record;
-  } else {
-    list.push(record);
-  }
-  try {
-    localStorage.setItem(key, JSON.stringify(list));
-  } catch(e) {
+  } else { list.push(record); }
+  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
     alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
   }
   window.__editKey = null;
@@ -5382,8 +5544,13 @@ function applyNextCtx() {
 
 <script type="text/plain" id="js-ltax_asset">
 
+
+
+
+
 /* =========================================================
-   ทะเบียนทรัพย์สินและเจ้าของ (AST001) — รวมทุกหมวดของเจ้าของรายเดียว
+   ทะเบียนทรัพย์สินและเจ้าของ (AST001) — รวมทุกหมวดฯ
+   อ่านจาก LTAXDB / localStorage
    ========================================================= */
 
 function $(id) { return document.getElementById(id); }
@@ -5408,10 +5575,12 @@ function fmtArea(r) {
   return (r['ไร่'] || '0') + '-' + (r['งาน'] || '0') + '-' + (r['ตร.วา'] || '0') + ' ไร่-งาน-วา';
 }
 
-function fmtNum(n) {
-  var num = parseFloat(n);
-  if (isNaN(num)) return '-';
-  return num.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function num(v) { var n = parseFloat(String(v == null ? '' : v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+
+function fmtNum(v) {
+  var val = num(v);
+  if (val === 0 && String(v == null ? '' : v).trim() === '') return '-';
+  return val.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /* ── แปลงรหัส จ/อ/ต เป็นชื่อภาษาไทย (จาก ADMIN_DATA) ── */
@@ -5611,8 +5780,9 @@ function renderRegistry(psnId) {
   } else {
     lands.forEach(function(l, idx) {
       var lCode = String(l['รหัสแปลงที่ดิน'] || '').trim();
-      var wah = parseFloat(l['รวมเนื้อที่ทั้งหมด (ตร.ว.)']) || 0;
-      var price = parseFloat(l['รวมราคาประเมินที่ดิน (บาท)']) || 0;
+      var wah = num(l['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+      if (!(wah > 0)) wah = num(l['ไร่']) * 400 + num(l['งาน']) * 100 + num(l['ตร.วา']);
+      var price = num(l['รวมราคาประเมินที่ดิน (บาท)']);
       totalLandAreaWah += wah;
       totalLandPrice += price;
 
@@ -5637,7 +5807,7 @@ function renderRegistry(psnId) {
       if (usages.length) {
         var uDesc = usages.map(function(u) {
           return '• ' + (u['ประเภทการใช้ประโยชน์'] || '-') + ' (' + (u['ไร่'] || 0) + '-' + (u['งาน'] || 0) + '-' + (u['ตร.วา'] || 0) + ' วา) โดย: ' + (u['ผู้ทำประโยชน์'] || '-');
-        }).join(' &nbsp;|&nbsp; ');
+        }).join(' | ');
         h += '<tr class="sub-row"><td colspan="8"><b>การใช้ประโยชน์:</b> ' + esc(uDesc) + '</td></tr>';
       }
     });
@@ -5692,7 +5862,7 @@ function renderRegistry(psnId) {
       if (usages.length) {
         var uDesc = usages.map(function(u) {
           return '• ' + (u['ประเภทการใช้งาน'] || '-') + ' (ชั้น ' + (u['ชั้นที่'] || '-') + ', ' + (u['พื้นที่รวม(ตร.ม.)'] || '-') + ' ตร.ม.) ' + (u['ลักษณะการใช้'] || '');
-        }).join(' &nbsp;|&nbsp; ');
+        }).join(' | ');
         h += '<tr class="sub-row"><td colspan="9"><b>การใช้ประโยชน์อาคาร:</b> ' + esc(uDesc) + '</td></tr>';
       }
     });
@@ -5825,6 +5995,8 @@ function goBack() {
 </script>
 
 <script type="text/plain" id="js-ltax_photo">
+
+
 
 /* =========================================================
    ข้อมูลหมวด + รายการรหัส (จาก localStorage ที่กรอกในฟอร์มแล้ว)
@@ -6334,8 +6506,12 @@ refreshAll();
 <script>
 /* ===== สคริปต์หน้าแรก + router + PWA (จาก home.html) ===== */
 
+
+
+
+
 /* =========================================================
-   ค้นหา / ดูข้อมูลที่กรอกแล้ว (จาก localStorage)
+   ค้นหา / ดูข้อมูลที่กรอกแล้ว (จาก LTAXDB / localStorage)
    ========================================================= */
 var SEARCH_META = {
   'ltax_owner':          { label: 'เจ้าของทรัพย์สิน',       form: 'ltax_owner',          key: 'เลขบัตรประชาชน', desc: function(r){ return r['ชื่อ'] + ' ' + r['นามสกุล']; } },
@@ -6359,6 +6535,11 @@ function $(id) { return document.getElementById(id); }
 
 function getList(key) {
   try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { return []; }
+}
+// Async: ดึงผ่าน LTAXDB (ใช้คู่กับ getListSync สำหรับฟังก์ชันที่รับ async ได้)
+function getListAsync(key) {
+  if (window.LTAXDB) return LTAXDB.getAllSurveys(key);
+  return Promise.resolve(getList(key));
 }
 
 function checkFormPrerequisites(formId) {
@@ -6487,6 +6668,8 @@ function openAssetRegistry(psnId) {
 
 function saveList(key, arr) {
   try { localStorage.setItem(key, JSON.stringify(arr)); } catch(e) {}
+  // dual-write ไป LTAXDB ด้วย (fire-and-forget)
+  if (window.LTAXDB) { LTAXDB.set(key, arr).catch(function(err) { console.warn('LTAXDB saveList error:', err); }); }
 }
 
 function deleteRecord(lkey, idx) {
