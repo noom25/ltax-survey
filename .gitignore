@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+
+# IDE / editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# โฟลเดอร์ภายในของ AI (ไม่ควรขึ้น git)
+.opencode/
+
+# Screenshots / ไฟล์ zip ทดสอบ
+screenshots/
+
+# Excel output ที่มีข้อมูลจริง (กรณีสร้างใหม่แล้วแต่อยากกันหลุด)
+# owner_land_building_template.xlsx

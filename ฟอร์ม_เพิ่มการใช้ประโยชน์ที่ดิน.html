@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เพิ่มการใช้ประโยชน์ที่ดิน</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tahoma', 'Segoe UI', sans-serif; background: #f2f2f2; font-size: 14px; }
+
+  header {
+    background: linear-gradient(#1b4f8a, #153d6b);
+    color: #fff; padding: 8px 20px; font-size: 15px; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  header .org { font-weight: normal; font-size: 12px; }
+  header .org b { color: #ffd75e; }
+
+  .container { max-width: 1000px; margin: 15px auto; padding: 0 10px; }
+  .panel { background: #fff; border: 1px solid #c8c8c8; border-radius: 4px; margin-bottom: 12px; }
+  .panel-head {
+    background: #2b6cb0; color: #fff; font-weight: bold;
+    padding: 8px 14px; border-radius: 4px 4px 0 0; font-size: 15px;
+  }
+  .panel-body { padding: 14px; }
+  .section-title {
+    background: #e8f0f8; color: #1b4f8a; font-weight: bold;
+    padding: 6px 10px; border-left: 4px solid #2b6cb0;
+    margin: 16px 0 8px 0; font-size: 14px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .row { display: flex; align-items: flex-start; margin-bottom: 8px; }
+  .row label { width: 220px; padding: 6px 8px; text-align: right; flex-shrink: 0; }
+  .row label .req { color: #d33; font-weight: bold; }
+  .row .field { flex: 1; padding: 0 4px; }
+  .row .field input[type=text], .row .field select, .row .field textarea {
+    width: 100%; padding: 5px 8px; border: 1px solid #b0b0b0; border-radius: 3px;
+    font-size: 14px; font-family: inherit;
+  }
+  .row .field input[readonly] { background: #f5f5f5; }
+  .row .field .area { display: inline-flex; gap: 6px; width: 100%; align-items: center; }
+  .row .field .area input { flex: 1; }
+  .row .field .area span { color: #666; font-size: 13px; flex-shrink: 0; }
+  .hint { color: #888; font-size: 12px; padding: 4px 6px 0 6px; }
+
+  .btn-bar { text-align: center; margin: 10px 0 20px 0; }
+  .btn {
+    padding: 7px 26px; font-size: 14px; border-radius: 4px; border: 1px solid;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+  .btn-ok { background: #2e7d32; border-color: #1b5e20; color: #fff; }
+  .btn-ok:hover { background: #1b5e20; }
+  .btn-back { background: #f5f5f5; border-color: #b0b0b0; color: #333; }
+  .btn-back:hover { background: #e0e0e0; }
+
+  #preview { margin-top: 10px; }
+  #preview textarea { width: 100%; height: 130px; font-size: 12px; font-family: Consolas, monospace; }
+  .preview-head {
+    background: #fff3cd; border: 1px solid #e6c65a; color: #7a5c00;
+    padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div><b>LTAX</b> ONLINE :: แก้ไขข้อมูลการใช้ประโยชน์ที่ดิน</div>
+  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
+</header>
+<div class="content-info">ระบบทะเบียนทรัพย์สิน : <b>การใช้ประโยชน์ที่ดิน (LND001-USE)</b> <span style="float:right;">แบบเพิ่ม/แก้ไขรายการใช้ประโยชน์</span></div>
+
+<div class="container">
+  <div class="panel">
+    <div class="panel-head">แก้ไขข้อมูลการใช้ประโยชน์ที่ดิน</div>
+    <div class="panel-body">
+
+      <div class="row">
+        <label>เลขบัตรเจ้าของที่ดิน <span class="req">*</span></label>
+        <div class="field"><input type="text" id="psnId" maxlength="13" placeholder="13 หลัก"></div>
+      </div>
+
+      <div class="row">
+        <label>รหัสแปลงที่ดิน (ผูก)</label>
+        <div class="field">
+          <div class="inline" style="display:inline-flex; gap:8px; width:100%;">
+            <input type="text" id="landParcelCode" placeholder="ตัวอย่าง: 50A001" onblur="this.value=this.value.toUpperCase()" onchange="recalcRemain()">
+            <input type="text" id="remainWah" placeholder="พื้นที่แปลงคงเหลือ (ตร.ว.)" style="max-width:200px;">
+          </div>
+          <div class="hint">พื้นที่แปลงคงเหลือ = เนื้อที่แปลง - พื้นที่ใช้ไปแล้ว (ระบบจะตรวจว่าห้ามเกิน)</div>
+        </div>
+      </div>
+
+      <div class="section-title">รายการการใช้ประโยชน์ (หลายรายการได้ — ผลรวมทุกแถวต้องเท่ากับเนื้อที่แปลงพอดี)</div>
+
+      <table style="width:100%; border-collapse:collapse; margin-bottom:8px;">
+        <thead>
+          <tr style="background:#e8f0f8;">
+            <th style="border:1px solid #ccc; padding:4px 6px;">ลำดับ</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;">ประเภทการใช้ประโยชน์</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;">เนื้อที่ (ไร่-งาน-ตร.ว.)</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;">ผู้ทำประโยชน์</th>
+            <th style="border:1px solid #ccc; padding:4px 6px;"></th>
+          </tr>
+        </thead>
+        <tbody id="usageTable">
+          <tr><td colspan="5" style="border:1px solid #ccc; padding:8px; text-align:center; color:#888;">ยังไม่พบข้อมูล — กด "เพิ่มรายการ"</td></tr>
+        </tbody>
+      </table>
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <button type="button" class="btn btn-ok" onclick="addUsage()" style="padding:5px 18px; font-weight:normal;"> + เพิ่มรายการ </button>
+          <div class="hint" id="crossHint" style="color:#b26a00;"></div>
+        </div>
+      </div>
+
+      <div class="section-title">กรอกข้อมูลรายการ (รายการล่าสุดที่กำลังเพิ่ม)</div>
+
+      <div class="row">
+        <label>ประเภทการใช้ประโยชน์ที่ดิน <span class="req">*</span></label>
+        <div class="field">
+          <select id="usedType" name="landUsed.usedType" onchange="hideAgri()">
+            <option value="">กรุณาเลือก</option>
+            <option value="1">1-เกษตรกรรม</option>
+            <option value="2">2-(1)ที่อยู่อาศัย - หลังหลัก และ หลังอื่นๆอยู่บนพื้นที่เดียวกัน</option>
+            <option value="3">2-(2)ที่อยู่อาศัย - หลังหลัก (กรณีไม่ใช่เจ้าของกรรมสิทธิ์ที่ดิน)</option>
+            <option value="4">2-(3)ที่อยู่อาศัย - หลังอื่นๆ</option>
+            <option value="5">3-อื่นๆ (ไม่ใช่เกษตรกรรมหรือที่อยู่อาศัย)</option>
+            <option value="6">4-ทิ้งไว้ว่างเปล่า/รกร้าง</option>
+            <option value="8">4-ทิ้งไว้ว่างเปล่า/รกร้าง (ตั้งแต่ 3 ปีขึ้นไป)</option>
+            <option value="9">4-ทิ้งไว้ว่างเปล่า/รกร้าง (ตั้งแต่ 6 ปีขึ้นไป)</option>
+            <option value="7">5-ใช้ประโยชน์หลายประเภท</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>เนื้อที่การใช้ประโยชน์ (ไร่-งาน-ตร.ว.) <span class="req">*</span></label>
+        <div class="field">
+          <div class="area">
+            <input type="text" id="raiStr" name="landUsed.raiStr" value="0" oninput="calArea()">
+            <span>ไร่</span>
+            <input type="text" id="nganStr" name="landUsed.nganStr" value="0" oninput="calArea()">
+            <span>งาน</span>
+            <input type="text" id="squareWahStr" name="landUsed.squareWahStr" value="0.00" oninput="calArea()">
+            <span>ตร.ว.</span>
+          </div>
+          <div class="area-total">
+            <span>รวม</span>
+            <input type="text" id="usedTotalWahStr" readonly oninput="calArea()">
+            <span>ตร.ว.</span>
+          </div>
+          <div class="hint" id="areaWarn"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>ผู้ทำประโยชน์</label>
+        <div class="field">
+          <select id="usedFor" name="landUsed.usedFor">
+            <option value="">กรุณาเลือก</option>
+            <option value="1">ใช้เอง</option>
+            <option value="2">ให้เช่า</option>
+            <option value="3">ให้บุคคลอื่นทำประโยชน์</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>ชื่อ-สกุล ผู้ทำประโยชน์</label>
+        <div class="field"><input type="text" id="usedBy" name="landUsed.usedBy"></div>
+      </div>
+      <div class="row">
+        <label>เลขบัตรผู้ทำประโยชน์</label>
+        <div class="field">
+          <input type="text" id="usedById" maxlength="13" placeholder="13 หลัก" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          <div class="hint">ใส่เฉพาะกรณีผู้ทำประโยชน์ไม่ใช่เจ้าของที่ดิน (ประเภท 2-(2) / 2-(3)) — ผู้นั้นต้องมีชุดข้อมูลของตัวเองด้วย: ฟอร์มเจ้าของทรัพย์สิน → สิ่งปลูกสร้าง (ผูกรหัสแปลงนี้) โดยไม่ต้องกรอกฟอร์มที่ดินซ้ำ</div>
+        </div>
+      </div>
+
+      <div id="hideAgri" style="display:none;">
+        <div class="row">
+          <label>การเกษตรที่ทำ</label>
+          <div class="field">
+            <select id="agriType" name="landUsed.agriType">
+              <option value="">กรุณาเลือก</option>
+              <option value="1">ปลูกข้าว</option>
+              <option value="2">ข้าวโพด</option>
+              <option value="3">อ้อย</option>
+              <option value="4">มันสำปะหลัง</option>
+              <option value="5">ไม้ล้มลุกอื่นๆ</option>
+              <option value="6">ยางพารา</option>
+              <option value="7">ปาล์ม</option>
+              <option value="8">ไม้ยืนต้นอื่นๆ</option>
+              <option value="9">เลี้ยงสัตว์ - ไก่</option>
+              <option value="10">เลี้ยงสัตว์ - สุกร</option>
+              <option value="11">เลี้ยงสัตว์ - วัว</option>
+              <option value="12">เลี้ยงสัตว์ - ปลา</option>
+              <option value="13">เลี้ยงสัตว์อื่นๆ</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>รูปภาพ</label>
+        <div class="field">
+          <div class="inline" style="display:inline-flex; gap:8px; width:100%;">
+            <input type="file" id="formFile" name="formFile" accept="image/*" style="padding:3px;" onchange="onPhotoPick()">
+            <div id="photoStatus" style="font-size:12px; color:#2e7d32; margin-top:4px;"></div>
+            <button type="button" class="btn btn-ok" style="padding:5px 16px; font-weight:normal;" onclick="alert('ตัวอย่าง: อัพโหลดรูปภาพ - doAddSubImg')"> อัพโหลดรูปภาพ </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>หมายเหตุ</label>
+        <div class="field"><textarea id="note" name="landUsed.note" rows="2"></textarea></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="btn-bar">
+    <button type="button" class="btn btn-ok" onclick="saveUsed()"> ตกลง </button>
+    <button type="button" class="btn btn-back" onclick="goBack()"> กลับไป </button>
+  </div>
+
+  <div id="preview" style="display:none;">
+    <div class="preview-head">ผลลัพธ์ (JSON สำหรับเก็บ — นำไปรวมกับข้อมูลอื่นที่ index.html)</div>
+    <textarea id="previewBox" readonly></textarea>
+  </div>
+</div>
+
+<script src="db.js"></script>
+<script>
+var REQUIRED = ['usedType','raiStr','nganStr','squareWahStr'];
+
+var usages = [];
+
+var FOR_LABEL = { '1': 'ใช้เอง', '2': 'ให้เช่า', '3': 'ให้ผู้อื่นทำประโยชน์' };
+
+/* เนื้อที่แปลงรวม (ตร.ว.) จากข้อมูล ltax_land — คืน 0 ถ้าไม่พบแปลงในเครื่อง */
+function parcelTotalWah(pc) {
+  var landList = [];
+  try { landList = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { landList = []; }
+  for (var i = 0; i < landList.length; i++) {
+    if (String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === String(pc || '').trim().toUpperCase()) {
+      var t = num(landList[i]['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+      if (t <= 0) t = num(landList[i]['ไร่']) * 400 + num(landList[i]['งาน']) * 100 + num(landList[i]['ตร.วา']);
+      return t;
+    }
+  }
+  return 0;
+}
+
+function $(id) { return document.getElementById(id); }
+function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+
+function getUsedWah() { return num($('raiStr').value) * 400 + num($('nganStr').value) * 100 + num($('squareWahStr').value); }
+
+function hideAgri() {
+  var t = $('usedType').value;
+  if (t === '1') {
+    $('hideAgri').style.display = 'block';
+  } else {
+    $('agriType').value = '';
+    $('hideAgri').style.display = 'none';
+  }
+}
+
+function calArea() {
+  var usedWah = getUsedWah();
+  var ut = $('usedTotalWahStr');
+  if (ut) ut.value = usedWah > 0 ? usedWah.toFixed(2) : '';
+  var remain = $('remainWah').value;
+  var warn = $('areaWarn');
+  if (remain !== '' && num(remain) > 0 && usedWah > num(remain)) {
+    warn.innerHTML = '<span style="color:#d33;">เตือน: เนื้อที่การใช้ประโยชน์ (' + usedWah + ' ตร.ว.) เกินพื้นที่คงเหลือ (' + num(remain) + ' ตร.ว.)</span>';
+  } else {
+    warn.innerHTML = usedWah > 0 ? 'รวม ' + usedWah.toLocaleString('en-US') + ' ตร.ว.' : '';
+  }
+}
+
+/* พื้นที่แปลงคงเหลือ (ตร.ว.) = เนื้อที่แปลงทั้งหมด − ผลรวมรายการใช้ประโยชน์ (ทั้งหมดในตาราง) */
+function recalcRemain() {
+  var pc = $('landParcelCode').value.trim().toUpperCase();
+  var rw = $('remainWah');
+  if (!pc || !rw) return;
+  var landList = [];
+  try { landList = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { landList = []; }
+  var land = null;
+  for (var i = 0; i < landList.length; i++) {
+    var lc = String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase();
+    if (lc === pc) { land = landList[i]; break; }
+  }
+  if (!land) return;  // ยังไม่มีแปลงนี้ในเครื่อง → ปล่อยตามเดิม (กรอกเอง/ค่าเดิม)
+  /* ก่อน: อ่าน land['เนื้อที่(ตร.ว.)'] ซึ่ง key ไม่ตรงกับที่ collect() เก็บ —
+     ใช้ "รวมเนื้อที่ทั้งหมด (ตร.ว.)" ก่อน แล้ว fallback ไร่/งาน/ตร.วา */
+  var totalWah = num(land['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+  if (totalWah <= 0) {
+    totalWah = num(land['ไร่']) * 400 + num(land['งาน']) * 100 + num(land['ตร.วา']);
+  }
+  var usedTotal = 0;
+  (usages || []).forEach(function(u) {
+    usedTotal += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']);
+  });
+  rw.value = (totalWah - usedTotal).toFixed(2);
+  window.__dirty = true;
+}
+
+/* ---------- รายการหลายประเภท ---------- */
+var photoData = '';
+function onPhotoPick() {
+  var input = $('formFile');
+  var file = input.files && input.files[0];
+  if (!file) { photoData = ''; $('photoStatus').textContent = ''; return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var rawUrl = e.target.result;
+    var img = new Image();
+    img.onload = function() {
+      var maxW = 1600, scale = Math.min(1, maxW / Math.max(img.width, img.height));
+      var c = document.createElement('canvas');
+      c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      var out = c.toDataURL('image/jpeg', 0.8);
+      photoData = out;
+      $('photoStatus').textContent = '✓ ' + file.name + ' (' + (out.length / 1024 / 1.33 / 1024).toFixed(1) + ' MB)';
+    };
+    img.onerror = function() {
+      photoData = rawUrl;
+      $('photoStatus').textContent = '✓ ' + file.name + ' (ไม่บีบอัด — ใช้ต้นฉบับ)';
+    };
+    img.src = rawUrl;
+  };
+  reader.readAsDataURL(file);
+}
+function addUsage() {
+  if (!$('usedType').value) { alert('กรุณาเลือกประเภทการใช้ประโยชน์'); return; }
+  if (getUsedWah() <= 0) { alert('เนื้อที่การใช้ประโยชน์ห้ามมีค่าเป็น 0'); return; }
+  var remain = $('remainWah').value;
+  if (remain !== '' && num(remain) > 0 && getUsedWah() > num(remain)) { alert('เนื้อที่การใช้ประโยชน์ เกินขนาดที่เหลือ'); return; }
+
+  usages.push({
+    'ประเภทการใช้ประโยชน์': $('usedType').value,
+    'ไร่': $('raiStr').value,
+    'งาน': $('nganStr').value,
+    'ตร.วา': $('squareWahStr').value,
+    'ผู้ทำประโยชน์': $('usedFor').value,
+    'ใช้โดย': $('usedBy').value,
+    'เลขบัตรผู้ทำประโยชน์': $('usedById').value.trim(),
+    'การเกษตรที่ทำ': $('usedType').value === '1' ? $('agriType').value : '',
+    'หมายเหตุ': $('note').value,
+    'Path รูปที่ดิน': $('formFile').files.length ? $('formFile').files[0].name : '',
+    'รูปที่ดิน_data': photoData
+  });
+  renderUsage();
+  clearUsageEntry();
+  recalcRemain();
+}
+
+function removeUsage(i) {
+  usages.splice(i, 1);
+  window.__dirty = true;
+  renderUsage();
+  recalcRemain();
+}
+
+function clearUsageEntry() {
+  $('usedType').value = '';
+  $('raiStr').value = '0'; $('nganStr').value = '0'; $('squareWahStr').value = '0.00';
+  $('usedFor').value = ''; $('usedBy').value = ''; $('usedById').value = ''; $('agriType').value = '';
+  $('note').value = ''; $('formFile').value = '';
+  photoData = ''; $('photoStatus').textContent = '';
+  $('areaWarn').innerHTML = '';
+  var ut = $('usedTotalWahStr'); if (ut) ut.value = '';
+hideAgri();
+}
+
+function renderUsage() {
+  var tb = $('usageTable');
+  if (!usages.length) {
+    tb.innerHTML = '<tr><td colspan="5" style="border:1px solid #ccc; padding:8px; text-align:center; color:#888;">ยังไม่พบข้อมูล — กด "เพิ่มรายการ"</td></tr>';
+    updateCrossHint();
+    return;
+  }
+  var h = '';
+  usages.forEach(function(u, i) {
+    var who = FOR_LABEL[u['ผู้ทำประโยชน์']] || (u['ผู้ทำประโยชน์'] || '-');
+    if (u['ใช้โดย']) {
+      who += '<br><span style="font-size:11px; color:#666;">' + u['ใช้โดย'] +
+             (u['เลขบัตรผู้ทำประโยชน์'] ? ' (' + u['เลขบัตรผู้ทำประโยชน์'] + ')' : '') + '</span>';
+    }
+    h += '<tr>' +
+      '<td align="center" style="border:1px solid #ccc; padding:4px 6px;">' + (i + 1) + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px;">' + u['ประเภทการใช้ประโยชน์'] + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px;">' + u['ไร่'] + ' - ' + u['งาน'] + ' - ' + u['ตร.วา'] + '</td>' +
+      '<td style="border:1px solid #ccc; padding:4px 6px;">' + who + '</td>' +
+      '<td align="center" style="border:1px solid #ccc; padding:4px 6px;"><a style="cursor:pointer; color:#d33;" onclick="removeUsage(' + i + ')">&#10008;</a></td>' +
+      '</tr>';
+  });
+  tb.innerHTML = h;
+  updateCrossHint();
+}
+
+/* เตือนเมื่อมีแถวที่ "คนอื่น" เป็นผู้ทำประโยชน์ — เขาต้องมีชุดย่อของตัวเอง */
+function updateCrossHint() {
+  var el = $('crossHint');
+  if (!el) return;
+  var others = usages.filter(function(u) {
+    return u['ผู้ทำประโยชน์'] === '3' || u['ประเภทการใช้ประโยชน์'] === '3' || u['ประเภทการใช้ประโยชน์'] === '4';
+  });
+  if (!others.length) { el.innerHTML = ''; return; }
+  var noId = others.some(function(u) { return !u['เลขบัตรผู้ทำประโยชน์']; });
+  el.innerHTML = '⚠ พบการใช้ประโยชน์โดยผู้อื่น ' + others.length + ' แถว — อย่าลืมกรอก "ชุดย่อ" ของผู้นั้น:' +
+    ' ฟอร์มเจ้าของทรัพย์สิน (บัตรเขา) → ฟอร์มสิ่งปลูกสร้าง (บ้านเขา ผูกรหัสแปลงนี้)' +
+    (noId ? ' — <b>ยังไม่ได้ใส่เลขบัตรผู้ทำประโยชน์ในบางแถว</b>' : '');
+}
+
+function collect() {
+  return {
+    'เลขบัตรเจ้าของที่ดิน': $('psnId').value.trim(),
+    'รหัสแปลงที่ดิน': $('landParcelCode').value.toUpperCase(),
+    'พื้นที่แปลงคงเหลือ (ตร.ว.)': $('remainWah').value,
+    'รายการใช้ประโยชน์': usages
+  };
+}
+
+function saveUsed() {
+  if (!$('psnId').value.trim()) { alert('กรุณากรอกเลขบัตรเจ้าของที่ดิน'); return; }
+  if (!$('landParcelCode').value.trim()) { alert('กรุณากรอกรหัสแปลงที่ดิน'); return; }
+  if (!usages.length) {
+    /* ลบรายการจนหมด → กดบันทึก = ลบข้อมูลการใช้ประโยชน์แปลงนี้ทิ้ง */
+    if (!confirm('ไม่มีรายการใช้ประโยชน์ในรายการ\nกด "ตกลง" = ลบข้อมูลการใช้ประโยชน์แปลงนี้ทิ้ง (รวมที่บันทึกไว้แล้ว)')) return;
+    try {
+      var arc = $('landParcelCode').value.trim().toUpperCase();
+      var list = JSON.parse(localStorage.getItem('ltax_land_usage') || '[]');
+      var kept = [];
+      var removed = false;
+      for (var i = 0; i < list.length; i++) {
+        var hit = (window.__editIdx === i && window.__editKey === 'ltax_land_usage') ||
+                  String(list[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === arc;
+        if (hit && !removed) { removed = true; continue; }
+        kept.push(list[i]);
+      }
+      localStorage.setItem('ltax_land_usage', JSON.stringify(kept));
+      alert('ลบข้อมูลการใช้ประโยชน์แปลง ' + arc + ' เรียบร้อย');
+    } catch (e) { alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e); }
+    window.__editKey = null; window.__editIdx = -1;
+    window.__saved = true;
+    $('previewBox').value = '[]';
+    $('preview').style.display = 'none';
+    if (window.__goHome) window.__goHome(); else if (window.location.href.indexOf('index.html') >= 0) showView('home');
+    else window.location.href = 'index.html';
+    return;
+  }
+
+  var data = collect();
+
+  /* ตรวจผลรวมทุกแถว = เนื้อที่แปลง (ระบบกรมจะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว — ต้องครบก่อนส่ง) */
+  var arcCode = data['รหัสแปลงที่ดิน'];
+  var total = parcelTotalWah(arcCode);
+  if (total > 0) {
+    var usedWah = 0;
+    usages.forEach(function(u) { usedWah += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']); });
+    var diff = total - usedWah;
+    if (Math.abs(diff) > 0.01) {
+      var msg = diff > 0
+        ? 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nยังไม่ครบเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. (ขาดอีก ' + diff.toFixed(2) + ' ตร.ว.)'
+        : 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nเกินเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. อยู่ ' + Math.abs(diff).toFixed(2) + ' ตร.ว.';
+      if (!confirm(msg + '\n\nคำเตือน: ระบบ LTAX Online จะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว\nควรแบ่งพื้นที่ให้ครบทุกส่วนก่อนส่งข้อมูล\n\nกด "ตกลง" = บันทึกแบบนี้ / กด "ยกเลิก" = กลับมาแก้ไข')) return;
+    }
+  }
+
+  LTAX_store('ltax_land_usage', data);
+  showSavedModal('รหัสแปลงที่ดิน: ' + data['รหัสแปลงที่ดิน'] + ' (' + usages.length + ' รายการใช้ประโยชน์)', 'ltax_building', { ctx: { psnId: data['เลขบัตรเจ้าของที่ดิน'], parcelCode: data['รหัสแปลงที่ดิน'] } });
+  $('previewBox').value = JSON.stringify(data, null, 2);
+  $('preview').style.display = 'block';
+  window.__saved = true;
+}
+
+/* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
+window.__editKey = null;
+window.__editIdx = -1;
+function LTAX_store(key, record) {
+  if (window.LTAXDB) {
+    var promise;
+    if (window.__editKey === key && window.__editIdx >= 0) {
+      promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
+    } else {
+      promise = LTAXDB.saveSurvey(key, record);
+    }
+    promise.then(function() {
+      return LTAXDB.getAllSurveys(key);
+    }).then(function(list) {
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
+    }).catch(function(err) {
+      console.error('LTAXDB store error:', err);
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+        list[window.__editIdx] = record;
+      } else { list.push(record); }
+      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
+        alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
+      }
+    });
+    window.__editKey = null;
+    window.__editIdx = -1;
+    return;
+  }
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
+    list[window.__editIdx] = record;
+  } else { list.push(record); }
+  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
+    alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม'); 
+  }
+  window.__editKey = null;
+  window.__editIdx = -1;
+}
+function LTAX_download(filename, record) {
+  var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+/* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
+function loadEditRecord() {
+  var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
+  var key = params.get('editKey');
+  var idx = parseInt(params.get('editIdx') || '-1', 10);
+  if (!key || idx < 0) return false;
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (!list[idx]) return false;
+  var r = list[idx];
+
+  if (r['เลขบัตรเจ้าของที่ดิน']) $('psnId').value = r['เลขบัตรเจ้าของที่ดิน'];
+  if (r['รหัสแปลงที่ดิน']) $('landParcelCode').value = r['รหัสแปลงที่ดิน'];
+  if (r['พื้นที่แปลงคงเหลือ (ตร.ว.)']) $('remainWah').value = r['พื้นที่แปลงคงเหลือ (ตร.ว.)'];
+  else if (r['พื้นที่แปลงคงเหลือ (ตร.วา)']) $('remainWah').value = r['พื้นที่แปลงคงเหลือ (ตร.วา)'];
+  usages = (r['รายการใช้ประโยชน์'] || []).map(function(u) {
+    return {
+      'ประเภทการใช้ประโยชน์': u['ประเภทการใช้ประโยชน์'],
+      'ไร่': u['ไร่'],
+      'งาน': u['งาน'],
+      'ตร.วา': u['ตร.วา'],
+      'ผู้ทำประโยชน์': u['ผู้ทำประโยชน์'],
+      'ใช้โดย': u['ใช้โดย'],
+      'เลขบัตรผู้ทำประโยชน์': u['เลขบัตรผู้ทำประโยชน์'],
+      'การเกษตรที่ทำ': u['การเกษตรที่ทำ'],
+      'หมายเหตุ': u['หมายเหตุ'],
+      'Path รูปที่ดิน': u['Path รูปที่ดิน'],
+      'รูปที่ดิน_data': u['รูปที่ดิน_data']
+    };
+  });
+  renderUsage();
+
+  window.__editKey = key;
+  window.__editIdx = idx;
+  window.__saved = true;
+  $('previewBox').value = JSON.stringify(r, null, 2);
+  $('preview').style.display = 'block';
+  return true;
+}
+
+window.__dirty = false;
+document.addEventListener('input', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+document.addEventListener('change', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+
+function goBack() {
+  if (window.__dirty && !window.__saved) { alert('กรุณาบันทึกข้อมูลก่อน'); return; }
+  if (window.__goHome) { window.__goHome(); return; }
+  window.location.href = 'index.html';
+}
+
+function resetForm() {
+  if (!confirm('ล้างข้อมูลในฟอร์ม?')) return;
+  $('psnId').value = ''; $('landParcelCode').value = ''; $('remainWah').value = '';
+  usages = [];
+  renderUsage();
+  clearUsageEntry();
+  $('preview').style.display = 'none';
+}
+
+hideAgri();
+setTimeout(applyNextCtx, 0);
+</script>
+<style>
+/* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
+#ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
+#ltaxModal .box{background:#fff;border-radius:12px;max-width:92%;width:330px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.35);overflow:hidden;}
+#ltaxModal .head{background:linear-gradient(135deg,#367fa9,#1b4f8a);color:#fff;padding:14px 10px 26px;font-size:16px;font-weight:700;}
+#ltaxModal .tick{width:62px;height:62px;border-radius:50%;background:#28a745;color:#fff;font-size:34px;line-height:62px;margin:-31px auto 12px;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+#ltaxModal .info{font-size:13px;color:#333;margin:4px 14px 14px;word-break:break-word;line-height:1.5;}
+#ltaxModal .btns{padding:0 14px 14px;}
+#ltaxModal .btn{display:block;width:100%;margin:7px 0 0;padding:11px;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;}
+#ltaxModal .btn-next{background:#367fa9;color:#fff;}
+#ltaxModal .btn-more{background:#28a745;color:#fff;}
+#ltaxModal .btn-home{background:#eef4f8;color:#1b4f8a;}
+#ltaxModal .btn-close{background:#f4f6f8;color:#8a8f94;}
+</style>
+
+<div id="ltaxModal">
+  <div class="box">
+    <div class="head">บันทึกข้อมูลเรียบร้อย</div>
+    <div class="tick">&#10003;</div>
+    <div class="info" id="ltaxModalInfo"></div>
+    <div class="btns">
+      <button type="button" class="btn btn-next" id="ltaxModalNext">กรอกชุดถัดไป (ต่อไป)</button>
+      <button type="button" class="btn btn-more" id="ltaxModalMore">เพิ่มรายการใหม่</button>
+      <button type="button" class="btn btn-home" id="ltaxModalHome">กลับหน้าแรก</button>
+      <button type="button" class="btn btn-home" id="ltaxModalNoSign" style="display:none;">ไม่มีป้าย (จบชุด)</button>
+      <button type="button" class="btn btn-close" id="ltaxModalClose">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- modal ยืนยันการบันทึก + flow ชุดข้อมูล ---------- */
+function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
+function goHome() { if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; }
+function goNextForm(fid, ctx) {
+  var c = ltaxReadCtx();
+  for (var k in (ctx || {})) if (ctx[k]) c[k] = ctx[k];
+  try { sessionStorage.setItem('ltax_next', JSON.stringify(c)); } catch(e) {}
+  if (window.openForm) { try { window.openForm(fid); return; } catch(e) {} }
+  var F = {
+    ltax_owner: 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html',
+    ltax_land: 'ฟอร์ม_เพิ่มที่ดิน.html',
+    ltax_land_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์ที่ดิน.html',
+    ltax_building: 'ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html',
+    ltax_building_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html',
+    ltax_sign: 'ฟอร์ม_เพิ่มป้าย.html'
+  };
+  window.location.href = F[fid] || 'index.html';
+}
+function showSavedModal(info, next, opts) {
+  opts = opts || {};
+  $('ltaxModalInfo').textContent = info;
+  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
+  nb.textContent = opts.askSign ? 'มีป้าย — กรอกป้าย' : (isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)');
+  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next, opts.ctx); };
+  var ns = $('ltaxModalNoSign');
+  if (opts.askSign) { ns.style.display = 'block'; ns.onclick = function() { hideSavedModal(); goHome(); }; }
+  else ns.style.display = 'none';
+  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
+  $('ltaxModalHome').onclick = function() { hideSavedModal(); goHome(); };
+  $('ltaxModalClose').onclick = hideSavedModal;
+  $('ltaxModal').style.display = 'flex';
+}
+function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
+function applyNextCtx() {
+  var c = ltaxReadCtx();
+  if (!c || !c.psnId) return;
+  sessionStorage.removeItem('ltax_next');
+  if (window.__editKey) return;
+  if (c.psnId) $('psnId').value = c.psnId;
+  if (c.parcelCode) $('landParcelCode').value = c.parcelCode;
+  window.__dirty = true;
+}
+setTimeout(function() { recalcRemain(); }, 100);</script>
+
+</body>
+</html>
