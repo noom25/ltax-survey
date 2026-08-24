@@ -811,6 +811,16 @@ window.__goHome = closeForm;
 /* =========================================================
    PWA — ติดตั้งแอป + service worker (เฉพาะเมื่อเข้า http/https)
    ========================================================= */
+/* สถานะแอป: ถ้ารันแบบ standalone (ติดตั้งแล้ว) → ซ่อนกล่องติดตั้งเลย */
+function isStandalone() {
+  return (window.navigator.standalone === true) ||
+         (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+function hideInstallPanel() {
+  var p = $('installPanel');
+  if (p) p.style.display = 'none';
+}
+
 var deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
@@ -819,14 +829,26 @@ window.addEventListener('beforeinstallprompt', function(e) {
   if (b) b.style.display = 'inline-block';
   var h = $('installHint');
   if (h) h.innerHTML = ' (เบราว์เซอร์รองรับ — กดปุ่มนี้ได้เลย)';
+  if (isStandalone()) hideInstallPanel();
+});
+
+/* ติดตั้งเสร็จแล้ว → ซ่อนปุ่ม/กล่องติดตั้งตลอด */
+window.addEventListener('appinstalled', function() {
+  hideInstallPanel();
 });
 
 function installApp() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt = null;
+    hideInstallPanel();
     return;
   }
+  alert('วิธีติดตั้ง:\n\n' +
+        'iPhone/iPad: กดปุ่ม Share (สี่เหลี่ยมลูกศรขึ้น) → "เพิ่มไปที่หน้าจอโฮม"\n\n' +
+        'Android (Chrome): กด ⋮ → "เพิ่มไปที่หน้าจอหลัก" (หรือ "ติดตั้งแอป")\n\n' +
+        'หลังติดตั้งแล้วเปิดจากไอคอนบนหน้าจอ — ใช้งานออฟไลน์ได้เลย');
+}
   alert('วิธีติดตั้ง:\n\n' +
         'iPhone/iPad: กดปุ่ม Share (สี่เหลี่ยมลูกศรขึ้น) → "เพิ่มไปที่หน้าจอโฮม"\n\n' +
         'Android (Chrome): กด ⋮ → "เพิ่มไปที่หน้าจอหลัก" (หรือ "ติดตั้งแอป")\n\n' +

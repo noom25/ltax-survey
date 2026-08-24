@@ -816,6 +816,16 @@ window.__goHome = closeForm;
 /* =========================================================
    PWA — ติดตั้งแอป + service worker (เฉพาะเมื่อเข้า http/https)
    ========================================================= */
+/* สถานะแอป: ถ้ารันแบบ standalone (ติดตั้งแล้ว) → ซ่อนกล่องติดตั้งเลย */
+function isStandalone() {
+  return (window.navigator.standalone === true) ||
+         (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+function hideInstallPanel() {
+  var p = $('installPanel');
+  if (p) p.style.display = 'none';
+}
+
 var deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
@@ -824,12 +834,19 @@ window.addEventListener('beforeinstallprompt', function(e) {
   if (b) b.style.display = 'inline-block';
   var h = $('installHint');
   if (h) h.innerHTML = ' (เบราว์เซอร์รองรับ — กดปุ่มนี้ได้เลย)';
+  if (isStandalone()) hideInstallPanel();
+});
+
+/* ติดตั้งเสร็จแล้ว → ซ่อนปุ่ม/กล่องติดตั้งตลอด */
+window.addEventListener('appinstalled', function() {
+  hideInstallPanel();
 });
 
 function installApp() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt = null;
+    hideInstallPanel();
     return;
   }
   alert('วิธีติดตั้ง:\n\n' +
@@ -6899,6 +6916,16 @@ window.__goHome = closeForm;
 /* =========================================================
    PWA — ติดตั้งแอป + service worker (เฉพาะเมื่อเข้า http/https)
    ========================================================= */
+/* สถานะแอป: ถ้ารันแบบ standalone (ติดตั้งแล้ว) → ซ่อนกล่องติดตั้งเลย */
+function isStandalone() {
+  return (window.navigator.standalone === true) ||
+         (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+function hideInstallPanel() {
+  var p = $('installPanel');
+  if (p) p.style.display = 'none';
+}
+
 var deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) {
   e.preventDefault();
@@ -6907,12 +6934,19 @@ window.addEventListener('beforeinstallprompt', function(e) {
   if (b) b.style.display = 'inline-block';
   var h = $('installHint');
   if (h) h.innerHTML = ' (เบราว์เซอร์รองรับ — กดปุ่มนี้ได้เลย)';
+  if (isStandalone()) hideInstallPanel();
+});
+
+/* ติดตั้งเสร็จแล้ว → ซ่อนปุ่ม/กล่องติดตั้งตลอด */
+window.addEventListener('appinstalled', function() {
+  hideInstallPanel();
 });
 
 function installApp() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt = null;
+    hideInstallPanel();
     return;
   }
   alert('วิธีติดตั้ง:\n\n' +
