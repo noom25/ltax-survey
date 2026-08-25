@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="th">
+<head><meta charset="UTF-8"><title>IDB test</title></head>
+<body>
+<pre id="out">running...</pre>
+<script>
+function p(req) { return new Promise(function(res, rej) { req.onsuccess = function() { res(req.result); }; req.onerror = function() { rej(req.error); }; }); }
+(async function() {
+  var out = [];
+  try {
+    // จำลองโมเดลเดิม: store keyPath id + autoIncrement, set() = put(ทั้งอาเรย์)
+    var req = indexedDB.deleteDatabase('idb_test_old');
+    req.onsuccess = req.onerror = req.onblocked = function(){};
+    await new Promise(function(r){ req.onsuccess = r; req.onerror = r; req.onblocked = r; });
+    var req2 = indexedDB.open('idb_test_old', 1);
+    req2.onupgradeneeded = function(e) {
+      e.target.result.createObjectStore('s1', { keyPath: 'id', autoIncrement: true });
+    };
+    var db = await p(req2);
+    function setA(list) {
+      return new Promise(function(res, rej) {
+        var tx = db.transaction('s1', 'readwrite');
+        tx.objectStore('s1').put(list);
+        tx.oncomplete = res; tx.onerror = function(){ rej(tx.error); };
+      });
+    }
+    await setA([{a:1},{a:2}]);          // saveSurvey ครั้งที่ 1
+    await setA([{a:1},{a:2},{a:3}]);    // saveSurvey ครั้งที่ 2
+    var rows = await new Promise(function(res, rej) {
+      var tx = db.transaction('s1', 'readonly');
+      var rq = tx.objectStore('s1').getAll();
+      rq.onsuccess = function(){ res(rq.result); }; rq.onerror = function(){ rej(rq.error); };
+    });
+    out.push('rows=' + rows.length);
+    rows.forEach(function(r, i) { out.push('row' + i + ': isArray=' + Array.isArray(r) + ' len=' + (r.length || '-') + ' id=' + r.id); });
+    db.close();
+  } catch (e) {
+    out.push('ERROR: ' + e);
+  }
+  document.getElementById('out').textContent = out.join('\n') || 'no output';
+})();
+</script>
+</body>
+</html>

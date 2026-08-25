@@ -419,21 +419,21 @@ function genBuildingCode() {
 }
 
 /* ---------- แปลงที่ดินที่ผูก: เลือกจากที่มีจริงในเครื่อง + ตรวจสอบ ---------- */
-function findLandRecord(code) {
+async function findLandRecord(code) {
   var c = String(code || '').trim().toUpperCase();
   if (!c) return null;
   var list = [];
-  try { list = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { list = []; }
+  if (window.LTAXDB) { list = await LTAXDB.getAllSurveys('ltax_land'); }
   for (var i = 0; i < list.length; i++) {
     if (String(list[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === c) return list[i];
   }
   return null;
 }
-function landOwnerName(landRec) {
+async function landOwnerName(landRec) {
   var psn = String((landRec && landRec['เลขบัตรเจ้าของที่ดิน']) || '').split(';')[0] || '';
   if (!psn) return '';
   var owners = [];
-  try { owners = JSON.parse(localStorage.getItem('ltax_owner') || '[]'); } catch (e) { owners = []; }
+  if (window.LTAXDB) { owners = await LTAXDB.getAllSurveys('ltax_owner'); }
   for (var i = 0; i < owners.length; i++) {
     if (String(owners[i]['เลขบัตรประชาชน'] || '').trim() === psn) {
       var p = String(owners[i]['คำนำหน้า'] || '');
@@ -444,32 +444,33 @@ function landOwnerName(landRec) {
   }
   return psn;
 }
-function fillParcelPick() {
+async function fillParcelPick() {
   var box = $('landParcelPick');
   if (!box) return;
   var list = [];
-  try { list = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { list = []; }
+  if (window.LTAXDB) { list = await LTAXDB.getAllSurveys('ltax_land'); }
   box.innerHTML = '<option value="">— เลือกแปลงที่มีในระบบ (' + list.length + ' แปลง) —</option>';
-  list.forEach(function(l) {
+  for (var i = 0; i < list.length; i++) {
+    var l = list[i];
     var code = String(l['รหัสแปลงที่ดิน'] || '').trim();
-    if (!code) return;
+    if (!code) continue;
     var opt = document.createElement('option');
     opt.value = code;
-    opt.text = code + ' — ' + landOwnerName(l) + ' (' + [l['ไร่'], l['งาน'], l['ตร.วา']].join('-') + ')';
+    opt.text = code + ' — ' + (await landOwnerName(l)) + ' (' + [l['ไร่'], l['งาน'], l['ตร.วา']].join('-') + ')';
     box.appendChild(opt);
-  });
+  }
 }
 function pickParcel(sel) {
   if (!sel.value) return;
   $('landParcelCode').value = sel.value;
   onParcelBlur();
 }
-function onParcelBlur() {
+async function onParcelBlur() {
   var hint = $('parcelHint');
   if (!hint) return;
   var code = $('landParcelCode').value.trim().toUpperCase();
   if (!code) { hint.innerHTML = 'กฎ: มีสิ่งปลูกสร้าง = ต้องผูกกับที่ดินที่มีในระบบเสมอ (ของตัวเอง หรือแปลงของคนอื่นที่แบ่งให้ปลูกบ้าน)'; return; }
-  var rec = findLandRecord(code);
+  var rec = await findLandRecord(code);
   /* sync ตารางแปลงที่แนบ (collect อ่านจาก lands) — กันเลือก/พิมพ์แปลงแล้วข้อมูลหลุดตอนบันทึก */
   lands = [{ code: code }];
   renderLands();
@@ -477,7 +478,7 @@ function onParcelBlur() {
     hint.innerHTML = '<span style="color:#d33;">❌ ยังไม่มีแปลง ' + code + ' ในระบบ — ต้องกรอกฟอร์มที่ดิน (ในชุดของเจ้าของแปลง) ก่อน จึงจะบันทึกอาคารได้</span>';
     return;
   }
-  var ownerName = landOwnerName(rec) || 'ไม่ทราบเจ้าของ';
+  var ownerName = (await landOwnerName(rec)) || 'ไม่ทราบเจ้าของ';
   var myPsn = owners && owners.length ? String(owners[0].psnId) : '';
   var landPsn = String(rec['เลขบัตรเจ้าของที่ดิน'] || '').split(';')[0] || '';
   if (myPsn && landPsn && myPsn === landPsn) {
@@ -544,11 +545,10 @@ function calAge() { /* since -> age */
 }
 
 /* ---------- บันทึก ---------- */
-/* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
+/* ---------- เก็บข้อมูล: LTAXDB (IndexedDB) ล้วน ---------- */
 window.__editKey = null;
 window.__editIdx = -1;
 function LTAX_store(key, record) {
-  // ใช้ LTAXDB (IndexedDB) เป็นหลัก + เขียน localStorage ด้วยเพื่อ backward compat
   if (window.LTAXDB) {
     var promise;
     if (window.__editKey === key && window.__editIdx >= 0) {
@@ -556,33 +556,15 @@ function LTAX_store(key, record) {
     } else {
       promise = LTAXDB.saveSurvey(key, record);
     }
-    promise.then(function() {
-      return LTAXDB.getAllSurveys(key);
-    }).then(function(list) {
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
-    }).catch(function(err) {
+    promise.catch(function(err) {
       console.error('LTAXDB store error:', err);
-      var list = [];
-      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-        list[window.__editIdx] = record;
-      } else { list.push(record); }
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e2) {}
+      alert('บันทึกข้อมูลไม่สำเร็จ (IndexedDB): ' + err);
     });
     window.__editKey = null;
     window.__editIdx = -1;
     return;
   }
-  var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-    list[window.__editIdx] = record;
-  } else { list.push(record); }
-  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
-    alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
-  }
-  window.__editKey = null;
-  window.__editIdx = -1;
+  console.error('LTAXDB ไม่พร้อมใช้งาน — ไม่สามารถบันทึกข้อมูลได้');
 }
 function LTAX_download(filename, record) {
   var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
@@ -596,13 +578,13 @@ function LTAX_download(filename, record) {
 }
 
 /* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
-function loadEditRecord() {
+async function loadEditRecord() {
   var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
   var key = params.get('editKey');
   var idx = parseInt(params.get('editIdx') || '-1', 10);
   if (!key || idx < 0) return false;
   var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (window.LTAXDB) { list = await LTAXDB.getAllSurveys(key); }
   if (!list[idx]) return false;
   var r = list[idx];
 
@@ -677,7 +659,7 @@ function collect() {
   };
 }
 
-function saveBuilding() {
+async function saveBuilding() {
   var missing = [];
   REQUIRED.forEach(function(r) {
     var el = $(r);
@@ -687,7 +669,7 @@ function saveBuilding() {
   if (num($('totalAreaStr').value) <= 0) { alert('ขนาดพื้นที่ทั้งอาคาร (ตร.ม.) ห้ามเท่ากับ 0'); return; }
   /* กฎ: มีสิ่งปลูกสร้าง = ต้องผูกกับที่ดินที่มีในระบบเสมอ (ของตัวเองหรือของคนอื่นที่แบ่งให้) */
   var pcode = $('landParcelCode').value.trim().toUpperCase();
-  if (!findLandRecord(pcode)) {
+  if (!(await findLandRecord(pcode))) {
     alert('ยังไม่มีแปลง ' + pcode + ' ในระบบ\n\nกฎ: บันทึกสิ่งปลูกสร้างได้เฉพาะเมื่อผูกกับที่ดินที่มีในระบบแล้ว\n' +
           '(บ้านบนที่ดินตัวเอง หรือแปลงของคนอื่นที่แบ่งให้ปลูกบ้าน)\n\n' +
           '→ กรุณากรอกฟอร์มที่ดินของแปลงนี้ในชุดของเจ้าของที่ดินก่อน แล้วค่อยบันทึกอาคาร');
@@ -695,7 +677,7 @@ function saveBuilding() {
   }
   var data = collect();
   LTAX_store('ltax_building', data);
-  var rec = findLandRecord(pcode);
+  var rec = await findLandRecord(pcode);
   var landPsn = rec ? String(rec['เลขบัตรเจ้าของที่ดิน'] || '').split(';')[0] : '';
   var myPsn = owners.length ? String(owners[0].psnId) : '';
   var extra = (landPsn && myPsn && landPsn !== myPsn) ? ' ⚠ บ้านบนที่ดินคนอื่น' : '';
@@ -739,7 +721,7 @@ function resetForm() {
 }
 
 /* init */
-(function() {
+(async function() {
   var box = $('buildingType');
   box.innerHTML = '<option value="">กรุณาเลือก</option>';
   BUILDING_TYPES.forEach(function(t) {
@@ -747,9 +729,9 @@ function resetForm() {
     opt.value = t[0]; opt.text = t[1];
     box.appendChild(opt);
   });
-  loadEditRecord();
-  fillParcelPick();
-  setTimeout(function() { applyNextCtx(); fillParcelPick(); onParcelBlur(); }, 0);
+  await loadEditRecord();
+  await fillParcelPick();
+  setTimeout(async function() { await applyNextCtx(); await fillParcelPick(); await onParcelBlur(); }, 0);
 })();
 </script>
 <style>
@@ -816,7 +798,7 @@ function showSavedModal(info, next, opts) {
   $('ltaxModal').style.display = 'flex';
 }
 function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
-function applyNextCtx() {
+async function applyNextCtx() {
   var c = ltaxReadCtx();
   if (!c || !c.psnId) return;
   sessionStorage.removeItem('ltax_next');
@@ -826,19 +808,19 @@ function applyNextCtx() {
   if (c.parcelCode) {
     $('landParcelCode').value = c.parcelCode;
     if (typeof lands !== 'undefined' && lands) { lands = [{ code: c.parcelCode }]; renderLands(); }
-    autoFillLandArea(c.parcelCode);
+    await autoFillLandArea(c.parcelCode);
   }
-  onParcelBlur();
+  await onParcelBlur();
   window.__dirty = true;
 }
 
-/* auto-fill "เนื้อที่ที่ดิน" (ไร่-งาน-ตร.วา) จากแปลงใน localStorage — กรอกเฉพาะยังว่าง */
-function autoFillLandArea(parcelCode) {
+/* auto-fill "เนื้อที่ที่ดิน" (ไร่-งาน-ตร.วา) จากแปลงใน LTAXDB — กรอกเฉพาะยังว่าง */
+async function autoFillLandArea(parcelCode) {
   if (!parcelCode) return;
   if (String($('landAreaStr').value || '').trim()) return;  // มีค่าอยู่แล้วไม่ทับ
   var code = String(parcelCode).trim().toUpperCase();
   var list = [];
-  try { list = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { list = []; }
+  if (window.LTAXDB) { list = await LTAXDB.getAllSurveys('ltax_land'); }
   for (var i = 0; i < list.length; i++) {
     if (String(list[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() !== code) continue;
     var rai = String(list[i]['ไร่'] || '').trim(), ngan = String(list[i]['งาน'] || '').trim(), wa = String(list[i]['ตร.วา'] || '').trim();

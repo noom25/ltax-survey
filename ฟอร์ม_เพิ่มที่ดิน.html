@@ -422,11 +422,11 @@ function checkLandPrice() {
 }
 
 /* ---------- บันทึก ---------- */
-/* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
+/* ---------- เก็บข้อมูล: IndexedDB (LTAXDB) + ดาวน์โหลด JSON ---------- */
 window.__editKey = null;
 window.__editIdx = -1;
 function LTAX_store(key, record) {
-  // ใช้ LTAXDB (IndexedDB) เป็นหลัก + เขียน localStorage ด้วยเพื่อ backward compat
+  // ใช้ LTAXDB (IndexedDB) อย่างเดียว — ไม่ใช้ localStorage
   if (window.LTAXDB) {
     var promise;
     if (window.__editKey === key && window.__editIdx >= 0) {
@@ -434,38 +434,15 @@ function LTAX_store(key, record) {
     } else {
       promise = LTAXDB.saveSurvey(key, record);
     }
-    promise.then(function() {
-      // sync กลับ localStorage ให้โค้ดเดิมที่อ่านผ่าน getList() ยังทำงานได้
-      return LTAXDB.getAllSurveys(key);
-    }).then(function(list) {
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
-    }).catch(function(err) {
+    promise.catch(function(err) {
       console.error('LTAXDB store error:', err);
-      // fallback: เขียน localStorage ตรงๆ
-      var list = [];
-      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-        list[window.__editIdx] = record;
-      } else {
-        list.push(record);
-      }
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e2) {}
+      alert('บันทึกข้อมูลไม่สำเร็จ (IndexedDB): ' + err);
     });
     window.__editKey = null;
     window.__editIdx = -1;
     return;
   }
-  // Fallback: localStorage ตรงๆ (กรณี LTAXDB ไม่พร้อม)
-  var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-    list[window.__editIdx] = record;
-  } else {
-    list.push(record);
-  }
-  localStorage.setItem(key, JSON.stringify(list));
-  window.__editKey = null;
-  window.__editIdx = -1;
+  console.error('LTAXDB ไม่พร้อมใช้งาน — ไม่สามารถบันทึกข้อมูลได้');
 }
 function LTAX_download(filename, record) {
   var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
@@ -479,13 +456,13 @@ function LTAX_download(filename, record) {
 }
 
 /* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
-function loadEditRecord() {
+async function loadEditRecord() {
   var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
   var key = params.get('editKey');
   var idx = parseInt(params.get('editIdx') || '-1', 10);
   if (!key || idx < 0) return false;
   var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  try { list = await LTAXDB.getAllSurveys(key); } catch(e) { list = []; }
   if (!list[idx]) return false;
   var r = list[idx];
 

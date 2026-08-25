@@ -419,35 +419,15 @@ function LTAX_store(key, record) {
     } else {
       promise = LTAXDB.saveSurvey(key, record);
     }
-    promise.then(function() {
-      return LTAXDB.getAllSurveys(key);
-    }).then(function(list) {
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
-    }).catch(function(err) {
+    promise.catch(function(err) {
       console.error('LTAXDB store error:', err);
-      var list = [];
-      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-        list[window.__editIdx] = record;
-      } else { list.push(record); }
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
-        alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
-      }
+      alert('บันทึกข้อมูลไม่สำเร็จ (IndexedDB): ' + err);
     });
     window.__editKey = null;
     window.__editIdx = -1;
     return;
   }
-  var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-    list[window.__editIdx] = record;
-  } else { list.push(record); }
-  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
-    alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
-  }
-  window.__editKey = null;
-  window.__editIdx = -1;
+  console.error('LTAXDB ไม่พร้อมใช้งาน — ไม่สามารถบันทึกข้อมูลได้');
 }
 function LTAX_download(filename, record) {
   var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
@@ -461,13 +441,13 @@ function LTAX_download(filename, record) {
 }
 
 /* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
-function loadEditRecord() {
+async function loadEditRecord() {
   var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
   var key = params.get('editKey');
   var idx = parseInt(params.get('editIdx') || '-1', 10);
   if (!key || idx < 0) return false;
-  var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (!window.LTAXDB) { console.error('LTAXDB ไม่พร้อมใช้งาน — โหลดข้อมูลไม่ได้'); return false; }
+  var list = await LTAXDB.getAllSurveys(key);
   if (!list[idx]) return false;
   var r = list[idx];
 

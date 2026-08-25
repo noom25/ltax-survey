@@ -70,11 +70,11 @@
 
       <div class="row">
         <label>รหัสสิ่งปลูกสร้าง</label>
-        <div class="field"><input type="text" id="buildingCode" onblur="this.value=this.value.toUpperCase()" placeholder="เช่น 50A001-B001"></div>
+        <div class="field"><input type="text" id="buildingCode" onblur="this.value=this.value.toUpperCase(); syncBuildingUsageData();" placeholder="เช่น 50A001-B001"></div>
       </div>
       <div class="row">
         <label>เลขบัตรเจ้าของสิ่งปลูกสร้าง</label>
-        <div class="field"><input type="text" id="psnId"></div>
+        <div class="field"><input type="text" id="psnId" onblur="syncBuildingUsageData();"></div>
       </div>
 
       <div class="section-title">รายการการใช้ประโยชน์ (หลายรายการได้)</div>
@@ -190,43 +190,88 @@ function $(id) { return document.getElementById(id); }
 
 var usages = [];
 var editIdx = -1;
-
-function LTAX_store(key, record) {
-  if (window.LTAXDB) {
-    var promise;
-    if (window.__editKey === key && window.__editIdx >= 0) {
-      promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
-    } else {
-      promise = LTAXDB.saveSurvey(key, record);
-    }
-    promise.then(function() {
-      return LTAXDB.getAllSurveys(key);
-    }).then(function(list) {
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
-    }).catch(function(err) {
-      console.error('LTAXDB store error:', err);
-      var list = [];
-      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-        list[window.__editIdx] = record;
-      } else { list.push(record); }
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e2) {}
-    });
-    window.__editKey = null;
-    window.__editIdx = -1;
-    return;
-  }
-  var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-    list[window.__editIdx] = record;
-  } else { list.push(record); }
-  localStorage.setItem(key, JSON.stringify(list));
-  window.__editKey = null;
-  window.__editIdx = -1;
-}
 window.__editKey = null;
 window.__editIdx = -1;
+
+function getOptionText(selectId, val) {
+  var el = $(selectId);
+  if (!el || !val) return '';
+  for (var i = 0; i < el.options.length; i++) {
+    if (el.options[i].value == val) return el.options[i].text;
+  }
+  return val;
+}
+
+async function syncBuildingUsageData() {
+  var code = ($('buildingCode').value || '').trim().toUpperCase();
+  var psnId = ($('psnId').value || '').trim();
+  if (!code && !psnId) return false;
+  if (!window.LTAXDB) return false;
+
+  try {
+    var list = await LTAXDB.getAllSurveys('ltax_building_usage');
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      var matchCode = code && String(item['รหัสสิ่งปลูกสร้าง'] || '').trim().toUpperCase() === code;
+      var matchPsn = psnId && String(item['เลขบัตรเจ้าของสิ่งปลูกสร้าง'] || '').trim() === psnId;
+
+      if (matchCode || matchPsn) {
+        window.__editKey = 'ltax_building_usage';
+        window.__editIdx = i;
+
+        var r = list[i];
+        if (r['รหัสสิ่งปลูกสร้าง']) $('buildingCode').value = r['รหัสสิ่งปลูกสร้าง'];
+        if (r['เลขบัตรเจ้าของสิ่งปลูกสร้าง']) $('psnId').value = r['เลขบัตรเจ้าของสิ่งปลูกสร้าง'];
+
+        usages = (r['รายการใช้ประโยชน์'] || []).map(function(u) {
+          return {
+            usedType: u['ประเภทการใช้งาน'],
+            usedTypeLabel: getOptionText('usedType', u['ประเภทการใช้งาน']),
+            fullArea: u['เต็มพื้นที่ทุกชั้น'] === 'Y',
+            useFloor: u['ชั้นที่'],
+            widthStr: u['กว้าง(ม.)'],
+            lengthStr: u['ยาว(ม.)'],
+            areaStr: u['พื้นที่รวม(ตร.ม.)'],
+            remainAreaStr: u['ขนาดพื้นที่คงเหลือ(ตร.ม.)'],
+            usedFor: u['ลักษณะการใช้'],
+            usedForLabel: getOptionText('usedFor', u['ลักษณะการใช้']),
+            note: u['หมายเหตุ']
+          };
+        });
+        renderUsage();
+        $('previewBox').value = JSON.stringify(r, null, 2);
+        $('preview').style.display = 'block';
+        return true;
+      }
+    }
+  } catch(e) { console.error('Sync error:', e); }
+  return false;
+}
+
+function LTAX_store(key, record) {
+  if (!window.LTAXDB) {
+    console.error('LTAXDB ไม่พร้อมใช้งาน — ไม่สามารถบันทึกข้อมูลได้');
+    return Promise.reject('LTAXDB ไม่พร้อมใช้งาน');
+  }
+
+  var promise;
+  if (window.__editKey === key && window.__editIdx >= 0) {
+    promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
+  } else {
+    promise = LTAXDB.saveSurvey(key, record);
+  }
+
+  return promise.then(function(res) {
+    window.__editKey = null;
+    window.__editIdx = -1;
+    return res;
+  }).catch(function(err) {
+    console.error('LTAXDB store error:', err);
+    alert('บันทึกข้อมูลไม่สำเร็จ (IndexedDB): ' + err);
+    throw err;
+  });
+}
+
 function LTAX_download(filename, record) {
   var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
   var a = document.createElement('a');
@@ -238,42 +283,44 @@ function LTAX_download(filename, record) {
   setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
 }
 
-/* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
 function loadEditRecord() {
   var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
   var key = params.get('editKey');
   var idx = parseInt(params.get('editIdx') || '-1', 10);
-  if (!key || idx < 0) return false;
-  var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-  if (!list[idx]) return false;
-  var r = list[idx];
+  if (!key || idx < 0) return Promise.resolve(false);
+  return LTAXDB.getAllSurveys(key).then(function(list) {
+    if (!list[idx]) return false;
+    var r = list[idx];
 
-  if (r['รหัสสิ่งปลูกสร้าง']) $('buildingCode').value = r['รหัสสิ่งปลูกสร้าง'];
-  if (r['เลขบัตรเจ้าของสิ่งปลูกสร้าง']) $('psnId').value = r['เลขบัตรเจ้าของสิ่งปลูกสร้าง'];
-  usages = (r['รายการใช้ประโยชน์'] || []).map(function(u) {
-    return {
-      usedType: u['ประเภทการใช้งาน'],
-      usedTypeLabel: '',
-      fullArea: u['เต็มพื้นที่ทุกชั้น'] === 'Y',
-      useFloor: u['ชั้นที่'],
-      widthStr: u['กว้าง(ม.)'],
-      lengthStr: u['ยาว(ม.)'],
-      areaStr: u['พื้นที่รวม(ตร.ม.)'],
-      remainAreaStr: u['ขนาดพื้นที่คงเหลือ(ตร.ม.)'],
-      usedFor: u['ลักษณะการใช้'],
-      usedForLabel: '',
-      note: u['หมายเหตุ']
-    };
+    if (r['รหัสสิ่งปลูกสร้าง']) $('buildingCode').value = r['รหัสสิ่งปลูกสร้าง'];
+    if (r['เลขบัตรเจ้าของสิ่งปลูกสร้าง']) $('psnId').value = r['เลขบัตรเจ้าของสิ่งปลูกสร้าง'];
+    usages = (r['รายการใช้ประโยชน์'] || []).map(function(u) {
+      return {
+        usedType: u['ประเภทการใช้งาน'],
+        usedTypeLabel: getOptionText('usedType', u['ประเภทการใช้งาน']),
+        fullArea: u['เต็มพื้นที่ทุกชั้น'] === 'Y',
+        useFloor: u['ชั้นที่'],
+        widthStr: u['กว้าง(ม.)'],
+        lengthStr: u['ยาว(ม.)'],
+        areaStr: u['พื้นที่รวม(ตร.ม.)'],
+        remainAreaStr: u['ขนาดพื้นที่คงเหลือ(ตร.ม.)'],
+        usedFor: u['ลักษณะการใช้'],
+        usedForLabel: getOptionText('usedFor', u['ลักษณะการใช้']),
+        note: u['หมายเหตุ']
+      };
+    });
+    renderUsage();
+
+    window.__editKey = key;
+    window.__editIdx = idx;
+    window.__saved = true;
+    $('previewBox').value = JSON.stringify(r, null, 2);
+    $('preview').style.display = 'block';
+    return true;
+  }).catch(function(err) {
+    console.error('LTAXDB loadEditRecord error:', err);
+    return false;
   });
-  renderUsage();
-
-  window.__editKey = key;
-  window.__editIdx = idx;
-  window.__saved = true;
-  $('previewBox').value = JSON.stringify(r, null, 2);
-  $('preview').style.display = 'block';
-  return true;
 }
 
 function renderUsage() {
@@ -380,7 +427,7 @@ function calTotalArea() {
   $('areaStr').value = (w * l).toFixed(2);
 }
 
-function saveUsage() {
+async function saveUsage() {
   var missing = [];
   if (!$('buildingCode').value.trim()) missing.push('รหัสสิ่งปลูกสร้าง');
   if (!$('psnId').value.trim()) missing.push('เลขบัตรเจ้าของสิ่งปลูกสร้าง');
@@ -390,10 +437,8 @@ function saveUsage() {
   var code = $('buildingCode').value.trim().toUpperCase();
 
   if (!usages.length) {
-    /* ลบรายการจนหมด → กดบันทึก = ลบข้อมูลการใช้ประโยชน์อาคารนี้ทิ้ง */
     if (!confirm('ไม่มีรายการใช้ประโยชน์ในรายการ\nกด "ตกลง" = ลบข้อมูลการใช้ประโยชน์อาคารนี้ทิ้ง (รวมที่บันทึกไว้แล้ว)')) return;
-    try {
-      var list = JSON.parse(localStorage.getItem('ltax_building_usage') || '[]');
+    LTAXDB.getAllSurveys('ltax_building_usage').then(function(list) {
       var kept = [];
       var removed = false;
       for (var i = 0; i < list.length; i++) {
@@ -402,15 +447,18 @@ function saveUsage() {
         if (hit && !removed) { removed = true; continue; }
         kept.push(list[i]);
       }
-      localStorage.setItem('ltax_building_usage', JSON.stringify(kept));
+      return LTAXDB.set('ltax_building_usage', kept);
+    }).then(function() {
       alert('ลบข้อมูลการใช้ประโยชน์อาคาร ' + code + ' เรียบร้อย');
-    } catch (e) { alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e); }
-    window.__editKey = null; window.__editIdx = -1;
-    window.__saved = true;
-    $('previewBox').value = '[]';
-    $('preview').style.display = 'none';
-    if (window.__goHome) window.__goHome(); else if (window.location.href.indexOf('index.html') >= 0) showView('home');
-    else window.location.href = 'index.html';
+      window.__editKey = null; window.__editIdx = -1;
+      window.__saved = true;
+      $('previewBox').value = '[]';
+      $('preview').style.display = 'none';
+      if (window.__goHome) window.__goHome(); else if (window.location.href.indexOf('index.html') >= 0) showView('home');
+      else window.location.href = 'index.html';
+    }).catch(function(e) {
+      alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e);
+    });
     return;
   }
 
@@ -432,11 +480,20 @@ function saveUsage() {
     })
   };
 
-  LTAX_store('ltax_building_usage', data);
-  showSavedModal('รหัสสิ่งปลูกสร้าง: ' + code + ' (' + usages.length + ' รายการใช้ประโยชน์)', 'ltax_sign', { askSign: true, ctx: { psnId: psnId, buildingCode: code } });
-  $('previewBox').value = JSON.stringify(data, null, 2);
-  $('preview').style.display = 'block';
-  window.__saved = true;
+  try {
+    await LTAX_store('ltax_building_usage', data);
+    showSavedModal(
+      'รหัสสิ่งปลูกสร้าง: ' + code + ' (' + usages.length + ' รายการใช้ประโยชน์)', 
+      'ltax_sign', 
+      { askSign: true, ctx: { psnId: psnId, buildingCode: code } }
+    );
+    $('previewBox').value = JSON.stringify(data, null, 2);
+    $('preview').style.display = 'block';
+    window.__saved = true;
+  } catch (err) {
+    console.error('saveUsed error:', err);
+    alert('บันทึกข้อมูลไม่สำเร็จ: ' + err);
+  }
 }
 
 window.__dirty = false;
@@ -465,9 +522,14 @@ function resetForm() {
   renderUsage();
   $('preview').style.display = 'none';
 }
-  loadEditRecord();
-  setTimeout(applyNextCtx, 0);
+
+/* ---------- เริ่มทำงานเมื่อโหลดหน้า ---------- */
+(async function init() {
+  await loadEditRecord();
+  if (typeof applyNextCtx === 'function') await applyNextCtx();
+})();
 </script>
+
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
 #ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
@@ -532,7 +594,8 @@ function showSavedModal(info, next, opts) {
   $('ltaxModal').style.display = 'flex';
 }
 function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
-function applyNextCtx() {
+
+async function applyNextCtx() {
   var c = ltaxReadCtx();
   if (!c || !c.buildingCode) return;
   sessionStorage.removeItem('ltax_next');
@@ -540,7 +603,9 @@ function applyNextCtx() {
   $('buildingCode').value = c.buildingCode;
   if (c.psnId) $('psnId').value = c.psnId;
   window.__dirty = true;
-}</script>
+  await syncBuildingUsageData();
+}
+</script>
 
 </body>
 </html>

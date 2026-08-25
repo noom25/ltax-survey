@@ -239,18 +239,19 @@ var usages = [];
 
 var FOR_LABEL = { '1': 'ใช้เอง', '2': 'ให้เช่า', '3': 'ให้ผู้อื่นทำประโยชน์' };
 
-/* เนื้อที่แปลงรวม (ตร.ว.) จากข้อมูล ltax_land — คืน 0 ถ้าไม่พบแปลงในเครื่อง */
+/* เนื้อที่แปลงรวม (ตร.ว.) จากข้อมูล ltax_land — คืน 0 ถ้าไม่พบแปลงในเครื่อง (async ผ่าน LTAXDB) */
 function parcelTotalWah(pc) {
-  var landList = [];
-  try { landList = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { landList = []; }
-  for (var i = 0; i < landList.length; i++) {
-    if (String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === String(pc || '').trim().toUpperCase()) {
-      var t = num(landList[i]['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
-      if (t <= 0) t = num(landList[i]['ไร่']) * 400 + num(landList[i]['งาน']) * 100 + num(landList[i]['ตร.วา']);
-      return t;
+  return LTAXDB.getAllSurveys('ltax_land').then(function(landList) {
+    landList = landList || [];
+    for (var i = 0; i < landList.length; i++) {
+      if (String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === String(pc || '').trim().toUpperCase()) {
+        var t = num(landList[i]['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+        if (t <= 0) t = num(landList[i]['ไร่']) * 400 + num(landList[i]['งาน']) * 100 + num(landList[i]['ตร.วา']);
+        return t;
+      }
     }
-  }
-  return 0;
+    return 0;
+  });
 }
 
 function $(id) { return document.getElementById(id); }
@@ -286,26 +287,27 @@ function recalcRemain() {
   var pc = $('landParcelCode').value.trim().toUpperCase();
   var rw = $('remainWah');
   if (!pc || !rw) return;
-  var landList = [];
-  try { landList = JSON.parse(localStorage.getItem('ltax_land') || '[]'); } catch (e) { landList = []; }
-  var land = null;
-  for (var i = 0; i < landList.length; i++) {
-    var lc = String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase();
-    if (lc === pc) { land = landList[i]; break; }
-  }
-  if (!land) return;  // ยังไม่มีแปลงนี้ในเครื่อง → ปล่อยตามเดิม (กรอกเอง/ค่าเดิม)
-  /* ก่อน: อ่าน land['เนื้อที่(ตร.ว.)'] ซึ่ง key ไม่ตรงกับที่ collect() เก็บ —
-     ใช้ "รวมเนื้อที่ทั้งหมด (ตร.ว.)" ก่อน แล้ว fallback ไร่/งาน/ตร.วา */
-  var totalWah = num(land['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
-  if (totalWah <= 0) {
-    totalWah = num(land['ไร่']) * 400 + num(land['งาน']) * 100 + num(land['ตร.วา']);
-  }
-  var usedTotal = 0;
-  (usages || []).forEach(function(u) {
-    usedTotal += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']);
+  LTAXDB.getAllSurveys('ltax_land').then(function(landList) {
+    landList = landList || [];
+    var land = null;
+    for (var i = 0; i < landList.length; i++) {
+      var lc = String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase();
+      if (lc === pc) { land = landList[i]; break; }
+    }
+    if (!land) return;  // ยังไม่มีแปลงนี้ในเครื่อง → ปล่อยตามเดิม (กรอกเอง/ค่าเดิม)
+    /* ก่อน: อ่าน land['เนื้อที่(ตร.ว.)'] ซึ่ง key ไม่ตรงกับที่ collect() เก็บ —
+       ใช้ "รวมเนื้อที่ทั้งหมด (ตร.ว.)" ก่อน แล้ว fallback ไร่/งาน/ตร.วา */
+    var totalWah = num(land['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+    if (totalWah <= 0) {
+      totalWah = num(land['ไร่']) * 400 + num(land['งาน']) * 100 + num(land['ตร.วา']);
+    }
+    var usedTotal = 0;
+    (usages || []).forEach(function(u) {
+      usedTotal += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']);
+    });
+    rw.value = (totalWah - usedTotal).toFixed(2);
+    window.__dirty = true;
   });
-  rw.value = (totalWah - usedTotal).toFixed(2);
-  window.__dirty = true;
 }
 
 /* ---------- รายการหลายประเภท ---------- */
@@ -429,12 +431,12 @@ function collect() {
 function saveUsed() {
   if (!$('psnId').value.trim()) { alert('กรุณากรอกเลขบัตรเจ้าของที่ดิน'); return; }
   if (!$('landParcelCode').value.trim()) { alert('กรุณากรอกรหัสแปลงที่ดิน'); return; }
+  
   if (!usages.length) {
-    /* ลบรายการจนหมด → กดบันทึก = ลบข้อมูลการใช้ประโยชน์แปลงนี้ทิ้ง */
     if (!confirm('ไม่มีรายการใช้ประโยชน์ในรายการ\nกด "ตกลง" = ลบข้อมูลการใช้ประโยชน์แปลงนี้ทิ้ง (รวมที่บันทึกไว้แล้ว)')) return;
-    try {
-      var arc = $('landParcelCode').value.trim().toUpperCase();
-      var list = JSON.parse(localStorage.getItem('ltax_land_usage') || '[]');
+    var arc = $('landParcelCode').value.trim().toUpperCase();
+    LTAXDB.getAllSurveys('ltax_land_usage').then(function(list) {
+      list = list || [];
       var kept = [];
       var removed = false;
       for (var i = 0; i < list.length; i++) {
@@ -443,83 +445,82 @@ function saveUsed() {
         if (hit && !removed) { removed = true; continue; }
         kept.push(list[i]);
       }
-      localStorage.setItem('ltax_land_usage', JSON.stringify(kept));
+      return LTAXDB.set('ltax_land_usage', kept);
+    }).then(function() {
       alert('ลบข้อมูลการใช้ประโยชน์แปลง ' + arc + ' เรียบร้อย');
-    } catch (e) { alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e); }
-    window.__editKey = null; window.__editIdx = -1;
-    window.__saved = true;
-    $('previewBox').value = '[]';
-    $('preview').style.display = 'none';
-    if (window.__goHome) window.__goHome(); else if (window.location.href.indexOf('index.html') >= 0) showView('home');
-    else window.location.href = 'index.html';
+      window.__editKey = null; window.__editIdx = -1;
+      window.__saved = true;
+      window.__dirty = false;
+      $('previewBox').value = '[]';
+      $('preview').style.display = 'none';
+      if (window.__goHome) window.__goHome(); 
+      else if (window.location.href.indexOf('index.html') >= 0) showView('home');
+      else window.location.href = 'index.html';
+    }).catch(function(e) {
+      alert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + e);
+    });
     return;
   }
 
   var data = collect();
-
-  /* ตรวจผลรวมทุกแถว = เนื้อที่แปลง (ระบบกรมจะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว — ต้องครบก่อนส่ง) */
   var arcCode = data['รหัสแปลงที่ดิน'];
-  var total = parcelTotalWah(arcCode);
-  if (total > 0) {
-    var usedWah = 0;
-    usages.forEach(function(u) { usedWah += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']); });
-    var diff = total - usedWah;
-    if (Math.abs(diff) > 0.01) {
-      var msg = diff > 0
-        ? 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nยังไม่ครบเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. (ขาดอีก ' + diff.toFixed(2) + ' ตร.ว.)'
-        : 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nเกินเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. อยู่ ' + Math.abs(diff).toFixed(2) + ' ตร.ว.';
-      if (!confirm(msg + '\n\nคำเตือน: ระบบ LTAX Online จะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว\nควรแบ่งพื้นที่ให้ครบทุกส่วนก่อนส่งข้อมูล\n\nกด "ตกลง" = บันทึกแบบนี้ / กด "ยกเลิก" = กลับมาแก้ไข')) return;
-    }
-  }
 
-  LTAX_store('ltax_land_usage', data);
-  showSavedModal('รหัสแปลงที่ดิน: ' + data['รหัสแปลงที่ดิน'] + ' (' + usages.length + ' รายการใช้ประโยชน์)', 'ltax_building', { ctx: { psnId: data['เลขบัตรเจ้าของที่ดิน'], parcelCode: data['รหัสแปลงที่ดิน'] } });
-  $('previewBox').value = JSON.stringify(data, null, 2);
-  $('preview').style.display = 'block';
-  window.__saved = true;
+  parcelTotalWah(arcCode).then(function(total) {
+    if (total > 0) {
+      var usedWah = 0;
+      usages.forEach(function(u) { usedWah += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']); });
+      var diff = total - usedWah;
+      if (Math.abs(diff) > 0.01) {
+        var msg = diff > 0
+          ? 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nยังไม่ครบเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. (ขาดอีก ' + diff.toFixed(2) + ' ตร.ว.)'
+          : 'ผลรวมการใช้ประโยชน์ ' + usedWah.toFixed(2) + ' ตร.ว.\nเกินเนื้อที่แปลง ' + total.toFixed(2) + ' ตร.ว. อยู่ ' + Math.abs(diff).toFixed(2) + ' ตร.ว.';
+        if (!confirm(msg + '\n\nคำเตือน: ระบบ LTAX Online จะล็อกการแก้ไขเมื่อประเมินภาษีแล้ว\nควรแบ่งพื้นที่ให้ครบทุกส่วนก่อนส่งข้อมูล\n\nกด "ตกลง" = บันทึกแบบนี้ / กด "ยกเลิก" = กลับมาแก้ไข')) return;
+      }
+    }
+
+    return LTAX_store('ltax_land_usage', data);
+  }).then(function() {
+    window.__saved = true;
+    window.__dirty = false;
+    showSavedModal('รหัสแปลงที่ดิน: ' + data['รหัสแปลงที่ดิน'] + ' (' + usages.length + ' รายการใช้ประโยชน์)', 'ltax_building', { 
+      ctx: { psnId: data['เลขบัตรเจ้าของที่ดิน'], parcelCode: data['รหัสแปลงที่ดิน'] } 
+    });
+    $('previewBox').value = JSON.stringify(data, null, 2);
+    $('preview').style.display = 'block';
+  }).catch(function(err) {
+    console.error('saveUsed error:', err);
+    alert('บันทึกข้อมูลไม่สำเร็จ: ' + err);
+  });
 }
 
-/* ---------- เก็บข้อมูล: localStorage + ดาวน์โหลด JSON ---------- */
+/* ---------- เก็บข้อมูล: IndexedDB (LTAXDB) + ดาวน์โหลด JSON ---------- */
 window.__editKey = null;
 window.__editIdx = -1;
+
 function LTAX_store(key, record) {
-  if (window.LTAXDB) {
-    var promise;
-    if (window.__editKey === key && window.__editIdx >= 0) {
-      promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
-    } else {
-      promise = LTAXDB.saveSurvey(key, record);
-    }
-    promise.then(function() {
-      return LTAXDB.getAllSurveys(key);
-    }).then(function(list) {
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {}
-    }).catch(function(err) {
-      console.error('LTAXDB store error:', err);
-      var list = [];
-      try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-      if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-        list[window.__editIdx] = record;
-      } else { list.push(record); }
-      try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
-        alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม — ไม่สามารถบันทึกรูปในเครื่องได้\n\nไฟล์ JSON รายแปลงยังดาวน์โหลดได้ตามปกติ (มีรูปครบ) แต่จะไม่ถูกนับรวมที่หน้า index.html\nกรุณาลบรายการเก่า หรือลดขนาดรูปก่อน'); 
-      }
-    });
+  if (!window.LTAXDB) {
+    console.error('LTAXDB ไม่พร้อมใช้งาน — ไม่สามารถบันทึกข้อมูลได้');
+    return Promise.reject('LTAXDB ไม่พร้อมใช้งาน');
+  }
+
+  var promise;
+  if (window.__editKey === key && window.__editIdx >= 0) {
+    promise = LTAXDB.updateSurvey(key, window.__editIdx, record);
+  } else {
+    promise = LTAXDB.saveSurvey(key, record);
+  }
+
+  return promise.then(function(res) {
     window.__editKey = null;
     window.__editIdx = -1;
-    return;
-  }
-  var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-  if (window.__editKey === key && window.__editIdx >= 0 && list[window.__editIdx]) {
-    list[window.__editIdx] = record;
-  } else { list.push(record); }
-  try { localStorage.setItem(key, JSON.stringify(list)); } catch(e) {
-    alert('⚠️ พื้นที่เก็บข้อมูล (localStorage) เต็ม'); 
-  }
-  window.__editKey = null;
-  window.__editIdx = -1;
+    return res;
+  }).catch(function(err) {
+    console.error('LTAXDB store error:', err);
+    alert('บันทึกข้อมูลไม่สำเร็จ (IndexedDB): ' + err);
+    throw err;
+  });
 }
+
 function LTAX_download(filename, record) {
   var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
   var a = document.createElement('a');
@@ -532,20 +533,26 @@ function LTAX_download(filename, record) {
 }
 
 /* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
-function loadEditRecord() {
-  var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
+async function loadEditRecord() {
+  var q = window.__editQuery || window.location.search; 
+  window.__editQuery = null; 
+  var params = new URLSearchParams(q);
   var key = params.get('editKey');
   var idx = parseInt(params.get('editIdx') || '-1', 10);
+  
   if (!key || idx < 0) return false;
+  
   var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  try { list = await LTAXDB.getAllSurveys(key); } catch(e) { list = []; }
   if (!list[idx]) return false;
+  
   var r = list[idx];
 
   if (r['เลขบัตรเจ้าของที่ดิน']) $('psnId').value = r['เลขบัตรเจ้าของที่ดิน'];
   if (r['รหัสแปลงที่ดิน']) $('landParcelCode').value = r['รหัสแปลงที่ดิน'];
   if (r['พื้นที่แปลงคงเหลือ (ตร.ว.)']) $('remainWah').value = r['พื้นที่แปลงคงเหลือ (ตร.ว.)'];
   else if (r['พื้นที่แปลงคงเหลือ (ตร.วา)']) $('remainWah').value = r['พื้นที่แปลงคงเหลือ (ตร.วา)'];
+  
   usages = (r['รายการใช้ประโยชน์'] || []).map(function(u) {
     return {
       'ประเภทการใช้ประโยชน์': u['ประเภทการใช้ประโยชน์'],
@@ -561,25 +568,31 @@ function loadEditRecord() {
       'รูปที่ดิน_data': u['รูปที่ดิน_data']
     };
   });
+  
   renderUsage();
 
   window.__editKey = key;
   window.__editIdx = idx;
   window.__saved = true;
+  window.__dirty = false;
+  
   $('previewBox').value = JSON.stringify(r, null, 2);
   $('preview').style.display = 'block';
+  
+  if (typeof recalcRemain === 'function') recalcRemain();
   return true;
 }
 
 window.__dirty = false;
-document.addEventListener('input', function(e) {
+function handleFormChange(e) {
   var t = e.target;
-  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
-});
-document.addEventListener('change', function(e) {
-  var t = e.target;
-  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
-});
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) {
+    window.__dirty = true;
+    window.__saved = false;
+  }
+}
+document.addEventListener('input', handleFormChange);
+document.addEventListener('change', handleFormChange);
 
 function goBack() {
   if (window.__dirty && !window.__saved) { alert('กรุณาบันทึกข้อมูลก่อน'); return; }
@@ -596,9 +609,14 @@ function resetForm() {
   $('preview').style.display = 'none';
 }
 
+/* ---------- เริ่มทำงานเมื่อโหลดหน้า ---------- */
 hideAgri();
-setTimeout(applyNextCtx, 0);
+(async function init() {
+  await loadEditRecord();
+  if (typeof applyNextCtx === 'function') applyNextCtx();
+})();
 </script>
+
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
 #ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}

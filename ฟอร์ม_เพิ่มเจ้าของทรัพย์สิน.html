@@ -383,10 +383,11 @@ function copyAddress() {
 }
 
 /* =========================================================
-   ค้นหาจากข้อมูลอ้างอิงเดิม (นำเข้าจากหน้าแรก — localStorage 'ltax_ref_owner')
+   ค้นหาจากข้อมูลอ้างอิงเดิม (นำเข้าจากหน้าแรก — LTAXDB 'ltax_ref_owner')
    ========================================================= */
 function getRefOwners() {
-  try { return JSON.parse(localStorage.getItem('ltax_ref_owner') || '[]'); } catch(e) { return []; }
+  if (!window.LTAXDB) return Promise.resolve([]);
+  return window.LTAXDB.getAllSurveys('ltax_ref_owner').catch(function() { return []; });
 }
 
 function onRefSearchInput() {
@@ -394,20 +395,21 @@ function onRefSearchInput() {
   var box = $('refResults');
   if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
-  var list = getRefOwners().filter(function(r) {
-    var hay = ((r['เลขบัตรประชาชน'] || '') + ' ' + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '')).toLowerCase();
-    return hay.indexOf(q) >= 0;
-  }).slice(0, 8);
+  getRefOwners().then(function(list) {
+    list = list.filter(function(r) {
+      var hay = ((r['เลขบัตรประชาชน'] || '') + ' ' + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '')).toLowerCase();
+      return hay.indexOf(q) >= 0;
+    }).slice(0, 8);
 
-  window.__refFiltered = list;
+    window.__refFiltered = list;
 
-  if (!list.length) {
-    box.innerHTML = '<div class="ref-empty">ไม่พบข้อมูลอ้างอิงที่ตรงกับ "' + $('refSearch').value.trim() + '" — ยังไม่ได้นำเข้าไฟล์ หรือไม่มีรายชื่อนี้</div>';
-    box.style.display = 'block';
-    return;
-  }
+    if (!list.length) {
+      box.innerHTML = '<div class="ref-empty">ไม่พบข้อมูลอ้างอิงที่ตรงกับ "' + $('refSearch').value.trim() + '" — ยังไม่ได้นำเข้าไฟล์ หรือไม่มีรายชื่อนี้</div>';
+      box.style.display = 'block';
+      return;
+    }
 
-  box.innerHTML = list.map(function(r, i) {
+    box.innerHTML = list.map(function(r, i) {
     var addr = [r['ตำบล'], r['อำเภอ'], r['จังหวัด']].filter(Boolean).join(' / ');
     return '<div class="ref-item" onclick="applyRefOwner(' + i + ')">' +
       '<span class="nm">' + (r['คำนำหน้า'] || '') + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '') + '</span>' +
@@ -415,7 +417,8 @@ function onRefSearchInput() {
       (addr ? '<div class="ad">' + addr + '</div>' : '') +
       '</div>';
   }).join('');
-  box.style.display = 'block';
+      box.style.display = 'block';
+    });
 }
 
 function findProvinceCode(name) {
@@ -547,13 +550,15 @@ function setSelectOrAdd(el, value) {
     el.value = value;
   }
 }
-function loadEditRecord() {
+async function loadEditRecord() {
   var q = window.__editQuery || window.location.search; window.__editQuery = null; var params = new URLSearchParams(q);
   var key = params.get('editKey');
   var idx = parseInt(params.get('editIdx') || '-1', 10);
   if (!key || idx < 0) return false;
   var list = [];
-  try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+  if (window.LTAXDB) {
+    try { list = await window.LTAXDB.getAllSurveys(key); } catch(e) { list = []; }
+  }
   if (!list[idx]) return false;
   var r = list[idx];
 
@@ -622,41 +627,71 @@ function collect() {
   };
 }
 
-function saveOwner() {
+// ฟังก์ชันบันทึกข้อมูล (ปรับเป็น async/await เพื่อรอ LTAXDB บันทึกสำเร็จก่อนแสดง Modal)
+async function saveOwner() {
   var missing = [];
   REQUIRED.forEach(function(r) {
     var el = $(r);
     if (r === 'lastName' && $('personType').value !== '1') return;
     if (!el || el.value === '' || el.value === '0') missing.push(el ? el.id : r);
   });
+
   if (missing.length) {
     alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', '));
     return;
   }
+
   var data = collect();
-  LTAX_store('ltax_owner', data);
-  var px = $('prefixName');
-  var pxText = px.options[px.selectedIndex] ? px.options[px.selectedIndex].text : '';
-  var fullName = (pxText + ' ' + $('firstName').value.trim() + ' ' + $('lastName').value.trim()).trim();
-  showSavedModal(fullName + ' (' + data['เลขบัตรประชาชน'] + ')', 'ltax_land', { ctx: { psnId: data['เลขบัตรประชาชน'], fullName: fullName }, askNoLand: true });
-  $('previewBox').value = JSON.stringify(data, null, 2);
-  $('preview').style.display = 'block';
-  window.__saved = true;
+
+  try {
+    // 1. รอการบันทึกลงฐานข้อมูล IndexedDB จริง
+    await LTAX_store('ltax_owner', data);
+
+    // 2. เคลียร์สถานะ dirty และตั้งค่า saved เมื่อบันทึกสำเร็จ
+    window.__saved = true;
+    window.__dirty = false;
+
+    // 3. แสดงผลหน้าจอและเปิด Modal
+    var px = $('prefixName');
+    var pxText = px.options[px.selectedIndex] ? px.options[px.selectedIndex].text : '';
+    var fullName = (pxText + ' ' + $('firstName').value.trim() + ' ' + $('lastName').value.trim()).trim();
+
+    showSavedModal(fullName + ' (' + data['เลขบัตรประชาชน'] + ')', 'ltax_land', { 
+      ctx: { psnId: data['เลขบัตรประชาชน'], fullName: fullName }, 
+      askNoLand: true 
+    });
+
+    $('previewBox').value = JSON.stringify(data, null, 2);
+    $('preview').style.display = 'block';
+
+  } catch (err) {
+    console.error('LTAXDB Save Error:', err);
+    alert('เกิดข้อผิดพลาด ไม่สามารถบันทึกข้อมูลลงฐานข้อมูลได้');
+  }
 }
 
+// ตรวจจับการพิมพ์/เลือกข้อมูล (หากมีการแก้ไขหลังบันทึก จะปลดสถานะ __saved ออกทันที)
 window.__dirty = false;
-document.addEventListener('input', function(e) {
+function handleFormChange(e) {
   var t = e.target;
-  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
-});
-document.addEventListener('change', function(e) {
-  var t = e.target;
-  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
-});
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) {
+    window.__dirty = true;
+    window.__saved = false;
+  }
+}
+document.addEventListener('input', handleFormChange);
+document.addEventListener('change', handleFormChange);
 
+// ฟังก์ชันย้อนกลับ
 function goBack() {
-  if (window.__dirty && !window.__saved) { alert('กรุณาบันทึกข้อมูลก่อน'); return; }
-  if (window.__goHome) { window.__goHome(); return; }
+  if (window.__dirty && !window.__saved) { 
+    alert('กรุณาบันทึกข้อมูลก่อน'); 
+    return; 
+  }
+  if (window.__goHome) { 
+    window.__goHome(); 
+    return; 
+  }
   window.location.href = 'index.html';
 }
 
