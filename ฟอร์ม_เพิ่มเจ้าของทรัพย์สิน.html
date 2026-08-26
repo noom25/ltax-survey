@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เพิ่มเจ้าของทรัพย์สิน</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Tahoma', 'Segoe UI', sans-serif; background: #f2f2f2; font-size: 14px; }
+
+  header {
+    background: linear-gradient(#1b4f8a, #153d6b);
+    color: #fff; padding: 8px 20px; font-size: 15px; font-weight: bold;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  header .org { font-weight: normal; font-size: 12px; }
+  header .org b { color: #ffd75e; }
+
+  .container { max-width: 980px; margin: 15px auto; padding: 0 10px; }
+  .panel { background: #fff; border: 1px solid #c8c8c8; border-radius: 4px; margin-bottom: 12px; }
+  .panel-head {
+    background: #2b6cb0; color: #fff; font-weight: bold;
+    padding: 8px 14px; border-radius: 4px 4px 0 0; font-size: 15px;
+  }
+  .panel-body { padding: 14px; }
+  .section-title {
+    background: #e8f0f8; color: #1b4f8a; font-weight: bold;
+    padding: 6px 10px; border-left: 4px solid #2b6cb0;
+    margin: 16px 0 8px 0; font-size: 14px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  .row { display: flex; align-items: flex-start; margin-bottom: 8px; }
+  .row label { width: 230px; padding: 6px 8px; text-align: right; flex-shrink: 0; }
+  .row label .req { color: #d33; font-weight: bold; }
+  .row .field { flex: 1; padding: 0 4px; }
+  .row .field input[type=text], .row .field select {
+    width: 100%; padding: 5px 8px; border: 1px solid #b0b0b0; border-radius: 3px;
+    font-size: 14px; font-family: inherit;
+  }
+  .row .field input[readonly] { background: #f5f5f5; }
+  .row .field .inline { display: inline-flex; gap: 8px; width: 100%; }
+  .row .field .inline input, .row .field .inline select { flex: 1; }
+  .hint { color: #888; font-size: 12px; padding: 4px 6px 0 6px; }
+
+  .btn-bar { text-align: center; margin: 10px 0 20px 0; }
+  .btn {
+    padding: 7px 26px; font-size: 14px; border-radius: 4px; border: 1px solid;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+  .btn-save { background: #2e7d32; border-color: #1b5e20; color: #fff; }
+  .btn-save:hover { background: #1b5e20; }
+  .btn-back { background: #f5f5f5; border-color: #b0b0b0; color: #333; }
+  .btn-back:hover { background: #e0e0e0; }
+  .btn-dbd { background: #1976d2; border-color: #0d47a1; color: #fff; font-weight: normal; }
+  .btn-dbd:hover { background: #0d47a1; }
+  .btn-dbd.hidden { display: none; }
+
+  #preview { margin-top: 10px; }
+  #preview textarea { width: 100%; height: 130px; font-size: 12px; font-family: Consolas, monospace; }
+  .preview-head {
+    background: #fff3cd; border: 1px solid #e6c65a; color: #7a5c00;
+    padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
+  }
+
+  .ref-search-box { position: relative; }
+  .ref-results {
+    border: 1px solid #b0b0b0; border-top: none; border-radius: 0 0 3px 3px;
+    max-height: 240px; overflow-y: auto; display: none; background: #fff;
+    position: absolute; left: 0; right: 0; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  }
+  .ref-item { padding: 8px 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+  .ref-item:hover { background: #eef3fa; }
+  .ref-item .nm { font-weight: bold; color: #1b4f8a; }
+  .ref-item .id { color: #888; font-size: 12px; }
+  .ref-item .ad { font-size: 12px; color: #888; }
+  .ref-empty { padding: 8px 10px; color: #888; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>ระบบจัดเก็บภาษีที่ดินและสิ่งปลูกสร้าง (LTAX Online) :: เพิ่มเจ้าของทรัพย์สิน</div>
+  <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ</div>
+</header>
+
+<div class="container">
+  <div class="panel">
+    <div class="panel-head">แบบเพิ่มเจ้าของทรัพย์สิน (เพิ่มข้อมูลเจ้าของทรัพย์สิน)</div>
+    <div class="panel-body">
+
+      <div class="section-title">ข้อมูลเจ้าของทรัพย์สิน</div>
+
+      <div class="row">
+        <label>ค้นหาจากข้อมูลอ้างอิงเดิม</label>
+        <div class="field ref-search-box">
+          <input type="text" id="refSearch" placeholder="พิมพ์เลขบัตรประชาชน หรือ ชื่อ-นามสกุล..." oninput="onRefSearchInput()" autocomplete="off">
+          <div id="refResults" class="ref-results"></div>
+          <div class="hint">เลือกรายการเพื่อเติมข้อมูลเจ้าของอัตโนมัติ (ต้องนำเข้าข้อมูลอ้างอิงจากหน้าแรกก่อน)</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>ประเภทบุคคล <span class="req">*</span></label>
+        <div class="field">
+          <select id="personType" name="assetOwner.personType" onchange="onPersonTypeChange()">
+            <option value="1">1. บุคคลธรรมดา</option>
+            <option value="2">2. นิติบุคคล</option>
+            <option value="3">3. รัฐวิสาหกิจ</option>
+            <option value="4">4. ราชการ</option>
+            <option value="5">5. สมาคม</option>
+            <option value="6">6. มูลนิธิ</option>
+            <option value="7">7. วัด/ศาสนา</option>
+            <option value="8">8. อื่นๆ</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>ถอดรหัสชื่อ ผ.ท.4</label>
+        <div class="field">
+          <input type="text" id="assetReg4" name="assetOwner.assetReg4" placeholder="เช่น ท700/8660">
+        </div>
+      </div>
+
+      <div class="row">
+        <label>เลขประจำตัวประชาชน / เลขนิติบุคคล <span class="req">*</span></label>
+        <div class="field">
+          <div class="inline">
+            <input type="text" id="psnId" name="assetOwner.psnId" maxlength="13" placeholder="กรอก 13 หลัก">
+            <button type="button" class="btn btn-dbd" id="dbdBtn" onclick="getDBD()">ดึงข้อมูล DBD</button>
+          </div>
+          <div class="hint">สำหรับนิติบุคคล ให้กด "ดึงข้อมูล DBD" เพื่อดึงชื่อหน่วยงานอัตโนมัติ</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <label id="lblPrefix">คำนำหน้าชื่อ <span class="req">*</span></label>
+        <div class="field">
+          <select id="prefixName" name="assetOwner.prefixName">
+            <option value="0">โปรดเลือกคำนำหน้าชื่อ</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label id="lblFirst">ชื่อ <span class="req">*</span></label>
+        <div class="field"><input type="text" id="firstName" name="assetOwner.firstName"></div>
+      </div>
+
+      <div class="row" id="rowLast">
+        <label id="lblLast">นามสกุล <span class="req">*</span></label>
+        <div class="field"><input type="text" id="lastName" name="assetOwner.lastName"></div>
+      </div>
+
+      <div class="row">
+        <label>สถานะบุคคล</label>
+        <div class="field">
+          <select id="personStatus" name="assetOwner.personStatus">
+            <option value="1">1. มีชีวิต</option>
+            <option value="2">2. ถึงแก่กรรม</option>
+            <option value="3">3. ล้มละลาย</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">ที่อยู่ตามบัตรประชาชน</div>
+
+      <div class="row">
+        <label>บ้านเลขที่ <span class="req">*</span></label>
+        <div class="field"><input type="text" id="addrNo" name="assetOwner.addrNo"></div>
+      </div>
+      <div class="row">
+        <label>หมู่ที่ / ชุมชน</label>
+        <div class="field"><input type="text" id="addrVillage" name="assetOwner.addrVillage"></div>
+      </div>
+      <div class="row">
+        <label>ถนน</label>
+        <div class="field"><input type="text" id="addrRoad" name="assetOwner.addrRoad"></div>
+      </div>
+      <div class="row">
+        <label>ซอย</label>
+        <div class="field"><input type="text" id="addrAlley" name="assetOwner.addrAlley"></div>
+      </div>
+      <div class="row">
+        <label>จังหวัด <span class="req">*</span></label>
+        <div class="field"><select id="provinceId" name="provinceId" onchange="onProvinceChange('provinceId','amphurId','districtId')"></select></div>
+      </div>
+      <div class="row">
+        <label>อำเภอ <span class="req">*</span></label>
+        <div class="field"><select id="amphurId" name="amphurId" onchange="onAmphurChange('amphurId','districtId')"><option value="">--</option></select></div>
+      </div>
+      <div class="row">
+        <label>ตำบล <span class="req">*</span></label>
+        <div class="field"><select id="districtId" name="districtId"><option value="">--</option></select></div>
+      </div>
+      <div class="row">
+        <label>รหัสไปรษณีย์</label>
+        <div class="field"><input type="text" id="postalCode" name="assetOwner.postalCode" maxlength="5"></div>
+      </div>
+
+      <div class="row">
+        <label></label>
+        <div class="field">
+          <label style="width:auto; text-align:left; font-weight:normal; display:inline;">
+            <input type="checkbox" id="copyAddr" name="assetOwner.copyAddr" value="1" onchange="copyAddress()">
+            เหมือนที่อยู่ตามบัตรประชาชน
+          </label>
+        </div>
+      </div>
+
+      <div class="section-title">ที่อยู่ปัจจุบัน</div>
+
+      <div class="row">
+        <label>บ้านเลขที่ <span class="req">*</span></label>
+        <div class="field"><input type="text" id="currNo" name="assetOwner.currNo"></div>
+      </div>
+      <div class="row">
+        <label>หมู่ที่ / ชุมชน</label>
+        <div class="field"><input type="text" id="currVillage" name="assetOwner.currVillage"></div>
+      </div>
+      <div class="row">
+        <label>ถนน</label>
+        <div class="field"><input type="text" id="currRoad" name="assetOwner.currRoad"></div>
+      </div>
+      <div class="row">
+        <label>ซอย</label>
+        <div class="field"><input type="text" id="currAlley" name="assetOwner.currAlley"></div>
+      </div>
+      <div class="row">
+        <label>จังหวัด <span class="req">*</span></label>
+        <div class="field"><select id="currProvinceId" name="currProvinceId" onchange="onProvinceChange('currProvinceId','currAmphurId','currDistrictId')"></select></div>
+      </div>
+      <div class="row">
+        <label>อำเภอ <span class="req">*</span></label>
+        <div class="field"><select id="currAmphurId" name="currAmphurId" onchange="onAmphurChange('currAmphurId','currDistrictId')"><option value="">--</option></select></div>
+      </div>
+      <div class="row">
+        <label>ตำบล <span class="req">*</span></label>
+        <div class="field"><select id="currDistrictId" name="currDistrictId"><option value="">--</option></select></div>
+      </div>
+      <div class="row">
+        <label>รหัสไปรษณีย์</label>
+        <div class="field"><input type="text" id="currPostalCode" name="assetOwner.currPostalCode" maxlength="5"></div>
+      </div>
+
+      <div class="section-title">ข้อมูลการติดต่อ</div>
+
+      <div class="row">
+        <label>โทรศัพท์</label>
+        <div class="field"><input type="text" id="tel" name="assetOwner.tel"></div>
+      </div>
+      <div class="row">
+        <label>อีเมล</label>
+        <div class="field"><input type="text" id="email" name="assetOwner.email"></div>
+      </div>
+      <div class="row">
+        <label>ที่อยู่เพื่อส่งจดหมาย <span class="req">*</span></label>
+        <div class="field">
+          <select id="sendAddr" name="assetOwner.sendAddr">
+            <option value="1">1. ที่อยู่ตามบัตรประชาชน</option>
+            <option value="2">2. ที่อยู่ปัจจุบัน</option>
+          </select>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="btn-bar">
+    <button type="button" class="btn btn-save" onclick="saveOwner()"> บันทึก </button>
+    <button type="button" class="btn btn-back" onclick="goBack()"> กลับไป </button>
+  </div>
+
+  <div id="preview" style="display:none;">
+    <div class="preview-head">ผลลัพธ์ (JSON สำหรับเก็บ — นำไปรวมกับข้อมูลอื่นที่ index.html)</div>
+    <textarea id="previewBox" readonly></textarea>
+  </div>
+</div>
+
+<script src="admin_data.js"></script>
+<script src="db.js"></script>
+<script>
+/* =========================================================
+   ข้อมูลอ้างอิง (ต้นแบบ - ยังไม่ครบทุกค่า)
+   หมายเหตุ: รายการคำนำหน้า / อำเภอ / ตำบล จะ sync ให้ตรงกับ
+   ระบบ LTAX จริง ในขั้นต่อไป (สคริปต์ดึง element จากเว็บ)
+   ========================================================= */
+
+var PREFIXES = {
+  '1': [ // บุคคลธรรมดา
+    '0 โปรดเลือกคำนำหน้าชื่อ', '1 นาย', '2 นาง', '3 น.ส.', '4 ด.ช.', '5 ด.ญ.',
+    '6 นส.', '120 ม.ร.ว.', '121 ม.ล.', '122 หม่อมหลวง',
+    '200 ศาสนาจารย์', '201 ท่าน', '202 พระ', '203 สามเณร',
+    '206 อาจารย์', '207 หม่อม', '208 พระครู', '212 อาตมา', '213 ดร.'
+  ],
+  '2': [ // นิติบุคคล
+    '0 โปรดเลือกคำนำหน้า', 'C11 บจก.', 'C12 บมจ.', 'C13 บรรษัท', 'C14 หจก.', 'C15 หสม.'
+  ],
+  '3': [ '0 โปรดเลือกคำนำหน้า', 'B11 องค์การ', 'B12 หน่วยงานรัฐวิสาหกิจ' ],
+  '4': [ '0 โปรดเลือกคำนำหน้า', 'A11 กรม', 'A12 หน่วยราชการ', 'A13 ส่วนราชการ' ],
+  '5': [ '0 โปรดเลือกคำนำหน้า', 'D11 สมาคม' ],
+  '6': [ '0 โปรดเลือกคำนำหน้า', 'E11 มูลนิธิ' ],
+  '7': [ '0 โปรดเลือกคำนำหน้า', 'F11 วัด', 'F12 ศาสนสถาน' ],
+  '8': [ '0 โปรดเลือกคำนำหน้า', 'G11 อื่นๆ' ]
+};
+
+/* จังหวัด (รหัส 2 หลัก ตามระบบ DLA) */
+/* จังหวัด/อำเภอ/ตำบล — ครบทุกจังหวัด (77 จ. / 928 อ. / 7,436 ต. จาก admin_data.js)
+   โหลดจาก window.ADMIN_DATA (ไฟล์ admin_data.js — โหมดเปิดไฟล์เดี่ยวต้องมีไฟล์นี้อยู่ด้วยกัน) */
+var ADMIN_DATA = window.ADMIN_DATA || { provinces: [], byProvince: {}, byDistrict: {} };
+
+var REQUIRED = ['personType','psnId','prefixName','firstName','addrNo','provinceId','amphurId','districtId','currNo','currProvinceId','currAmphurId','currDistrictId','sendAddr'];
+
+/* ---------- ฟังก์ชัน ---------- */
+
+function $(id) { return document.getElementById(id); }
+
+function onPersonTypeChange() {
+  var t = $('personType').value;
+  var box = $('prefixName');
+  box.innerHTML = '';
+  (PREFIXES[t] || PREFIXES['1']).forEach(function(p) {
+    var parts = p.split(' '), opt = document.createElement('option');
+    opt.value = parts[0]; opt.text = parts.slice(1).join(' ');
+    box.appendChild(opt);
+  });
+  $('lblPrefix').innerHTML = (t === '1') ? 'คำนำหน้าชื่อ <span class="req">*</span>' : 'หน่วยงาน <span class="req">*</span>';
+  $('lblFirst').innerHTML = (t === '1') ? 'ชื่อ <span class="req">*</span>' : 'ชื่อหน่วยงาน';
+  $('lblLast').innerHTML = (t === '1') ? 'นามสกุล <span class="req">*</span>' : 'รหัส/สังกัด';
+  var legal = (t !== '1');
+  $('rowLast').style.display = legal ? 'none' : 'flex';
+  $('dbdBtn').className = 'btn btn-dbd' + (legal ? '' : ' hidden');
+  REQUIRED.indexOf('lastName') === -1;
+}
+
+function getDBD() {
+  alert('ตัวอย่าง: ฟังก์ชันดึงข้อมูล DBD - จะเชื่อม API จริงในขั้นถัดไป');
+}
+
+function onProvinceChange(pSel, aSel, dSel) {
+  var prov = $(pSel).value;
+  var aBox = $(aSel), dBox = $(dSel);
+  aBox.innerHTML = '<option value="">--</option>';
+  dBox.innerHTML = '<option value="">--</option>';
+  if (!prov) return;
+  (ADMIN_DATA.byProvince[prov] || []).forEach(function(a) {
+    var opt = document.createElement('option');
+    opt.value = a.c; opt.text = a.n;
+    aBox.appendChild(opt);
+  });
+  if (aBox.options.length > 1 && !aBox.value) aBox.selectedIndex = 1;
+  if (aBox.value) onAmphurChange(aSel, dSel);
+}
+
+function onAmphurChange(aSel, dSel) {
+  var amph = $(aSel).value;
+  var dBox = $(dSel);
+  dBox.innerHTML = '<option value="">--</option>';
+  if (!amph) return;
+  (ADMIN_DATA.byDistrict[amph] || []).forEach(function(d) {
+    var opt = document.createElement('option');
+    opt.value = d.c; opt.text = d.n;
+    dBox.appendChild(opt);
+  });
+}
+
+function copyAddress() {
+  if (!$('copyAddr').checked) return;
+  var map = [
+    ['addrNo','currNo'], ['addrVillage','currVillage'], ['addrRoad','currRoad'],
+    ['addrAlley','currAlley'], ['postalCode','currPostalCode']
+  ];
+  map.forEach(function(m) {
+    var from = $(m[0]), to = $(m[1]);
+    if (from && to) to.value = from.value;
+  });
+  /* จ/อ/ต คัดลอกตามลำดับ cascade: จังหวัด → สร้าง options อำเภอ → อำเภอ → สร้าง options ตำบล → ตำบล
+     (การ rebuild options จะล้างค่าที่ตั้งไว้ก่อนหน้า — ห้ามตั้งค่าทั้งหมดก่อนแล้วค่อยเรียก cascade) */
+  var prov = $('provinceId').value, amph = $('amphurId').value, dist = $('districtId').value;
+  if (prov) { $('currProvinceId').value = prov; onProvinceChange('currProvinceId','currAmphurId','currDistrictId'); }
+  if (amph) { $('currAmphurId').value = amph; onAmphurChange('currAmphurId','currDistrictId'); }
+  if (dist) $('currDistrictId').value = dist;
+}
+
+/* =========================================================
+   ค้นหาจากข้อมูลอ้างอิงเดิม (นำเข้าจากหน้าแรก — เก็บผ่าน LTAXDB store 'ltax_ref_owner')
+   ========================================================= */
+function getRefOwners() {
+  return LTAX_getAll('ltax_ref_owner');
+}
+
+function onRefSearchInput() {
+  var q = $('refSearch').value.trim().toLowerCase();
+  var box = $('refResults');
+  if (q.length < 2) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  getRefOwners().then(function(all) {
+    // เผื่อผู้ใช้พิมพ์เปลี่ยนคำค้นระหว่างรอโหลด — เช็คว่าค่าปัจจุบันยังตรงกับตอนเริ่มค้นหาไหม
+    if ($('refSearch').value.trim().toLowerCase() !== q) return;
+
+    var list = all.filter(function(r) {
+      var hay = ((r['เลขบัตรประชาชน'] || '') + ' ' + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '')).toLowerCase();
+      return hay.indexOf(q) >= 0;
+    }).slice(0, 8);
+
+    window.__refFiltered = list;
+
+    if (!list.length) {
+      box.innerHTML = '<div class="ref-empty">ไม่พบข้อมูลอ้างอิงที่ตรงกับ "' + $('refSearch').value.trim() + '" — ยังไม่ได้นำเข้าไฟล์ หรือไม่มีรายชื่อนี้</div>';
+      box.style.display = 'block';
+      return;
+    }
+
+    box.innerHTML = list.map(function(r, i) {
+      var addr = [r['ตำบล'], r['อำเภอ'], r['จังหวัด']].filter(Boolean).join(' / ');
+      return '<div class="ref-item" onclick="applyRefOwner(' + i + ')">' +
+        '<span class="nm">' + (r['คำนำหน้า'] || '') + (r['ชื่อ'] || '') + ' ' + (r['นามสกุล'] || '') + '</span>' +
+        ' <span class="id">(' + (r['เลขบัตรประชาชน'] || '') + ')</span>' +
+        (addr ? '<div class="ad">' + addr + '</div>' : '') +
+        '</div>';
+    }).join('');
+    box.style.display = 'block';
+  });
+}
+
+function findProvinceCode(name) {
+  if (!name) return '';
+  var t = String(name).trim();
+  for (var i = 0; i < ADMIN_DATA.provinces.length; i++) {
+    if (ADMIN_DATA.provinces[i].n === t || ADMIN_DATA.provinces[i].c === t) return ADMIN_DATA.provinces[i].c;
+  }
+  return '';
+}
+function findAmphurCode(provCode, name) {
+  if (!provCode || !name) return '';
+  var t = String(name).trim();
+  var list = ADMIN_DATA.byProvince[provCode] || [];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].n === t || list[i].c === t) return list[i].c;
+  }
+  return '';
+}
+function findDistrictCode(provCode, amphCode, name) {
+  if (!amphCode || !name) return '';
+  var t = String(name).trim();
+  var list = ADMIN_DATA.byDistrict[amphCode] || [];
+  for (var i = 0; i < list.length; i++) {
+    if (list[i].n === t || list[i].c === t) return list[i].c;
+  }
+  return '';
+}
+
+function applyRefOwner(i) {
+  var r = (window.__refFiltered || [])[i];
+  if (!r) return;
+
+  $('psnId').value = r['เลขบัตรประชาชน'] || '';
+
+  if (r['คำนำหน้า']) {
+    var pbox = $('prefixName'), pv = r['คำนำหน้า'], matched = false;
+    for (var k = 0; k < pbox.options.length; k++) {
+      if (pbox.options[k].text === pv || pbox.options[k].value === pv) { pbox.value = pbox.options[k].value; matched = true; break; }
+    }
+    if (!matched) setSelectOrAdd(pbox, pv);
+  }
+
+  $('firstName').value = r['ชื่อ'] || '';
+  $('lastName').value = r['นามสกุล'] || '';
+  $('addrNo').value = r['เลขที่บ้าน'] || '';
+  $('addrVillage').value = r['หมู่ที่'] || '';
+  $('addrRoad').value = r['ถนน'] || '';
+  $('addrAlley').value = r['ซอย'] || '';
+  $('postalCode').value = r['รหัสไปรษณีย์'] || '';
+  if (r['โทรศัพท์']) $('tel').value = r['โทรศัพท์'];
+
+  var provCode = findProvinceCode(r['จังหวัด']);
+  if (provCode) {
+    $('provinceId').value = provCode;
+    onProvinceChange('provinceId', 'amphurId', 'districtId');
+    var amphCode = findAmphurCode(provCode, r['อำเภอ']);
+    if (amphCode) {
+      $('amphurId').value = amphCode;
+      onAmphurChange('amphurId', 'districtId');
+      var distCode = findDistrictCode(provCode, amphCode, r['ตำบล']);
+      if (distCode) $('districtId').value = distCode;
+      else if (r['ตำบล']) setSelectOrAdd($('districtId'), r['ตำบล']);
+    } else if (r['อำเภอ']) {
+      setSelectOrAdd($('amphurId'), r['อำเภอ']);
+    }
+  } else if (r['จังหวัด']) {
+    alert('พบจังหวัด "' + r['จังหวัด'] + '" ซึ่งยังไม่มีในรายการอำเภอ/ตำบลของระบบนี้ — กรุณาเลือกจังหวัด/อำเภอ/ตำบลเอง');
+  }
+
+  $('refResults').style.display = 'none';
+  $('refSearch').value = '';
+  window.__dirty = true;
+}
+
+document.addEventListener('click', function(e) {
+  var box = $('refResults');
+  var input = $('refSearch');
+  if (box && box.style.display !== 'none' && e.target !== input && !box.contains(e.target)) {
+    box.style.display = 'none';
+  }
+});
+
+/* ---------- เก็บข้อมูล: LTAX_store / LTAX_loadEditRecord (ดู db.js) ---------- */
+window.__editKey = null;
+window.__editIdx = -1;
+
+function LTAX_download(filename, record) {
+  var blob = new Blob([JSON.stringify(record, null, 2)], { type: 'application/json;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+/* โหลด record ที่เลือกจากหน้า index กลับขึ้นฟอร์ม (?editKey=...&editIdx=...) */
+function setSelectOrAdd(el, value) {
+  if (!el || value == null) return;
+  el.value = value;
+  if (el.value !== String(value)) {
+    var opt = document.createElement('option');
+    opt.value = value;
+    opt.text = value + ' (ยังไม่อยู่ในรายการ)';
+    el.appendChild(opt);
+    el.value = value;
+  }
+}
+function loadEditRecord() {
+  var q = window.__editQuery || window.location.search; window.__editQuery = null;
+  return LTAX_loadEditRecord(q).then(function(res) {
+    if (!res) return false;
+    var r = res.record;
+
+    if (r['ประเภทบุคคล']) { $('personType').value = r['ประเภทบุคคล']; onPersonTypeChange(); }
+    if (r['คำนำหน้า']) {
+      var pbox = $('prefixName'), pv = r['คำนำหน้า'];
+      for (var i = 0; i < pbox.options.length; i++) {
+        if (pbox.options[i].value === pv || pbox.options[i].text === pv) { pv = pbox.options[i].value; break; }
+      }
+      setSelectOrAdd(pbox, pv);
+    }
+    if (r['เลขบัตรประชาชน']) $('psnId').value = r['เลขบัตรประชาชน'];
+    if (r['ชื่อ']) $('firstName').value = r['ชื่อ'];
+    if (r['นามสกุล']) $('lastName').value = r['นามสกุล'];
+    if (r['เลขที่บ้าน']) $('addrNo').value = r['เลขที่บ้าน'];
+    if (r['หมู่ที่']) $('addrVillage').value = r['หมู่ที่'];
+    if (r['ซอย']) $('addrAlley').value = r['ซอย'];
+    if (r['ถนน']) $('addrRoad').value = r['ถนน'];
+    setSelectOrAdd($('provinceId'), r['จังหวัด']);
+    onProvinceChange('provinceId','amphurId','districtId');
+    setSelectOrAdd($('amphurId'), r['อำเภอ']);
+    onAmphurChange('amphurId','districtId');
+    setSelectOrAdd($('districtId'), r['ตำบล']);
+    if (r['รหัสไปรษณีย์']) $('postalCode').value = r['รหัสไปรษณีย์'];
+    if (r['โทรศัพท์']) $('tel').value = r['โทรศัพท์'];
+
+    /* ฟอร์มบังคับให้กรอกที่อยู่ปัจจุบัน — คัดลอกจากที่อยู่ตามบัตรเมื่อแก้ไข */
+    if (!$('currNo').value) $('currNo').value = $('addrNo').value;
+    if (!$('currVillage').value) $('currVillage').value = $('addrVillage').value;
+    if (!$('currRoad').value) $('currRoad').value = $('addrRoad').value;
+    if (!$('currAlley').value) $('currAlley').value = $('addrAlley').value;
+    if (!$('currPostalCode').value) $('currPostalCode').value = $('postalCode').value;
+    setSelectOrAdd($('currProvinceId'), $('provinceId').value);
+    onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
+    setSelectOrAdd($('currAmphurId'), $('amphurId').value);
+    onAmphurChange('currAmphurId','currDistrictId');
+    setSelectOrAdd($('currDistrictId'), $('districtId').value);
+    if (!$('sendAddr').value) $('sendAddr').value = '1';
+
+    window.__saved = true;
+    $('previewBox').value = JSON.stringify(r, null, 2);
+    $('preview').style.display = 'block';
+    return true;
+  });
+}
+
+function collect() {
+  var sel = function(id) { var el = $(id); return el ? el.value : ''; };
+  return {
+    'เลขบัตรประชาชน': sel('psnId').trim(),
+    'ประเภทบุคคล': sel('personType'),
+    'คำนำหน้า': sel('prefixName'),
+    'ชื่อ': sel('firstName').trim(),
+    'นามสกุล': sel('lastName').trim(),
+    'สัญชาติ': '',
+    'เลขที่บ้าน': sel('addrNo'),
+    'หมู่ที่': sel('addrVillage'),
+    'ซอย': sel('addrAlley'),
+    'ถนน': sel('addrRoad'),
+    'ตำบล': sel('districtId'),
+    'อำเภอ': sel('amphurId'),
+    'จังหวัด': sel('provinceId'),
+    'รหัสไปรษณีย์': sel('postalCode'),
+    'โทรศัพท์': sel('tel')
+  };
+}
+
+async function saveOwner() {
+  var missing = [];
+  REQUIRED.forEach(function(r) {
+    var el = $(r);
+    if (r === 'lastName' && $('personType').value !== '1') return;
+    if (!el || el.value === '' || el.value === '0') missing.push(el ? el.id : r);
+  });
+  if (missing.length) {
+    alert('กรุณากรอกข้อมูลให้ครบ: ' + missing.join(', '));
+    return;
+  }
+  var data = collect();
+  await LTAX_store('ltax_owner', data);
+  var px = $('prefixName');
+  var pxText = px.options[px.selectedIndex] ? px.options[px.selectedIndex].text : '';
+  var fullName = (pxText + ' ' + $('firstName').value.trim() + ' ' + $('lastName').value.trim()).trim();
+  showSavedModal(fullName + ' (' + data['เลขบัตรประชาชน'] + ')', 'ltax_land', { ctx: { psnId: data['เลขบัตรประชาชน'], fullName: fullName }, askNoLand: true });
+  $('previewBox').value = JSON.stringify(data, null, 2);
+  $('preview').style.display = 'block';
+  window.__saved = true;
+}
+
+window.__dirty = false;
+document.addEventListener('input', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+document.addEventListener('change', function(e) {
+  var t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) window.__dirty = true;
+});
+
+function goBack() {
+  if (window.__dirty && !window.__saved) { alert('กรุณาบันทึกข้อมูลก่อน'); return; }
+  if (window.__goHome) { window.__goHome(); return; }
+  window.location.href = 'index.html';
+}
+
+function resetForm() {
+  if (!confirm('ล้างข้อมูลในฟอร์ม?')) return;
+  $('personType').value = '1';
+  onPersonTypeChange();
+  ['assetReg4','psnId','firstName','lastName','addrNo','addrVillage','addrRoad','addrAlley',
+   'postalCode','currNo','currVillage','currRoad','currAlley','currPostalCode','tel','email'].forEach(function(f) {
+    $(f).value = '';
+  });
+  ['provinceId','amphurId','districtId','currProvinceId','currAmphurId','currDistrictId'].forEach(function(f) {
+    $(f).value = '';
+  });
+  $('copyAddr').checked = false;
+  $('sendAddr').value = '1';
+  $('personStatus').value = '1';
+  $('preview').style.display = 'none';
+}
+
+/* init */
+(function() {
+  var pBox = $('provinceId'), cBox = $('currProvinceId');
+  ADMIN_DATA.provinces.forEach(function(p) {
+    var o1 = document.createElement('option'); o1.value = p.c; o1.text = p.n; pBox.appendChild(o1);
+    var o2 = document.createElement('option'); o2.value = p.c; o2.text = p.n; cBox.appendChild(o2);
+  });
+  $('provinceId').value = '33';
+  $('currProvinceId').value = '33';
+  onPersonTypeChange();
+  onProvinceChange('provinceId','amphurId','districtId');
+  onProvinceChange('currProvinceId','currAmphurId','currDistrictId');
+  /* ค่าเริ่มต้นเขตพื้นที่ อบต.: ขุขันธ์ / ปรือใหญ่ */
+  var amphKh = findAmphurCode('33', 'ขุขันธ์');
+  if (amphKh) {
+    $('amphurId').value = amphKh; onAmphurChange('amphurId','districtId');
+    $('currAmphurId').value = amphKh; onAmphurChange('currAmphurId','currDistrictId');
+    var dPrue = findDistrictCode('33', amphKh, 'ปรือใหญ่');
+    if (dPrue) { $('districtId').value = dPrue; $('currDistrictId').value = dPrue; }
+  }
+  loadEditRecord();
+})();
+</script>
+<style>
+/* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
+#ltaxModal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,35,60,.55);display:none;align-items:center;justify-content:center;z-index:9999;}
+#ltaxModal .box{background:#fff;border-radius:12px;max-width:92%;width:330px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.35);overflow:hidden;}
+#ltaxModal .head{background:linear-gradient(135deg,#367fa9,#1b4f8a);color:#fff;padding:14px 10px 26px;font-size:16px;font-weight:700;}
+#ltaxModal .tick{width:62px;height:62px;border-radius:50%;background:#28a745;color:#fff;font-size:34px;line-height:62px;margin:-31px auto 12px;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.25);}
+#ltaxModal .info{font-size:13px;color:#333;margin:4px 14px 14px;word-break:break-word;line-height:1.5;}
+#ltaxModal .btns{padding:0 14px 14px;}
+#ltaxModal .btn{display:block;width:100%;margin:7px 0 0;padding:11px;border:none;border-radius:6px;font-size:15px;font-weight:700;cursor:pointer;}
+#ltaxModal .btn-next{background:#367fa9;color:#fff;}
+#ltaxModal .btn-more{background:#28a745;color:#fff;}
+#ltaxModal .btn-home{background:#eef4f8;color:#1b4f8a;}
+#ltaxModal .btn-close{background:#f4f6f8;color:#8a8f94;}
+</style>
+
+<div id="ltaxModal">
+  <div class="box">
+    <div class="head">บันทึกข้อมูลเรียบร้อย</div>
+    <div class="tick">&#10003;</div>
+    <div class="info" id="ltaxModalInfo"></div>
+    <div class="btns">
+      <button type="button" class="btn btn-next" id="ltaxModalNext">กรอกชุดถัดไป (ต่อไป)</button>
+      <button type="button" class="btn btn-home" id="ltaxModalNoLand" style="display:none;">ไม่มีที่ดินเป็นของตัวเอง — ไปสิ่งปลูกสร้าง (บ้านบนที่ดินคนอื่น)</button>
+      <button type="button" class="btn btn-more" id="ltaxModalMore">เพิ่มรายการใหม่</button>
+      <button type="button" class="btn btn-home" id="ltaxModalHome">กลับหน้าแรก</button>
+      <button type="button" class="btn btn-close" id="ltaxModalClose">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- modal ยืนยันการบันทึก + flow ชุดข้อมูล ---------- */
+function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
+function goHome() { if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; }
+function goNextForm(fid, ctx) {
+  var c = ltaxReadCtx();
+  for (var k in (ctx || {})) if (ctx[k]) c[k] = ctx[k];
+  try { sessionStorage.setItem('ltax_next', JSON.stringify(c)); } catch(e) {}
+  if (window.openForm) { try { window.openForm(fid); return; } catch(e) {} }
+  var F = {
+    ltax_owner: 'ฟอร์ม_เพิ่มเจ้าของทรัพย์สิน.html',
+    ltax_land: 'ฟอร์ม_เพิ่มที่ดิน.html',
+    ltax_land_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์ที่ดิน.html',
+    ltax_building: 'ฟอร์ม_เพิ่มสิ่งปลูกสร้าง.html',
+    ltax_building_usage: 'ฟอร์ม_เพิ่มการใช้ประโยชน์สิ่งปลูกสร้าง.html',
+    ltax_sign: 'ฟอร์ม_เพิ่มป้าย.html'
+  };
+  window.location.href = F[fid] || 'index.html';
+}
+function showSavedModal(info, next, opts) {
+  opts = opts || {};
+  $('ltaxModalInfo').textContent = info;
+  var nb = $('ltaxModalNext'), isLast = (next === undefined || next === null);
+  nb.textContent = isLast ? 'กรอกข้อมูลเจ้าของรายถัดไป' : 'กรอกชุดถัดไป (ต่อไป)';
+  nb.onclick = function() { hideSavedModal(); goNextForm(isLast ? 'ltax_owner' : next, opts.ctx); };
+  /* ชุดย่อ: คนนี้ไม่มีที่ดินเป็นของตัวเอง (บ้านบนที่ดินคนอื่น) → ข้ามไปสิ่งปลูกสร้างเลย */
+  var nl = $('ltaxModalNoLand');
+  if (opts.askNoLand) {
+    nl.style.display = 'block';
+    nl.onclick = function() { hideSavedModal(); goNextForm('ltax_building', opts.ctx); };
+  } else nl.style.display = 'none';
+  $('ltaxModalMore').onclick = function() { hideSavedModal(); resetForm(); };
+  $('ltaxModalHome').onclick = function() { hideSavedModal(); goHome(); };
+  $('ltaxModalClose').onclick = hideSavedModal;
+  $('ltaxModal').style.display = 'flex';
+}
+function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
+function applyNextCtx() {
+  var c = ltaxReadCtx();
+  if (!c || !c.psnId) return;
+  sessionStorage.removeItem('ltax_next');
+  if (window.__editKey) return;
+  if (c.psnId) $('psnId').value = c.psnId;
+  window.__dirty = true;
+}
+setTimeout(applyNextCtx, 0);
+</script>
+
+</body>
+</html>
