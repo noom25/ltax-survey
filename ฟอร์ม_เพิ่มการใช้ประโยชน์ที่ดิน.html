@@ -83,10 +83,13 @@
         <label>รหัสแปลงที่ดิน (ผูก)</label>
         <div class="field">
           <div class="inline" style="display:inline-flex; gap:8px; width:100%;">
-            <input type="text" id="landParcelCode" placeholder="ตัวอย่าง: 50A001" onblur="this.value=this.value.toUpperCase()" onchange="recalcRemain()">
-            <input type="text" id="remainWah" placeholder="พื้นที่แปลงคงเหลือ (ตร.ว.)" style="max-width:200px;">
+            <select id="landParcelPick" onchange="pickParcel(this)" style="flex:1;"></select>
+            <input type="text" id="landParcelCode" placeholder="พิมพ์เองได้" onblur="this.value=this.value.toUpperCase(); onParcelCodeChange()" style="max-width:150px;">
           </div>
-          <div class="hint">พื้นที่แปลงคงเหลือ = เนื้อที่แปลง - พื้นที่ใช้ไปแล้ว (ระบบจะตรวจว่าห้ามเกิน)</div>
+          <div class="inline" style="display:inline-flex; gap:8px; width:100%; margin-top:6px;">
+            <input type="text" id="remainWah" placeholder="พื้นที่แปลงคงเหลือ (ตร.ว.)" style="max-width:220px;">
+          </div>
+          <div class="hint" id="parcelHint">พื้นที่แปลงคงเหลือ = เนื้อที่แปลง - พื้นที่ใช้ไปแล้ว (ระบบจะตรวจว่าห้ามเกิน)</div>
         </div>
       </div>
 
@@ -255,6 +258,130 @@ function parcelTotalWah(pc) {
 
 function $(id) { return document.getElementById(id); }
 function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+
+/* ---------- dropdown เลือกแปลง + สถานะ (ว่าง / บันทึกแล้วบางส่วน / บันทึกครบแล้ว) ----------
+   แต่ละแปลงมีระเบียน ltax_land_usage ได้ 1 ระเบียน (เก็บหลายรายการใช้ประโยชน์ไว้ในนั้น)
+   สถานะคำนวณจากผลรวมของรายการใช้ประโยชน์ทั้งหมดในระเบียนนั้น เทียบกับเนื้อที่แปลงจริง */
+function landTotalWah(landRec) {
+  if (!landRec) return 0;
+  var t = num(landRec['รวมเนื้อที่ทั้งหมด (ตร.ว.)']);
+  if (t <= 0) t = num(landRec['ไร่']) * 400 + num(landRec['งาน']) * 100 + num(landRec['ตร.วา']);
+  return t;
+}
+function usageRowsTotalWah(rows) {
+  var t = 0;
+  (rows || []).forEach(function(u) { t += num(u['ไร่']) * 400 + num(u['งาน']) * 100 + num(u['ตร.วา']); });
+  return t;
+}
+function landUsageIndexByParcel(list) {
+  var idx = {};
+  list.forEach(function(r, i) {
+    var c = String(r['รหัสแปลงที่ดิน'] || '').trim().toUpperCase();
+    if (!c) return;
+    if (!idx[c]) idx[c] = [];
+    idx[c].push(i);
+  });
+  return idx;
+}
+// สถานะของแปลง (ไม่รวมระเบียนที่กำลังแก้ไขอยู่ — ส่งมาผ่าน recs ที่กรองแล้วจากผู้เรียก)
+function parcelStatusLabel(landRec, recs) {
+  var totalWah = landTotalWah(landRec);
+  if (!recs || !recs.length) return { text: '○ ว่าง — ยังไม่บันทึกการใช้ประโยชน์', color: '#2e7d32' };
+  var usedWah = 0;
+  recs.forEach(function(r) { usedWah += usageRowsTotalWah(r['รายการใช้ประโยชน์']); });
+  var dup = recs.length > 1 ? ' ⚠ พบ ' + recs.length + ' ระเบียนซ้อนกัน!' : '';
+  if (totalWah > 0 && Math.abs(totalWah - usedWah) <= 0.01) return { text: '✓ บันทึกครบเนื้อที่แล้ว' + dup, color: '#2e7d32' };
+  if (totalWah > 0 && usedWah > totalWah) return { text: '⚠ เกินเนื้อที่แปลง (~' + (usedWah - totalWah).toFixed(0) + ' ตร.ว.)' + dup, color: '#c62828' };
+  if (totalWah > 0) return { text: '◐ บันทึกแล้วบางส่วน (เหลือ ~' + (totalWah - usedWah).toFixed(0) + ' ตร.ว.)' + dup, color: '#b26a00' };
+  return { text: '● มีบันทึกแล้ว (' + usedWah.toFixed(0) + ' ตร.ว.)' + dup, color: '#555' };
+}
+function fillParcelPick() {
+  var box = $('landParcelPick');
+  if (!box) return Promise.resolve();
+  return Promise.all([LTAX_getAll('ltax_land'), LTAX_getAll('ltax_land_usage')]).then(function(res) {
+    var landList = res[0], usageList = res[1];
+    var byParcel = landUsageIndexByParcel(usageList);
+    var selfKey = window.__editKey, selfIdx = window.__editIdx;
+    var selfCode = (selfKey === 'ltax_land_usage' && selfIdx >= 0 && usageList[selfIdx])
+      ? String(usageList[selfIdx]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() : '';
+    var curCode = $('landParcelCode') ? $('landParcelCode').value.trim().toUpperCase() : '';
+    box.innerHTML = '<option value="">— เลือกแปลงที่มีในระบบ (' + landList.length + ' แปลง) —</option>';
+    landList.forEach(function(l) {
+      var code = String(l['รหัสแปลงที่ดิน'] || '').trim();
+      if (!code) return;
+      var codeU = code.toUpperCase();
+      var idxs = byParcel[codeU] || [];
+      var recs = idxs.filter(function(i) { return !(selfKey === 'ltax_land_usage' && i === selfIdx); }).map(function(i) { return usageList[i]; });
+      var status;
+      if (codeU === selfCode) {
+        status = { text: '✎ กำลังแก้ไขรายการนี้อยู่' + (recs.length ? ' — ⚠ พบอีก ' + recs.length + ' ระเบียนซ้อนของแปลงนี้' : ''), color: '#1b4f8a' };
+      } else {
+        status = parcelStatusLabel(l, recs);
+      }
+      var opt = document.createElement('option');
+      opt.value = code;
+      opt.text = code + ' (' + [l['ไร่'], l['งาน'], l['ตร.วา']].join('-') + ')  [' + status.text + ']';
+      if (codeU === curCode) opt.selected = true;
+      box.appendChild(opt);
+    });
+  });
+}
+function pickParcel(sel) {
+  if (!sel.value) return;
+  $('landParcelCode').value = sel.value;
+  onParcelCodeChange();
+}
+// ทำให้ dropdown ไฮไลต์ตัวที่ตรงกับรหัสแปลงปัจจุบันเสมอ ไม่ว่าจะเลือกจาก dropdown หรือพิมพ์เอง
+function syncParcelPickSelection(code) {
+  var box = $('landParcelPick');
+  if (!box) return;
+  var c = String(code || '').trim().toUpperCase();
+  for (var i = 0; i < box.options.length; i++) {
+    if (box.options[i].value.trim().toUpperCase() === c) { box.selectedIndex = i; return; }
+  }
+  box.selectedIndex = 0;
+}
+function onParcelCodeChange() {
+  syncParcelPickSelection($('landParcelCode').value);
+  recalcRemain();
+  updateParcelHint();
+}
+// hint ใต้ dropdown: สถานะแปลงปัจจุบัน + เตือนถ้ามีระเบียนเดิมอยู่แล้ว (กันบันทึกซ้อนกัน 2 ชุด)
+function updateParcelHint() {
+  var hint = $('parcelHint');
+  if (!hint) return;
+  var code = $('landParcelCode').value.trim().toUpperCase();
+  if (!code) { hint.innerHTML = 'พื้นที่แปลงคงเหลือ = เนื้อที่แปลง - พื้นที่ใช้ไปแล้ว (ระบบจะตรวจว่าห้ามเกิน)'; return; }
+  Promise.all([LTAX_getAll('ltax_land'), LTAX_getAll('ltax_land_usage')]).then(function(res) {
+    var landList = res[0], usageList = res[1];
+    var landRec = null;
+    for (var i = 0; i < landList.length; i++) {
+      if (String(landList[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === code) { landRec = landList[i]; break; }
+    }
+    var selfKey = window.__editKey, selfIdx = window.__editIdx;
+    var isSelfCode = (selfKey === 'ltax_land_usage' && selfIdx >= 0 && usageList[selfIdx] &&
+      String(usageList[selfIdx]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === code);
+    var recs = [];
+    usageList.forEach(function(r, i) {
+      if (selfKey === 'ltax_land_usage' && i === selfIdx) return;
+      if (String(r['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === code) recs.push(r);
+    });
+    var lines = [];
+    if (!landRec) {
+      lines.push('<span style="color:#d33;">⚠ ยังไม่มีแปลง ' + code + ' ในข้อมูลที่ดิน (ltax_land) — คำนวณพื้นที่คงเหลืออัตโนมัติไม่ได้ จนกว่าจะกรอกฟอร์มที่ดินก่อน</span>');
+    }
+    if (isSelfCode) {
+      lines.push('<span style="color:#1b4f8a;">✎ กำลังแก้ไขระเบียนการใช้ประโยชน์ของแปลงนี้อยู่</span>');
+    } else {
+      var status = parcelStatusLabel(landRec, recs);
+      lines.push('<span style="color:' + status.color + ';">' + status.text + '</span>');
+    }
+    if (recs.length) {
+      lines.push('<span style="color:#b26a00;">⚠ แปลงนี้มีระเบียนการใช้ประโยชน์อยู่แล้วในระบบ — ถ้าต้องการแก้ไขของเดิม ให้กลับไปหน้ารายการแล้วกดแก้ไขแปลงนี้แทน มิฉะนั้นจะกลายเป็นข้อมูลซ้อนกัน 2 ชุด</span>');
+    }
+    hint.innerHTML = lines.join('<br>');
+  });
+}
 
 function getUsedWah() { return num($('raiStr').value) * 400 + num($('nganStr').value) * 100 + num($('squareWahStr').value); }
 
@@ -540,11 +667,14 @@ function resetForm() {
   renderUsage();
   clearUsageEntry();
   $('preview').style.display = 'none';
+  fillParcelPick();
+  updateParcelHint();
 }
 
 hideAgri();
 loadEditRecord();
-setTimeout(function() { applyNextCtx(); recalcRemain(); }, 0);
+fillParcelPick();
+setTimeout(function() { applyNextCtx(); fillParcelPick(); recalcRemain(); updateParcelHint(); }, 0);
 </script>
 <style>
 /* ===== modal ยืนยันการบันทึก (เรียบร้อย) ===== */
@@ -619,7 +749,7 @@ function applyNextCtx() {
   if (c.parcelCode) $('landParcelCode').value = c.parcelCode;
   window.__dirty = true;
 }
-setTimeout(function() { recalcRemain(); }, 100);</script>
+setTimeout(function() { fillParcelPick(); recalcRemain(); updateParcelHint(); }, 100);</script>
 
 </body>
 </html>

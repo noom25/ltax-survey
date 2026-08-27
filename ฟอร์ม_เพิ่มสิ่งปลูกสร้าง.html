@@ -446,18 +446,62 @@ function landOwnerNameSync(landRec, ownersList) {
 function landOwnerName(landRec) {
   return LTAX_getAll('ltax_owner').then(function(ownersList) { return landOwnerNameSync(landRec, ownersList); });
 }
+/* ---------- สถานะการผูกแปลง (ว่าง / ผูกบางส่วน / ผูกครบ) ----------
+   ใช้เมื่อแปลงเดียวมีหลายสิ่งปลูกสร้าง (แบ่งใช้ประโยชน์หลายประเภท) — คำนวณจาก
+   ผลรวม "เนื้อที่ที่ดิน" ของสิ่งปลูกสร้างทุกหลังที่ผูกกับแปลงนั้น เทียบกับเนื้อที่แปลงทั้งหมด */
+function parseRaiNganWahToWah(str) {
+  var s = String(str || '').trim();
+  var m = s.match(/^(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)$/);
+  if (!m) return 0;
+  return num(m[1]) * 400 + num(m[2]) * 100 + num(m[3]);
+}
+// รวมพื้นที่ที่ถูกใช้ไปแล้วต่อแปลง จากสิ่งปลูกสร้างทุกหลัง — ไม่นับหลังที่กำลังแก้ไขอยู่ (กันหักซ้ำตัวเอง)
+// ถ้าอาคารหลังหนึ่งผูกหลายแปลงพร้อมกัน (คั่นด้วย ; ) จะหารเนื้อที่เท่า ๆ กันในการนับคร่าว ๆ
+function computeParcelUsage(buildingList) {
+  var selfKey = window.__editKey, selfIdx = window.__editIdx;
+  var usage = {};
+  buildingList.forEach(function(b, bi) {
+    if (selfKey === 'ltax_building' && selfIdx === bi) return;
+    var codes = String(b['รหัสแปลงที่ดิน'] || '').split(';').map(function(c) { return c.trim().toUpperCase(); }).filter(Boolean);
+    if (!codes.length) return;
+    var areaEach = parseRaiNganWahToWah(b['เนื้อที่ที่ดิน']) / codes.length;
+    codes.forEach(function(c) {
+      if (!usage[c]) usage[c] = { usedWah: 0, count: 0 };
+      usage[c].usedWah += areaEach;
+      usage[c].count += 1;
+    });
+  });
+  return usage;
+}
+// สถานะของแปลงเดียว (ใช้ทั้งใน dropdown และใน hint ใต้ช่องกรอกรหัสแปลง)
+function parcelUsageInfo(code, landRec, usage) {
+  var totalWah = landRec ? (num(landRec['ไร่']) * 400 + num(landRec['งาน']) * 100 + num(landRec['ตร.วา'])) : 0;
+  var u = usage[String(code || '').trim().toUpperCase()] || { usedWah: 0, count: 0 };
+  return { totalWah: totalWah, usedWah: u.usedWah, count: u.count, remainWah: totalWah - u.usedWah };
+}
+function parcelStatusLabel(info) {
+  if (info.count === 0) return { text: '○ ว่าง — ยังไม่ผูกกับสิ่งปลูกสร้างใด', color: '#2e7d32' };
+  if (info.totalWah > 0 && info.remainWah <= 0) return { text: '⚠ ผูกครบพื้นที่แล้ว (' + info.count + ' หลัง)', color: '#c62828' };
+  if (info.totalWah > 0) return { text: '◐ ผูกแล้วบางส่วน (' + info.count + ' หลัง, เหลือ ~' + fmt(info.remainWah, false) + ' ตร.วา)', color: '#b26a00' };
+  return { text: '● ผูกแล้ว (' + info.count + ' หลัง)', color: '#555' };
+}
 function fillParcelPick() {
   var box = $('landParcelPick');
   if (!box) return Promise.resolve();
-  return Promise.all([LTAX_getAll('ltax_land'), LTAX_getAll('ltax_owner')]).then(function(res) {
-    var list = res[0], ownersList = res[1];
+  return Promise.all([LTAX_getAll('ltax_land'), LTAX_getAll('ltax_owner'), LTAX_getAll('ltax_building')]).then(function(res) {
+    var list = res[0], ownersList = res[1], buildingList = res[2];
+    var usage = computeParcelUsage(buildingList);
+    var curCode = $('landParcelCode') ? $('landParcelCode').value.trim().toUpperCase() : '';
     box.innerHTML = '<option value="">— เลือกแปลงที่มีในระบบ (' + list.length + ' แปลง) —</option>';
     list.forEach(function(l) {
       var code = String(l['รหัสแปลงที่ดิน'] || '').trim();
       if (!code) return;
+      var info = parcelUsageInfo(code, l, usage);
+      var status = parcelStatusLabel(info);
       var opt = document.createElement('option');
       opt.value = code;
-      opt.text = code + ' — ' + landOwnerNameSync(l, ownersList) + ' (' + [l['ไร่'], l['งาน'], l['ตร.วา']].join('-') + ')';
+      opt.text = code + ' — ' + landOwnerNameSync(l, ownersList) + ' (' + [l['ไร่'], l['งาน'], l['ตร.วา']].join('-') + ')  [' + status.text + ']';
+      if (code.toUpperCase() === curCode) opt.selected = true;
       box.appendChild(opt);
     });
   });
@@ -471,6 +515,7 @@ function onParcelBlur() {
   var hint = $('parcelHint');
   if (!hint) return;
   var code = $('landParcelCode').value.trim().toUpperCase();
+  syncParcelPickSelection(code);
   if (!code) { hint.innerHTML = 'กฎ: มีสิ่งปลูกสร้าง = ต้องผูกกับที่ดินที่มีในระบบเสมอ (ของตัวเอง หรือแปลงของคนอื่นที่แบ่งให้ปลูกบ้าน)'; return; }
   findLandRecord(code).then(function(rec) {
     /* sync ตารางแปลงที่แนบ (collect อ่านจาก lands) — กันเลือก/พิมพ์แปลงแล้วข้อมูลหลุดตอนบันทึก */
@@ -484,16 +529,36 @@ function onParcelBlur() {
       var ownerName = ownerNameResolved || 'ไม่ทราบเจ้าของ';
       var myPsn = owners && owners.length ? String(owners[0].psnId) : '';
       var landPsn = String(rec['เลขบัตรเจ้าของที่ดิน'] || '').split(';')[0] || '';
+      var baseHtml;
       if (myPsn && landPsn && myPsn === landPsn) {
-        hint.innerHTML = '<span style="color:#2e7d32;">✓ แปลง ' + code + ' เป็นที่ดินของเจ้าของอาคารเอง (' + ownerName + ')</span>';
+        baseHtml = '<span style="color:#2e7d32;">✓ แปลง ' + code + ' เป็นที่ดินของเจ้าของอาคารเอง (' + ownerName + ')</span>';
       } else if (myPsn && landPsn) {
-        hint.innerHTML = '<span style="color:#b26a00;">⚠ บ้านบนที่ดินของคนอื่น — เจ้าของแปลง: ' + ownerName + '<br>' +
+        baseHtml = '<span style="color:#b26a00;">⚠ บ้านบนที่ดินของคนอื่น — เจ้าของแปลง: ' + ownerName + '<br>' +
           'อย่าลืม: ชุดข้อมูลของเจ้าของแปลงต้องมีแถวการใช้ประโยชน์ (ประเภท 2-(2) หรือ 2-(3)) ของเจ้าของอาคารบนแปลงนี้ด้วย</span>';
       } else {
-        hint.innerHTML = '✓ พบแปลง ' + code + ' (เจ้าของแปลง: ' + ownerName + ')';
+        baseHtml = '✓ พบแปลง ' + code + ' (เจ้าของแปลง: ' + ownerName + ')';
       }
+      hint.innerHTML = baseHtml;
+      // ต่อท้ายด้วยสถานะการผูกพื้นที่ (ว่าง / ผูกบางส่วน / ผูกครบ) — สำคัญเมื่อแปลงเดียวแบ่งใช้หลายประเภท/หลายหลัง
+      return LTAX_getAll('ltax_building').then(function(buildingList) {
+        var usage = computeParcelUsage(buildingList);
+        var info = parcelUsageInfo(code, rec, usage);
+        var status = parcelStatusLabel(info);
+        hint.innerHTML += '<div style="margin-top:4px;color:' + status.color + ';">' + status.text + '</div>';
+      });
     });
   });
+}
+// ทำให้ dropdown แสดงตัวที่ตรงกับรหัสแปลงปัจจุบันเสมอ (ไม่ว่าจะเลือกจาก dropdown หรือพิมพ์เอง)
+// เพื่อให้ผู้ใช้เห็นชัดว่า "แปลงไหนถูกเลือกอยู่" เมื่อกลับมาดู dropdown อีกครั้ง
+function syncParcelPickSelection(code) {
+  var box = $('landParcelPick');
+  if (!box) return;
+  var c = String(code || '').trim().toUpperCase();
+  for (var i = 0; i < box.options.length; i++) {
+    if (box.options[i].value.trim().toUpperCase() === c) { box.selectedIndex = i; return; }
+  }
+  box.selectedIndex = 0;
 }
 
 /* ---------- คำนวณ ---------- */
