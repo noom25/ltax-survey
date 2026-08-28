@@ -812,6 +812,10 @@ function loadEditRecord() {
     window.__saved = true;
     $('previewBox').value = JSON.stringify(r, null, 2);
     $('preview').style.display = 'block';
+    // ข้อมูลจากระเบียนที่แก้ไขเพิ่งมาถึง (async ช้ากว่า setTimeout ตอน init) —
+    // ต้องรีเฟรช dropdown แปลง + dropdown แบ่งใช้ประโยชน์ที่ดินอีกรอบ ไม่งั้นจะไม่โผล่ขึ้นมาเลย
+    fillParcelPick();
+    onParcelBlur();
     return true;
   });
 }

@@ -640,6 +640,10 @@ function loadEditRecord() {
     window.__saved = true;
     $('previewBox').value = JSON.stringify(r, null, 2);
     $('preview').style.display = 'block';
+    // ข้อมูลจากระเบียนที่แก้ไขเพิ่งมาถึง (async ช้ากว่า setTimeout ตอน init) —
+    // ต้องรีเฟรช dropdown แปลง + hint สถานะอีกรอบ ไม่งั้นจะไม่อัปเดตให้ตรงกับระเบียนที่เปิดแก้ไข
+    fillParcelPick();
+    updateParcelHint();
     return true;
   });
 }
