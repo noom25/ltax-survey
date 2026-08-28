@@ -189,6 +189,13 @@
         <div class="field"><input type="text" id="totalAreaStr" name="building.totalAreaStr" readonly></div>
       </div>
 
+      <div class="row" id="landUsagePickRow" style="display:none;">
+        <label>แบ่งใช้ประโยชน์ที่ดิน (เลือกให้ตรงกับอาคารนี้)</label>
+        <div class="field">
+          <select id="landUsagePick" onchange="pickLandUsageRow(this)"></select>
+          <div class="hint" id="landUsageHint"></div>
+        </div>
+      </div>
       <div class="row">
         <label>เนื้อที่ที่ดิน (ไร่-งาน-ตร.ว.)</label>
         <div class="field">
@@ -381,13 +388,14 @@ function addOwner() {
 function removeOwner(i) { owners.splice(i, 1); window.__dirty = true; renderOwners(); }
 function renderOwners() {
   var tb = $('ownerTable');
-  if (!owners.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">ยังไม่พบข้อมูล</td></tr>'; return; }
+  if (!owners.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">ยังไม่พบข้อมูล</td></tr>'; fillParcelPick(); return; }
   var h = '';
   owners.forEach(function(o, i) {
     h += '<tr><td align="center">' + (i + 1) + '</td><td>' + o.fullName + '</td><td>' + o.psnId +
          '</td><td>-</td><td align="center"><a class="icon-danger" onclick="removeOwner(' + i + ')">&#10008;</a></td></tr>';
   });
   tb.innerHTML = h;
+  fillParcelPick();  // เจ้าของเปลี่ยน → จัดกลุ่ม dropdown แปลงที่ดินใหม่ (แปลงของเจ้าของชุดนี้ขึ้นก่อน)
 }
 function addLand() {
   var code = prompt('รหัสแปลงที่ดิน:', '');
@@ -397,15 +405,57 @@ function addLand() {
   renderLands();
 }
 function removeLand(i) { lands.splice(i, 1); window.__dirty = true; renderLands(); }
+// ป้ายย่อประเภทการใช้ประโยชน์ที่ดิน สำหรับโชว์ในตารางสรุป (สั้นกว่า LAND_USE_TYPE_LABEL ที่ใช้ใน dropdown)
+var LAND_USE_TYPE_SHORT = { '1': '1', '2': '2(1)', '3': '2(2)', '4': '2(3)', '5': '3', '6': '4', '8': '4(3ปี+)', '9': '4(6ปี+)', '7': '5' };
+// ป้ายประเภทเอกสารสิทธิ์ (ต้องตรงกับ <option> ในฟอร์ม_เพิ่มที่ดิน.html — field 'ประเภทเอกสาร' เก็บเป็นรหัสตัวเลข)
+var LAND_DOC_TYPE_LABEL = {
+  '1': 'โฉนด', '2': 'น.ส.3ก', '3': 'น.ส.3', '4': 'น.ส.2', '5': 'ส.ค.1',
+  '6': 'ส.ป.ก.4-01', '7': 'ท.ค.', '8': 'ส.ธ.1', '9': 'โฉนดตราจอง',
+  '10': 'น.ส.ล.', '11': 'ก.ส.น.5', '12': 'ที่ราชพัสดุ', '13': 'อื่นๆ'
+};
 function renderLands() {
   var tb = $('landTable');
   if (!lands.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">ยังไม่พบข้อมูล</td></tr>'; return; }
   var h = '';
   lands.forEach(function(l, i) {
-    h += '<tr><td align="center">' + (i + 1) + '</td><td>' + l.code +
-         '</td><td>-</td><td>-</td><td>-</td><td align="center"><a class="icon-danger" onclick="removeLand(' + i + ')">&#10008;</a></td></tr>';
+    h += '<tr id="landRow' + i + '"><td align="center">' + (i + 1) + '</td><td>' + l.code +
+         '</td><td class="lrTitle">-</td><td class="lrSurvey">-</td><td class="lrUsage">-</td><td align="center"><a class="icon-danger" onclick="removeLand(' + i + ')">&#10008;</a></td></tr>';
   });
   tb.innerHTML = h;
+  fillLandTableDetails();
+}
+// ดึงข้อมูลจริงมาแทนที่ "-" ในตาราง: เลขที่เอกสารสิทธิ์ / หน้าสำรวจ (จาก ltax_land — ชื่อฟิลด์เดายังไม่ยืนยัน 100%
+// เพราะยังไม่เห็นฟอร์มที่ดินตัวจริง ถ้าไม่ตรงจะโชว์ "-" เหมือนเดิม ไม่ error) และประเภทการใช้ประโยชน์ (จาก ltax_land_usage)
+function fillLandTableDetails() {
+  if (!lands.length) return;
+  Promise.all([LTAX_getAll('ltax_land'), LTAX_getAll('ltax_land_usage')]).then(function(res) {
+    var landList = res[0], usageList = res[1];
+    lands.forEach(function(l, i) {
+      var code = String(l.code || '').trim().toUpperCase();
+      var row = document.getElementById('landRow' + i);
+      if (!row || !code) return;
+      var landRec = null;
+      for (var a = 0; a < landList.length; a++) {
+        if (String(landList[a]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === code) { landRec = landList[a]; break; }
+      }
+      var docTypeLabel = landRec ? (LAND_DOC_TYPE_LABEL[landRec['ประเภทเอกสาร']] || '') : '';
+      var docNo = landRec ? (landRec['เลขที่เอกสาร'] || '') : '';
+      var titleNo = (docTypeLabel || docNo) ? ((docTypeLabel ? docTypeLabel + ' ' : '') + docNo).trim() : '';
+      var surveyNo = landRec ? (landRec['หน้าสำรวจ'] || '') : '';
+      var usageRec = null;
+      for (var b = 0; b < usageList.length; b++) {
+        if (String(usageList[b]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === code) { usageRec = usageList[b]; break; }
+      }
+      var usageTxt = '-';
+      var rows = usageRec && usageRec['รายการใช้ประโยชน์'];
+      if (rows && rows.length) {
+        usageTxt = rows.map(function(u) { return LAND_USE_TYPE_SHORT[u['ประเภทการใช้ประโยชน์']] || u['ประเภทการใช้ประโยชน์']; }).join(', ');
+      }
+      row.cells[2].textContent = titleNo || '-';
+      row.cells[3].textContent = surveyNo || '-';
+      row.cells[4].textContent = usageTxt;
+    });
+  });
 }
 
 /* ---------- รหัสสิ่งปลูกสร้าง ---------- */
@@ -418,6 +468,72 @@ function genBuildingCode() {
   window.__dirty = true;
 }
 
+/* ---------- แบ่งใช้ประโยชน์ที่ดิน: โชว์ว่าแปลงนี้แบ่งใช้ประโยชน์อะไรบ้าง แล้วให้เลือกว่าอาคารหลังนี้อยู่บนส่วนไหน ----------
+   แทนที่พฤติกรรมเดิมที่ auto-fill "เนื้อที่ที่ดิน" เป็นเต็มแปลงเสมอ ซึ่งทำให้เวลาแปลงเดียวมีหลายหลัง
+   ระบบนับพื้นที่ผูกซ้ำเกินจริง (ทุกหลังโชว์เต็มแปลง) — ตอนนี้จะดึงจากรายการที่แบ่งไว้ใน ltax_land_usage แทน */
+var FOR_LABEL_LANDUSE = { '1': 'ใช้เอง', '2': 'ให้เช่า', '3': 'ให้ผู้อื่นทำประโยชน์' };
+var LAND_USE_TYPE_LABEL = {
+  '1': '1-เกษตรกรรม',
+  '2': '2-(1) ที่อยู่อาศัย (หลังหลัก+หลังอื่นๆ พื้นที่เดียวกัน)',
+  '3': '2-(2) ที่อยู่อาศัย - หลังหลัก (ไม่ใช่เจ้าของที่ดิน)',
+  '4': '2-(3) ที่อยู่อาศัย - หลังอื่นๆ',
+  '5': '3-อื่นๆ',
+  '6': '4-ทิ้งไว้ว่างเปล่า/รกร้าง',
+  '8': '4-ทิ้งไว้ว่างเปล่า/รกร้าง (3 ปีขึ้นไป)',
+  '9': '4-ทิ้งไว้ว่างเปล่า/รกร้าง (6 ปีขึ้นไป)',
+  '7': '5-ใช้ประโยชน์หลายประเภท'
+};
+function findLandUsageRecord(code) {
+  var c = String(code || '').trim().toUpperCase();
+  if (!c) return Promise.resolve(null);
+  return LTAX_getAll('ltax_land_usage').then(function(list) {
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() === c) return list[i];
+    }
+    return null;
+  });
+}
+// แสดง/ซ่อน dropdown "แบ่งใช้ประโยชน์ที่ดิน" ตามรหัสแปลงปัจจุบัน
+function fillLandUsagePick(code) {
+  var row = $('landUsagePickRow'), box = $('landUsagePick'), hint = $('landUsageHint');
+  if (!row || !box || !hint) return Promise.resolve();
+  var c = String(code || '').trim().toUpperCase();
+  if (!c) { row.style.display = 'none'; return Promise.resolve(); }
+  return findLandUsageRecord(c).then(function(rec) {
+    var rows = (rec && rec['รายการใช้ประโยชน์']) || [];
+    if (!rows.length) {
+      row.style.display = 'none';
+      hint.innerHTML = '';
+      return;
+    }
+    row.style.display = '';
+    box.innerHTML = '<option value="">— เลือกรายการใช้ประโยชน์ที่ตรงกับอาคารนี้ —</option>';
+    rows.forEach(function(u, i) {
+      var typeLabel = LAND_USE_TYPE_LABEL[u['ประเภทการใช้ประโยชน์']] || ('ประเภท ' + u['ประเภทการใช้ประโยชน์']);
+      var areaStr = [u['ไร่'], u['งาน'], u['ตร.วา']].join('-');
+      var whoLabel = FOR_LABEL_LANDUSE[u['ผู้ทำประโยชน์']] || (u['ใช้โดย'] || '');
+      var opt = document.createElement('option');
+      opt.value = String(i);
+      opt.text = typeLabel + '  (' + areaStr + ' ไร่-งาน-วา)' + (whoLabel ? '  — ' + whoLabel : '');
+      box.appendChild(opt);
+    });
+    hint.innerHTML = '<span style="color:#2e7d32;">✓ แปลง ' + c + ' แบ่งใช้ประโยชน์ไว้ ' + rows.length +
+      ' รายการ — เลือกรายการที่ตรงกับอาคารหลังนี้ เพื่อดึงเนื้อที่ที่ดินให้ถูกส่วน (ไม่ใช่เต็มแปลง)</span>';
+    // มีรายการเดียว → เลือกให้อัตโนมัติเลย ไม่ต้องเสียเวลาเลือกเอง
+    if (rows.length === 1) { box.selectedIndex = 1; pickLandUsageRow(box); }
+  });
+}
+function pickLandUsageRow(sel) {
+  if (!sel.value) return;
+  var code = $('landParcelCode').value.trim().toUpperCase();
+  findLandUsageRecord(code).then(function(rec) {
+    var u = rec && (rec['รายการใช้ประโยชน์'] || [])[parseInt(sel.value, 10)];
+    if (!u) return;
+    $('landAreaStr').value = [u['ไร่'], u['งาน'], u['ตร.วา']].join('-');
+    calLandAreaWah();
+    window.__dirty = true;
+  });
+}
 /* ---------- แปลงที่ดินที่ผูก: เลือกจากที่มีจริงในเครื่อง + ตรวจสอบ (อ่านผ่าน LTAXDB) ---------- */
 function findLandRecord(code) {
   var c = String(code || '').trim().toUpperCase();
@@ -492,7 +608,11 @@ function fillParcelPick() {
     var list = res[0], ownersList = res[1], buildingList = res[2];
     var usage = computeParcelUsage(buildingList);
     var curCode = $('landParcelCode') ? $('landParcelCode').value.trim().toUpperCase() : '';
-    box.innerHTML = '<option value="">— เลือกแปลงที่มีในระบบ (' + list.length + ' แปลง) —</option>';
+    // เจ้าของชุดนี้ (จากตาราง "เจ้าของ/ที่ดิน" ด้านบนฟอร์ม) — ใช้จัดกลุ่มแปลงที่ "น่าจะใช่" ขึ้นก่อน
+    var myPsnSet = {};
+    (owners || []).forEach(function(o) { if (o.psnId) myPsnSet[String(o.psnId).trim()] = true; });
+    var hasOwner = Object.keys(myPsnSet).length > 0;
+    var mineOpts = [], otherOpts = [];
     list.forEach(function(l) {
       var code = String(l['รหัสแปลงที่ดิน'] || '').trim();
       if (!code) return;
@@ -502,8 +622,32 @@ function fillParcelPick() {
       opt.value = code;
       opt.text = code + ' — ' + landOwnerNameSync(l, ownersList) + ' (' + [l['ไร่'], l['งาน'], l['ตร.วา']].join('-') + ')  [' + status.text + ']';
       if (code.toUpperCase() === curCode) opt.selected = true;
-      box.appendChild(opt);
+      var landPsnList = String(l['เลขบัตรเจ้าของที่ดิน'] || '').split(';').map(function(p) { return p.trim(); }).filter(Boolean);
+      var isMine = hasOwner && landPsnList.some(function(p) { return myPsnSet[p]; });
+      (isMine ? mineOpts : otherOpts).push(opt);
     });
+    box.innerHTML = '';
+    var blank = document.createElement('option');
+    blank.value = ''; blank.text = '— เลือกแปลงที่มีในระบบ (' + list.length + ' แปลง) —';
+    box.appendChild(blank);
+    if (hasOwner) {
+      // จัดกลุ่ม: แปลงของเจ้าของชุดนี้ขึ้นก่อน — ไม่ตัดกลุ่ม "แปลงอื่น" ทิ้ง เพราะระบบรองรับเคส "บ้านบนที่ดินคนอื่น" ด้วย
+      if (mineOpts.length) {
+        var g1 = document.createElement('optgroup');
+        g1.label = 'แปลงของเจ้าของชุดนี้ (' + mineOpts.length + ')';
+        mineOpts.forEach(function(o) { g1.appendChild(o); });
+        box.appendChild(g1);
+      }
+      if (otherOpts.length) {
+        var g2 = document.createElement('optgroup');
+        g2.label = 'แปลงอื่นในระบบ (ที่ดินคนอื่น)';
+        otherOpts.forEach(function(o) { g2.appendChild(o); });
+        box.appendChild(g2);
+      }
+    } else {
+      // ยังไม่ได้กรอกเจ้าของ — โชว์รวมกันไปก่อนแบบเดิม ไม่มีอะไรให้จัดกลุ่ม
+      mineOpts.concat(otherOpts).forEach(function(o) { box.appendChild(o); });
+    }
   });
 }
 function pickParcel(sel) {
@@ -516,6 +660,8 @@ function onParcelBlur() {
   if (!hint) return;
   var code = $('landParcelCode').value.trim().toUpperCase();
   syncParcelPickSelection(code);
+  fillLandUsagePick(code);
+  autoFillLandArea(code);
   if (!code) { hint.innerHTML = 'กฎ: มีสิ่งปลูกสร้าง = ต้องผูกกับที่ดินที่มีในระบบเสมอ (ของตัวเอง หรือแปลงของคนอื่นที่แบ่งให้ปลูกบ้าน)'; return; }
   findLandRecord(code).then(function(rec) {
     /* sync ตารางแปลงที่แนบ (collect อ่านจาก lands) — กันเลือก/พิมพ์แปลงแล้วข้อมูลหลุดตอนบันทึก */
@@ -861,20 +1007,32 @@ function applyNextCtx() {
   window.__dirty = true;
 }
 
-/* auto-fill "เนื้อที่ที่ดิน" (ไร่-งาน-ตร.วา) จากแปลงใน LTAXDB — กรอกเฉพาะยังว่าง */
+/* auto-fill "เนื้อที่ที่ดิน" (ไร่-งาน-ตร.วา) — กรอกเฉพาะยังว่าง เรียงลำดับความสำคัญ:
+   1) ถ้าแปลงนี้แบ่งใช้ประโยชน์ไว้ "รายการเดียว" ใน ltax_land_usage → ใช้เนื้อที่รายการนั้น (แม่นยำกว่าเต็มแปลง)
+   2) ถ้าแบ่งไว้ "หลายรายการ" → ปล่อยว่างไว้ก่อน ให้เลือกเองจาก dropdown "แบ่งใช้ประโยชน์ที่ดิน" ด้านบน (กัน auto-fill ผิดรายการ)
+   3) ถ้ายังไม่มีการแบ่งใช้ประโยชน์เลย → fallback เดิม ใช้เนื้อที่เต็มแปลง (พฤติกรรมเดิมของระบบ) */
 function autoFillLandArea(parcelCode) {
-  if (!parcelCode) return;
-  if (String($('landAreaStr').value || '').trim()) return;  // มีค่าอยู่แล้วไม่ทับ
+  if (!parcelCode) return Promise.resolve();
+  if (String($('landAreaStr').value || '').trim()) return Promise.resolve();  // มีค่าอยู่แล้วไม่ทับ
   var code = String(parcelCode).trim().toUpperCase();
-  return LTAX_getAll('ltax_land').then(function(list) {
-    for (var i = 0; i < list.length; i++) {
-      if (String(list[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() !== code) continue;
-      var rai = String(list[i]['ไร่'] || '').trim(), ngan = String(list[i]['งาน'] || '').trim(), wa = String(list[i]['ตร.วา'] || '').trim();
-      if (rai === '' && ngan === '' && wa === '') return;
-      $('landAreaStr').value = rai + '-' + ngan + '-' + wa;
+  return findLandUsageRecord(code).then(function(rec) {
+    var rows = (rec && rec['รายการใช้ประโยชน์']) || [];
+    if (rows.length === 1) {
+      $('landAreaStr').value = [rows[0]['ไร่'], rows[0]['งาน'], rows[0]['ตร.วา']].join('-');
       calLandAreaWah();
-      break;
+      return;
     }
+    if (rows.length > 1) return;  // หลายรายการ — รอเลือกเองจาก landUsagePick
+    return LTAX_getAll('ltax_land').then(function(list) {
+      for (var i = 0; i < list.length; i++) {
+        if (String(list[i]['รหัสแปลงที่ดิน'] || '').trim().toUpperCase() !== code) continue;
+        var rai = String(list[i]['ไร่'] || '').trim(), ngan = String(list[i]['งาน'] || '').trim(), wa = String(list[i]['ตร.วา'] || '').trim();
+        if (rai === '' && ngan === '' && wa === '') return;
+        $('landAreaStr').value = rai + '-' + ngan + '-' + wa;
+        calLandAreaWah();
+        break;
+      }
+    });
   });
 }</script>
 
