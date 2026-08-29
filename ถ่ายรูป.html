@@ -397,18 +397,42 @@ function getGps(cb) {
   }, { timeout: 4000, maximumAge: 60000 });
 }
 
-function compressImage(file, maxW, quality, cb) {
+function compressImage(file, maxW, quality, maxBytes, cb) {
+  if (typeof maxBytes === 'function') { cb = maxBytes; maxBytes = null; } // เผื่อเรียกแบบเดิมไม่ระบุ maxBytes
   var reader = new FileReader();
   reader.onload = function(e) {
     var rawUrl = e.target.result;
     var img = new Image();
     img.onload = function() {
-      var scale = Math.min(1, maxW / Math.max(img.width, img.height));
-      var c = document.createElement('canvas');
-      c.width = Math.round(img.width * scale);
-      c.height = Math.round(img.height * scale);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      cb(c.toDataURL('image/jpeg', quality));
+      var srcW = img.width, srcH = img.height;
+      function render(targetMaxW, q) {
+        var scale = Math.min(1, targetMaxW / Math.max(srcW, srcH));
+        var c = document.createElement('canvas');
+        c.width = Math.round(srcW * scale) || 1;
+        c.height = Math.round(srcH * scale) || 1;
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        return c.toDataURL('image/jpeg', q);
+      }
+      function estBytes(dataUrl) {
+        var i = dataUrl.indexOf(',') + 1;
+        return Math.round((dataUrl.length - i) * 3 / 4);
+      }
+      var curW = maxW, curQ = quality;
+      var dataUrl = render(curW, curQ);
+      if (maxBytes) {
+        var tries = 0;
+        // ลดคุณภาพก่อน (ผลกระทบต่อความคมชัดน้อยกว่าลดขนาด) ถ้ายังไม่พอค่อยลดความกว้างลงทีละขั้น
+        while (estBytes(dataUrl) > maxBytes && tries < 10) {
+          tries++;
+          if (curQ > 0.4) {
+            curQ = Math.max(0.4, curQ - 0.1);
+          } else {
+            curW = Math.round(curW * 0.85);
+          }
+          dataUrl = render(curW, curQ);
+        }
+      }
+      cb(dataUrl);
     };
     img.onerror = function() { cb(rawUrl); };
     img.src = rawUrl;
@@ -442,7 +466,7 @@ $('camInput').addEventListener('change', function(e) {
         return;
       }
       var f = todo.shift();
-      compressImage(f, 1024, 0.70, function(dataUrl) {
+      compressImage(f, 1024, 0.70, 800 * 1024, function(dataUrl) {
         var rec = {
           id: 'p' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
           category: cat,
