@@ -4518,7 +4518,16 @@ function fillLandUsagePick(code) {
     hint.innerHTML = '<span style="color:#2e7d32;">✓ แปลง ' + c + ' แบ่งใช้ประโยชน์ไว้ ' + rows.length +
       ' รายการ — เลือกรายการที่ตรงกับอาคารหลังนี้ เพื่อดึงเนื้อที่ที่ดินให้ถูกส่วน (ไม่ใช่เต็มแปลง)</span>';
     // มีรายการเดียว → เลือกให้อัตโนมัติเลย ไม่ต้องเสียเวลาเลือกเอง
-    if (rows.length === 1) { box.selectedIndex = 1; pickLandUsageRow(box); }
+    if (rows.length === 1) { box.selectedIndex = 1; pickLandUsageRow(box); return; }
+    // หลายรายการ + กำลังแก้ไขอาคารที่มี "เนื้อที่ที่ดิน" บันทึกไว้แล้ว → ลองจับคู่เนื้อที่เดิมกับรายการที่ตรงกัน
+    // (แค่ไฮไลต์ให้ ไม่เรียก pickLandUsageRow เพื่อไม่ทับค่าที่โหลดมาจากบันทึกเดิม)
+    var curAreaWah = parseRaiNganWahToWah($('landAreaStr').value);
+    if (curAreaWah > 0) {
+      for (var i = 0; i < rows.length; i++) {
+        var rowWah = num(rows[i]['ไร่']) * 400 + num(rows[i]['งาน']) * 100 + num(rows[i]['ตร.วา']);
+        if (Math.abs(rowWah - curAreaWah) < 0.01) { box.selectedIndex = i + 1; break; }
+      }
+    }
   });
 }
 function pickLandUsageRow(sel) {
@@ -4573,10 +4582,15 @@ function parseRaiNganWahToWah(str) {
 // ถ้าอาคารหลังหนึ่งผูกหลายแปลงพร้อมกัน (คั่นด้วย ; ) จะหารเนื้อที่เท่า ๆ กันในการนับคร่าว ๆ
 function computeParcelUsage(buildingList) {
   var selfKey = window.__editKey, selfIdx = window.__editIdx;
-  var usage = {};
+  var usage = {}, selfCodes = {};
   buildingList.forEach(function(b, bi) {
-    if (selfKey === 'ltax_building' && selfIdx === bi) return;
     var codes = String(b['รหัสแปลงที่ดิน'] || '').split(';').map(function(c) { return c.trim().toUpperCase(); }).filter(Boolean);
+    if (selfKey === 'ltax_building' && selfIdx === bi) {
+      // อาคารหลังที่กำลังแก้ไขอยู่ตอนนี้เอง — ไม่นับเป็น "ผู้ใช้พื้นที่รายอื่น" (กันหักซ้ำตัวเอง)
+      // แต่ต้องจำไว้ว่ามันผูกกับแปลงไหนบ้าง เพื่อไม่ให้สถานะโชว์ผิดว่า "ว่าง" ทั้งที่จริงคือตัวมันเองผูกอยู่
+      codes.forEach(function(c) { selfCodes[c] = true; });
+      return;
+    }
     if (!codes.length) return;
     var areaEach = parseRaiNganWahToWah(b['เนื้อที่ที่ดิน']) / codes.length;
     codes.forEach(function(c) {
@@ -4585,19 +4599,24 @@ function computeParcelUsage(buildingList) {
       usage[c].count += 1;
     });
   });
-  return usage;
+  return { usage: usage, selfCodes: selfCodes };
 }
 // สถานะของแปลงเดียว (ใช้ทั้งใน dropdown และใน hint ใต้ช่องกรอกรหัสแปลง)
-function parcelUsageInfo(code, landRec, usage) {
+function parcelUsageInfo(code, landRec, usageData) {
+  var c = String(code || '').trim().toUpperCase();
   var totalWah = landRec ? (num(landRec['ไร่']) * 400 + num(landRec['งาน']) * 100 + num(landRec['ตร.วา'])) : 0;
-  var u = usage[String(code || '').trim().toUpperCase()] || { usedWah: 0, count: 0 };
-  return { totalWah: totalWah, usedWah: u.usedWah, count: u.count, remainWah: totalWah - u.usedWah };
+  var u = usageData.usage[c] || { usedWah: 0, count: 0 };
+  return { totalWah: totalWah, usedWah: u.usedWah, count: u.count, remainWah: totalWah - u.usedWah, isSelfHere: !!usageData.selfCodes[c] };
 }
 function parcelStatusLabel(info) {
-  if (info.count === 0) return { text: '○ ว่าง — ยังไม่ผูกกับสิ่งปลูกสร้างใด', color: '#2e7d32' };
-  if (info.totalWah > 0 && info.remainWah <= 0) return { text: '⚠ ผูกครบพื้นที่แล้ว (' + info.count + ' หลัง)', color: '#c62828' };
-  if (info.totalWah > 0) return { text: '◐ ผูกแล้วบางส่วน (' + info.count + ' หลัง, เหลือ ~' + fmt(info.remainWah, false) + ' ตร.วา)', color: '#b26a00' };
-  return { text: '● ผูกแล้ว (' + info.count + ' หลัง)', color: '#555' };
+  var dispCount = info.count + (info.isSelfHere ? 1 : 0);
+  // กำลังแก้ไขอาคารนี้อยู่ และเป็นหลังเดียวที่ผูกกับแปลงนี้ — ต้องบอกตรง ๆ ว่า "ผูกอยู่แล้ว (คืออาคารนี้เอง)"
+  // ไม่ใช่ "ว่าง" เพราะจะทำให้เข้าใจผิดว่าอาคารที่กำลังแก้ไขยังไม่ได้ผูกกับแปลงนี้
+  if (info.count === 0 && info.isSelfHere) return { text: '✎ อาคารนี้ผูกกับแปลงนี้อยู่แล้ว (ยังไม่มีหลังอื่นแบ่งใช้พื้นที่เพิ่ม)', color: '#1565c0' };
+  if (dispCount === 0) return { text: '○ ว่าง — ยังไม่ผูกกับสิ่งปลูกสร้างใด', color: '#2e7d32' };
+  if (info.totalWah > 0 && info.remainWah <= 0) return { text: '⚠ ผูกครบพื้นที่แล้ว (' + dispCount + ' หลัง)', color: '#c62828' };
+  if (info.totalWah > 0) return { text: '◐ ผูกแล้วบางส่วน (' + dispCount + ' หลัง, เหลือ ~' + fmt(info.remainWah, false) + ' ตร.วา)', color: '#b26a00' };
+  return { text: '● ผูกแล้ว (' + dispCount + ' หลัง)', color: '#555' };
 }
 function fillParcelPick() {
   var box = $('landParcelPick');
@@ -4810,7 +4829,17 @@ function loadEditRecord() {
     window.__saved = true;
     $('previewBox').value = JSON.stringify(r, null, 2);
     $('preview').style.display = 'block';
-    return true;
+
+    // สำคัญ: ต้องเรียก pipeline ของแปลงที่ดินเองตรงนี้ (แทนที่จะหวังพึ่ง setTimeout ใน init()
+    // ซึ่งแข่งกับ Promise นี้อยู่ และแพ้ได้เวลาข้อมูลเยอะ/เครื่องช้า) ไม่งั้น dropdown
+    // "แบ่งใช้ประโยชน์ที่ดิน" จะไม่โผล่ตอนเปิดแก้ไข ทั้งที่แปลงนั้นแบ่งใช้ประโยชน์ไว้แล้วจริง
+    var loadedCode = $('landParcelCode').value.trim().toUpperCase();
+    return fillParcelPick().then(function() {
+      syncParcelPickSelection(loadedCode);
+      return fillLandUsagePick(loadedCode);
+    }).then(function() {
+      return true;
+    });
   });
 }
 
@@ -4920,9 +4949,17 @@ function resetForm() {
     opt.value = t[0]; opt.text = t[1];
     box.appendChild(opt);
   });
-  loadEditRecord();
   fillParcelPick();
-  setTimeout(function() { applyNextCtx(); fillParcelPick(); onParcelBlur(); }, 0);
+  loadEditRecord().then(function(wasEdit) {
+    // ถ้าเป็นการเปิดแก้ไขระเบียนเดิม loadEditRecord() ได้จัดการ fillParcelPick /
+    // syncParcelPickSelection / fillLandUsagePick ให้ตรงกับข้อมูลที่โหลดมาแล้วข้างใน (ดูฟังก์ชันนั้น)
+    // ไม่ต้องเรียก onParcelBlur() ซ้ำ เพราะจะไป reset lands/hint ทับของเดิมโดยไม่จำเป็น
+    if (wasEdit) { applyNextCtx(); return; }
+    // กรณีเปิดฟอร์มใหม่ (ไม่ใช่โหมดแก้ไข) — ทำงานตามเดิม
+    applyNextCtx();
+    fillParcelPick();
+    onParcelBlur();
+  });
 })();
 function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
 function goHome() { if (window.__goHome) window.__goHome(); else window.location.href = 'index.html'; }
@@ -6345,7 +6382,7 @@ $('camInput').addEventListener('change', function(e) {
         return;
       }
       var f = todo.shift();
-      compressImage(f, 1024, 0.70, 800 * 1024, function(dataUrl) {
+      compressImage(f, 1280, 0.72, function(dataUrl) {
         var rec = {
           id: 'p' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
           category: cat,

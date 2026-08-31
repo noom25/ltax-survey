@@ -584,10 +584,15 @@ function parseRaiNganWahToWah(str) {
 // ถ้าอาคารหลังหนึ่งผูกหลายแปลงพร้อมกัน (คั่นด้วย ; ) จะหารเนื้อที่เท่า ๆ กันในการนับคร่าว ๆ
 function computeParcelUsage(buildingList) {
   var selfKey = window.__editKey, selfIdx = window.__editIdx;
-  var usage = {};
+  var usage = {}, selfCodes = {};
   buildingList.forEach(function(b, bi) {
-    if (selfKey === 'ltax_building' && selfIdx === bi) return;
     var codes = String(b['รหัสแปลงที่ดิน'] || '').split(';').map(function(c) { return c.trim().toUpperCase(); }).filter(Boolean);
+    if (selfKey === 'ltax_building' && selfIdx === bi) {
+      // อาคารหลังที่กำลังแก้ไขอยู่ตอนนี้เอง — ไม่นับเป็น "ผู้ใช้พื้นที่รายอื่น" (กันหักซ้ำตัวเอง)
+      // แต่ต้องจำไว้ว่ามันผูกกับแปลงไหนบ้าง เพื่อไม่ให้สถานะโชว์ผิดว่า "ว่าง" ทั้งที่จริงคือตัวมันเองผูกอยู่
+      codes.forEach(function(c) { selfCodes[c] = true; });
+      return;
+    }
     if (!codes.length) return;
     var areaEach = parseRaiNganWahToWah(b['เนื้อที่ที่ดิน']) / codes.length;
     codes.forEach(function(c) {
@@ -596,19 +601,24 @@ function computeParcelUsage(buildingList) {
       usage[c].count += 1;
     });
   });
-  return usage;
+  return { usage: usage, selfCodes: selfCodes };
 }
 // สถานะของแปลงเดียว (ใช้ทั้งใน dropdown และใน hint ใต้ช่องกรอกรหัสแปลง)
-function parcelUsageInfo(code, landRec, usage) {
+function parcelUsageInfo(code, landRec, usageData) {
+  var c = String(code || '').trim().toUpperCase();
   var totalWah = landRec ? (num(landRec['ไร่']) * 400 + num(landRec['งาน']) * 100 + num(landRec['ตร.วา'])) : 0;
-  var u = usage[String(code || '').trim().toUpperCase()] || { usedWah: 0, count: 0 };
-  return { totalWah: totalWah, usedWah: u.usedWah, count: u.count, remainWah: totalWah - u.usedWah };
+  var u = usageData.usage[c] || { usedWah: 0, count: 0 };
+  return { totalWah: totalWah, usedWah: u.usedWah, count: u.count, remainWah: totalWah - u.usedWah, isSelfHere: !!usageData.selfCodes[c] };
 }
 function parcelStatusLabel(info) {
-  if (info.count === 0) return { text: '○ ว่าง — ยังไม่ผูกกับสิ่งปลูกสร้างใด', color: '#2e7d32' };
-  if (info.totalWah > 0 && info.remainWah <= 0) return { text: '⚠ ผูกครบพื้นที่แล้ว (' + info.count + ' หลัง)', color: '#c62828' };
-  if (info.totalWah > 0) return { text: '◐ ผูกแล้วบางส่วน (' + info.count + ' หลัง, เหลือ ~' + fmt(info.remainWah, false) + ' ตร.วา)', color: '#b26a00' };
-  return { text: '● ผูกแล้ว (' + info.count + ' หลัง)', color: '#555' };
+  var dispCount = info.count + (info.isSelfHere ? 1 : 0);
+  // กำลังแก้ไขอาคารนี้อยู่ และเป็นหลังเดียวที่ผูกกับแปลงนี้ — ต้องบอกตรง ๆ ว่า "ผูกอยู่แล้ว (คืออาคารนี้เอง)"
+  // ไม่ใช่ "ว่าง" เพราะจะทำให้เข้าใจผิดว่าอาคารที่กำลังแก้ไขยังไม่ได้ผูกกับแปลงนี้
+  if (info.count === 0 && info.isSelfHere) return { text: '✎ อาคารนี้ผูกกับแปลงนี้อยู่แล้ว (ยังไม่มีหลังอื่นแบ่งใช้พื้นที่เพิ่ม)', color: '#1565c0' };
+  if (dispCount === 0) return { text: '○ ว่าง — ยังไม่ผูกกับสิ่งปลูกสร้างใด', color: '#2e7d32' };
+  if (info.totalWah > 0 && info.remainWah <= 0) return { text: '⚠ ผูกครบพื้นที่แล้ว (' + dispCount + ' หลัง)', color: '#c62828' };
+  if (info.totalWah > 0) return { text: '◐ ผูกแล้วบางส่วน (' + dispCount + ' หลัง, เหลือ ~' + fmt(info.remainWah, false) + ' ตร.วา)', color: '#b26a00' };
+  return { text: '● ผูกแล้ว (' + dispCount + ' หลัง)', color: '#555' };
 }
 function fillParcelPick() {
   var box = $('landParcelPick');
