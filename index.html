@@ -4955,10 +4955,11 @@ function resetForm() {
     // syncParcelPickSelection / fillLandUsagePick ให้ตรงกับข้อมูลที่โหลดมาแล้วข้างใน (ดูฟังก์ชันนั้น)
     // ไม่ต้องเรียก onParcelBlur() ซ้ำ เพราะจะไป reset lands/hint ทับของเดิมโดยไม่จำเป็น
     if (wasEdit) { applyNextCtx(); return; }
-    // กรณีเปิดฟอร์มใหม่ (ไม่ใช่โหมดแก้ไข) — ทำงานตามเดิม
+    // กรณีเปิดฟอร์มใหม่ (ไม่ใช่โหมดแก้ไข) — applyNextCtx() เรียก onParcelBlur() อยู่แล้วข้างในตัวมันเอง
+    // (ทั้งกรณีมี parcelCode ส่งต่อมาจากชุดก่อนหน้า และกรณีไม่มี context เลย) ไม่ต้องเรียกซ้ำอีก
+    // ไม่งั้นข้อความสถานะแปลงใน parcelHint จะถูกต่อท้าย (+=) ซ้อนกัน 2 รอบ
     applyNextCtx();
     fillParcelPick();
-    onParcelBlur();
   });
 })();
 function ltaxReadCtx() { try { return JSON.parse(sessionStorage.getItem('ltax_next') || 'null') || {}; } catch(e) { return {}; } }
