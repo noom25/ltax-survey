@@ -2592,6 +2592,10 @@ refreshRefStats();
           <input type="file" id="formFile" name="formFile" accept="image/*" style="border:none; padding:4px 0;" onchange="onPhotoPick()">
           <div class="hint">เลือกรูปแล้วจะฝังลงใน JSON เอง (ใช้ได้ทุกเครื่อง) — ไม่ต้องตามหาไฟล์รูปแยก</div>
           <div id="photoStatus" style="font-size:12px; color:#2e7d32; margin-top:4px;"></div>
+          <div id="photoPreviewBox" style="display:none; margin-top:6px;">
+            <img id="photoPreviewImg" src="" style="max-width:220px; max-height:220px; border:1px solid #ccc; border-radius:4px; display:block;">
+            <button type="button" onclick="removePhoto()" style="margin-top:4px; font-size:12px; color:#c62828; background:none; border:1px solid #c62828; border-radius:4px; padding:2px 8px; cursor:pointer;">✕ ลบรูปนี้</button>
+          </div>
         </div>
       </div>
 
@@ -5384,10 +5388,23 @@ function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isNaN(
 function fmt(n, dec) { return n.toLocaleString('en-US', { minimumFractionDigits: (dec ? 2 : 0), maximumFractionDigits: (dec ? 2 : 0) }); }
 
 var photoData = '';
+function showPhotoPreview(dataUrl) {
+  var box = $('photoPreviewBox'), img = $('photoPreviewImg');
+  if (!dataUrl) { box.style.display = 'none'; img.src = ''; return; }
+  img.src = dataUrl;
+  box.style.display = 'block';
+}
+function removePhoto() {
+  photoData = '';
+  $('formFile').value = '';
+  $('photoStatus').textContent = 'ลบรูปแล้ว (บันทึกเพื่อยืนยัน)';
+  $('photoStatus').style.color = '#c62828';
+  showPhotoPreview('');
+}
 function onPhotoPick() {
   var input = $('formFile');
   var file = input.files && input.files[0];
-  if (!file) { photoData = ''; $('photoStatus').textContent = ''; return; }
+  if (!file) { photoData = ''; $('photoStatus').textContent = ''; showPhotoPreview(''); return; }
   var reader = new FileReader();
   reader.onload = function(e) {
     var rawUrl = e.target.result;
@@ -5399,11 +5416,15 @@ function onPhotoPick() {
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       var out = c.toDataURL('image/jpeg', 0.8);
       photoData = out;
+      $('photoStatus').style.color = '#2e7d32';
       $('photoStatus').textContent = '✓ ' + file.name + ' (' + (out.length / 1024 / 1.33 / 1024).toFixed(1) + ' MB)';
+      showPhotoPreview(out);
     };
     img.onerror = function() {
       photoData = rawUrl;
+      $('photoStatus').style.color = '#2e7d32';
       $('photoStatus').textContent = '✓ ' + file.name + ' (ไม่บีบอัด — ใช้ต้นฉบับ)';
+      showPhotoPreview(rawUrl);
     };
     img.src = rawUrl;
   };
@@ -5567,6 +5588,14 @@ function loadEditRecord() {
     if (r['หมายเหตุ']) $('note').value = r['หมายเหตุ'];
     if (r['หมายเหตุเจ้าหน้าที่']) $('ltaxRemark').value = r['หมายเหตุเจ้าหน้าที่'];
     photoData = r['รูปภาพ_data'] || '';
+    if (photoData) {
+      $('photoStatus').style.color = '#2e7d32';
+      $('photoStatus').textContent = '✓ มีรูปแนบอยู่แล้ว' + (r['Path รูปภาพ'] ? ' (' + r['Path รูปภาพ'] + ')' : '') + ' — เลือกไฟล์ใหม่เพื่อแทนที่';
+      showPhotoPreview(photoData);
+    } else {
+      $('photoStatus').textContent = '';
+      showPhotoPreview('');
+    }
 
     window.__saved = true;
     $('previewBox').value = JSON.stringify(r, null, 2);
