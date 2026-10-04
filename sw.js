@@ -1,8 +1,8 @@
 /* LTAX Offline — Service Worker
    cache-first: ครั้งแรกต้องมีเน็ตเพื่อติดตั้ง ครั้งต่อ ๆ ไปเปิดได้แม้ไม่มีเน็ต
-   version: 20260826-013527
+   version: 20261003-155629
 */
-var VERSION = "20260826-013527";
+var VERSION = "20261003-155629";
 var CACHE = "ltax-offline-" + VERSION;
 
 var ASSETS = [
@@ -11,6 +11,7 @@ var ASSETS = [
   "admin_data.js",
   "db.js",
   "db_helpers.js",
+  "photo_store.js",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/apple-touch-icon.png",
@@ -27,7 +28,10 @@ var ASSETS = [
 self.addEventListener("install", function (e) {
   e.waitUntil(
     caches.open(CACHE).then(function (c) {
-      return c.addAll(ASSETS).then(function () { return self.skipWaiting(); });
+      // cache:"reload" = ดึงจากเซิร์ฟเวอร์จริงทุกไฟล์ ไม่ใช้สำเนาใน HTTP cache (GitHub Pages แคชไว้ได้ ~10 นาที)
+      // กันติดตั้งเวอร์ชันใหม่แล้วได้ไฟล์เก่าปนกับไฟล์ใหม่
+      return c.addAll(ASSETS.map(function (u) { return new Request(u, { cache: "reload" }); }))
+        .then(function () { return self.skipWaiting(); });
     })
   );
 });

@@ -77,7 +77,9 @@ def esc_js(s):
 def build_index():
     home = read("home.html")
     home_css = extract_style(home)
-    home_body = extract_body(home)
+    # สคริปต์หน้าแรกถูกแยกไปฝังท้ายไฟล์ครั้งเดียว (home_js) — ต้องตัดออกจาก body ไม่งั้นทำงานซ้ำ 2 ชุด
+    # (เดิม: <script> ใน body ถูกฝังซ้ำ ทำให้ db.js ถูกโหลดซ้ำและสคริปต์หน้าแรกรันสองรอบ)
+    home_body = strip_scripts(extract_body(home))
     home_js = esc_js("\n\n".join(extract_scripts(home)))
 
     tpl_parts = []
@@ -119,6 +121,7 @@ def build_index():
         '<script src="admin_data.js"></script>',
         '<script src="db.js"></script>',
         '<script src="db_helpers.js"></script>',
+        '<script src="photo_store.js"></script>',
         '</head>',
         '<body>',
         '<div id="view-home">',
@@ -177,7 +180,7 @@ def build_manifest():
 
 
 def build_sw():
-    assets = ['index.html', 'manifest.json', 'admin_data.js', 'db.js', 'db_helpers.js',
+    assets = ['index.html', 'manifest.json', 'admin_data.js', 'db.js', 'db_helpers.js', 'photo_store.js',
               'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png']
     assets += [fname for fname, _ in FORM_ORDER]
 
@@ -257,7 +260,10 @@ var ASSETS = __ASSETS__;
 self.addEventListener("install", function (e) {
   e.waitUntil(
     caches.open(CACHE).then(function (c) {
-      return c.addAll(ASSETS).then(function () { return self.skipWaiting(); });
+      // cache:"reload" = ดึงจากเซิร์ฟเวอร์จริงทุกไฟล์ ไม่ใช้สำเนาใน HTTP cache (GitHub Pages แคชไว้ได้ ~10 นาที)
+      // กันติดตั้งเวอร์ชันใหม่แล้วได้ไฟล์เก่าปนกับไฟล์ใหม่
+      return c.addAll(ASSETS.map(function (u) { return new Request(u, { cache: "reload" }); }))
+        .then(function () { return self.skipWaiting(); });
     })
   );
 });

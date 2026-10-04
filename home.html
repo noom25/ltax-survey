@@ -213,31 +213,57 @@
     </li>
   </ul>
 
+  <div class="panel" style="background:#fff; border:2px solid #1b4f8a; border-radius:6px; padding:16px 18px; margin-top:20px;">
+    <div style="font-size:15px; font-weight:bold; color:#1b4f8a; margin-bottom:6px;">ดาวน์โหลดข้อมูลทั้งหมด (ZIP)</div>
+    <div id="expStat" style="font-size:13px; color:#555; margin-bottom:10px; line-height:1.7;"></div>
+    <div style="font-size:13px; margin-bottom:8px;">ชื่อเครื่อง/ผู้สำรวจ (ใช้ตั้งชื่อไฟล์): <input type="text" id="expLabel" maxlength="20" style="padding:6px 8px; border:1px solid #b0b0b0; border-radius:4px; width:150px;" onchange="expSaveLabel()"></div>
+    <label style="font-size:13px; display:block; margin-bottom:10px;"><input type="checkbox" id="expInclAll"> รวมรูปที่เคยดาวน์โหลดแล้วด้วย (สำรองเต็ม — ไฟล์เยอะ/ช้ากว่า)</label>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button type="button" class="btn btn-main" id="expBuildBtn" onclick="expStart()">เริ่มดาวน์โหลดข้อมูลทั้งหมด</button>
+      <button type="button" class="btn btn-main" id="expSaveBtn" style="display:none; background:#2e7d32; border-color:#1b5e20;" onclick="expSave(false)">บันทึก/แชร์ไฟล์</button>
+      <a href="#" id="expDlLink" style="display:none; font-size:13px;" onclick="expSave(true); return false;">ดาวน์โหลดตรง</a>
+      <a href="#" id="expCancelLink" style="display:none; font-size:13px;" onclick="expCancel(); return false;">หยุด</a>
+    </div>
+    <div id="expMsg" style="font-size:13px; color:#1b4f8a; margin-top:10px; min-height:18px;"></div>
+    <div style="margin-top:10px;"><button type="button" class="btn btn-danger" id="expDelBtn" onclick="expDeleteSent()">ลบรูปที่ดาวน์โหลดแล้วออกจากเครื่อง</button></div>
+    <div style="font-size:12px; color:#888; margin-top:10px; line-height:1.7;">
+      <b>วิธีใช้:</b> กด "เริ่มดาวน์โหลดข้อมูลทั้งหมด" → กดปุ่มสีเขียว "บันทึก/แชร์" แล้วเลือก <b>"บันทึกไปยังไฟล์"</b> (iPhone/iPad) หรือบันทึกลงเครื่อง (Android) — ชุดถัดไปจะเตรียมให้เองจนครบ ทำออฟไลน์ได้ทั้งหมด<br>
+      ไฟล์ ZIP แต่ละชุดมี <b>data.json</b> (ข้อมูลทุกหมวดครบทุกชุด) + <b>manifest.json</b> + โฟลเดอร์ <b>photos/</b> (รูปจริง) · ปกติจะดาวน์โหลดเฉพาะรูปใหม่ที่ยังไม่เคยดาวน์โหลด<br>
+      <b>ควรดาวน์โหลดทุกวันหลังเลิกงาน</b> (ข้อมูลอยู่ในเครื่องนี้เครื่องเดียว) · ย้ายไฟล์เข้าคอมฯ ด้วยวิธีที่สะดวก (สายเคเบิล / Google Drive / LINE) แล้วรัน <b>python import_export.py *.zip</b> · ลบรูปออกจากเครื่องเมื่อนำเข้าที่คอมฯ และตรวจแล้วเท่านั้น
+    </div>
+  </div>
+
   <div class="panel" style="background:#fff; border:1px solid #c8c8c8; border-radius:6px; padding:16px 18px; margin-top:20px;">
-    <div style="font-size:15px; font-weight:bold; color:#1b4f8a; margin-bottom:10px;">รวมข้อมูลเพื่อนำไปสร้าง Excel</div>
+    <div style="font-size:15px; font-weight:bold; color:#1b4f8a; margin-bottom:10px;">ข้อมูลในเครื่อง</div>
     <div id="summary" style="font-size:13px; color:#555; margin-bottom:12px; line-height:1.8;"></div>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button type="button" class="btn btn-main" onclick="collectAll()">รวมข้อมูล (JSON)</button>
-      <button type="button" class="btn btn-main" onclick="collectAllExcel()">สร้างไฟล์ Excel</button>
-      <button type="button" class="btn btn-main" onclick="sendToPC()">ส่งข้อมูลไปคอมฯ</button>
       <button type="button" class="btn btn-danger" onclick="clearAll()">ล้างข้อมูลทั้งหมด</button>
     </div>
-    <div style="font-size:12px; color:#888; margin-top:10px;">รวมข้อมูล = ดาวน์โหลดไฟล์ JSON กลางไฟล์เดียว (รูปจากหน้าถ่ายรูปจะถูกแนบเข้ากับแปลง/อาคาร/ป้ายให้อัตโนมัติ)<br><b>ส่งข้อมูลไปคอมฯ</b> = ส่งไปยังเครื่องคอมฯ ที่เปิดเว็บนี้ไว้ (แปลงเป็น Excel ให้อัตโนมัติ) — ใช้ได้เมื่อเข้าผ่าน server เท่านั้น</div>
+    <details style="margin-top:12px;">
+      <summary style="cursor:pointer; font-size:13px; color:#1b4f8a;">วิธีเดิม: รวมเป็นไฟล์ JSON ไฟล์เดียว (เหมาะกับรูปไม่เกินไม่กี่ร้อยรูป)</summary>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <button type="button" class="btn btn-main" onclick="collectAll()">รวมข้อมูล (JSON)</button>
+        <button type="button" class="btn btn-main" onclick="collectAllExcel()">ดาวน์โหลด ltax_data_all.json</button>
+      </div>
+      <div style="font-size:12px; color:#888; margin-top:8px;">ฝังรูปเป็น base64 ลงในไฟล์ JSON ไฟล์เดียว — รูปเยอะแล้วเครื่องอาจค้าง ให้ใช้ "ดาวน์โหลดข้อมูลทั้งหมด (ZIP)" ด้านบนแทน</div>
+    </details>
+  </div>
   </div>
 
   <div class="note">
     <b>ลำดับการทำงาน:</b> เพิ่มเจ้าของทรัพย์สินก่อน แล้วค่อยเพิ่ม ที่ดิน → การใช้ประโยชน์ที่ดิน / สิ่งปลูกสร้าง → การใช้ประโยชน์สิ่งปลูกสร้าง / ป้าย<br>
-    ปุ่ม <b>บันทึก</b> ของแต่ละฟอร์มจะเก็บข้อมูลไว้ในเครื่อง (IndexedDB) เท่านั้น — ไม่สร้างไฟล์หลุดออกมา เมื่อกรอกครบแล้วกลับมาหน้านี้ กด <b>รวมข้อมูล</b> เพื่อดาวน์โหลดเป็นไฟล์ JSON ไฟล์เดียว (รวมทุกหมวด) จากนั้นรัน <b>json_to_excel.py</b> เพื่อสร้าง Excel template ที่บอทอ่านได้<br><br>
-    <b>รูปภาพ:</b> เลือกรูปในฟอร์มแล้วระบบจะฝังตัวรูป (ฐาน 64) ลงในไฟล์ JSON เอง หรือจะถ่ายเป็นชุดผ่านหน้าถ่ายรูป (เลือกหมวด+รหัสก่อนถ่าย ระบบจำรหัสล่าสุดให้ — กันจับคู่ผิด) — ใช้ได้ทุกเครื่อง ไม่ต้องหอบไฟล์รูปแยกกลับมา
+    ปุ่ม <b>บันทึก</b> ของแต่ละฟอร์มจะเก็บข้อมูลไว้ในเครื่อง (IndexedDB) เท่านั้น — ไม่สร้างไฟล์หลุดออกมา เมื่อสำรวจเสร็จกด <b>ดาวน์โหลดข้อมูลทั้งหมด (ZIP)</b> แล้วนำไฟล์ไปรัน <b>import_export.py</b> บนคอมฯ ได้ <b>ltax_data_all.json</b> + โฟลเดอร์ <b>photos/</b> (และ Excel ไว้ดู) สำหรับให้บอทนำขึ้น LTAX Online<br><br>
+    <b>รูปภาพ:</b> ถ่ายเป็นชุดผ่านหน้าถ่ายรูป (เลือกหมวด+รหัสก่อนถ่าย ระบบจำรหัสล่าสุดให้ — กันจับคู่ผิด) หรือเลือกจากคลังรูปในเครื่อง รูปทุกใบเก็บเป็นไฟล์แยกในเครื่อง ไม่ฝังลงข้อมูลฟอร์ม
   </div>
 
   <div class="tip">
-    <b>โหมดแอป (PWA):</b> ติดตั้งครั้งแรกจากหน้าเว็บจริง (ต้องมีเน็ต) → จากนั้นใช้งานออฟไลน์ได้ 100% ข้อมูลทุกอย่างเก็บในเครื่อง ไม่ส่งผ่านเน็ต ยกเว้นปุ่ม <b>ส่งข้อมูลไปคอมฯ</b> ที่ต้องใช้ในวงแลนกับเครื่องคอมฯ ที่เปิด server ไว้
+    <b>โหมดแอป (PWA):</b> ติดตั้งครั้งแรกจากหน้าเว็บ (ต้องมีเน็ต ครั้งเดียว) → จากนั้นใช้งานออฟไลน์ได้ 100% ข้อมูลทุกอย่างเก็บในเครื่อง ไม่ส่งผ่านเน็ต · การอัปเดตแอปต้องมีเน็ตเป็นครั้งคราว ควรทำก่อนออกสำรวจ
   </div>
 </div>
 
 <script src="admin_data.js"></script>
 <script src="db.js"></script>
+<script src="photo_store.js"></script>
 <script>
 /* =========================================================
    ค้นหา / ดูข้อมูลที่กรอกแล้ว (จาก LTAXDB — IndexedDB)
@@ -564,109 +590,82 @@ async function clearRefOwners() {
 }
 
 /* =========================================================
-   ระบบภาพถ่าย — IndexedDB (สำรองเป็น localStorage ถ้าเว็บวิวเก่า)
+   ระบบภาพถ่าย — ใช้ PhotoStore (photo_store.js) ร่วมกับหน้าถ่ายรูป
    ========================================================= */
-var photoBackend = null;
-function detectPhotoBackend() {
-  if (photoBackend) return photoBackend;
-  if (window.indexedDB && typeof indexedDB.open === 'function') photoBackend = 'idb';
-  else photoBackend = 'ls';
-  return photoBackend;
-}
-function _photoDB() {
-  return new Promise(function(res, rej) {
-    var rq = indexedDB.open('ltax_photos_db', 1);
-    rq.onupgradeneeded = function(e) {
-      var db = e.target.result;
-      if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', { keyPath: 'id' });
-    };
-    rq.onsuccess = function() { res(rq.result); };
-    rq.onerror = function() { rej(rq.error); };
-  });
-}
-function photoPut(rec) {
-  if (detectPhotoBackend() === 'ls') {
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]'); } catch(e) { list = []; }
-    var i = -1;
-    for (var j = 0; j < list.length; j++) if (list[j].id === rec.id) { i = j; break; }
-    if (i >= 0) list[i] = rec; else list.push(rec);
-    try { localStorage.setItem('ltax_photos_fb', JSON.stringify(list)); } catch(e) { return Promise.reject(e); }
-    return Promise.resolve();
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readwrite');
-      tx.objectStore('photos').put(rec);
-      tx.oncomplete = function() { res(); };
-      tx.onerror = function() { rej(tx.error); };
-    });
-  });
-}
-function photoGetAll() {
-  if (detectPhotoBackend() === 'ls') {
-    try { return Promise.resolve(JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]')); }
-    catch(e) { return Promise.resolve([]); }
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readonly');
-      var rq = tx.objectStore('photos').getAll();
-      rq.onsuccess = function() { res(rq.result || []); };
-      rq.onerror = function() { rej(rq.error); };
-    });
-  });
-}
-function photoDelete(ids) {
-  if (!ids || !ids.length) return Promise.resolve();
-  if (detectPhotoBackend() === 'ls') {
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]'); } catch(e) { list = []; }
-    list = list.filter(function(p) { return ids.indexOf(p.id) < 0; });
-    localStorage.setItem('ltax_photos_fb', JSON.stringify(list));
-    return Promise.resolve();
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readwrite');
-      var st = tx.objectStore('photos');
-      ids.forEach(function(id) { st.delete(id); });
-      tx.oncomplete = function() { res(); };
-      tx.onerror = function() { rej(tx.error); };
-    });
-  });
-}
+function photoGetAll() { return PhotoStore.listMeta(); }   // ข้อมูลรูป (meta) เท่านั้น ไม่รวมตัวรูป
 
 /* =========================================================
    รวมข้อมูล + แนบรูปจากหน้าถ่ายรูปเข้ากับแปลง/อาคาร/ป้าย
    ========================================================= */
+function collectErr(err) {
+  if (err && err.message === 'cancelled') return;
+  alert('รวมข้อมูลไม่สำเร็จ: ' + (err && err.message || err) + '\n\nถ้ามีรูปเยอะ แนะนำให้ใช้ "ส่งออก ZIP" แทน');
+}
+
+/* วิธีเดิม: ฝังรูปเป็น base64 ลงใน JSON ไฟล์เดียว — เหมาะกับรูปไม่กี่ร้อยรูป
+   (รูปเยอะ ใช้ "ส่งออก ZIP (รูป + ข้อมูล)" ด้านบนแทน) */
 function collectAllData() {
   var out = {};
-  return Promise.all(KEYS.map(function(k) { return getList(k[0]); })).then(function(lists) {
+  return Promise.all(KEYS.map(function(k) { return LTAX_getAll(k[0]); })).then(function(lists) {
     KEYS.forEach(function(k, i) { out[k[0]] = lists[i]; });
-    return photoGetAll();
+    return PhotoStore.listMeta();
+  }).then(function(metas) {
+    if (metas.length > 300 && !confirm('มีรูป ' + metas.length + ' รูป — การรวมเป็นไฟล์ JSON ไฟล์เดียวใช้หน่วยความจำมากและอาจทำให้แอปค้าง\n\nแนะนำให้ใช้ปุ่ม "ส่งออก ZIP" แทน\n\nต้องการทำต่อด้วยวิธีเดิมหรือไม่?')) {
+      throw new Error('cancelled');
+    }
+    var photos = [];
+    var chain = Promise.resolve();
+    metas.forEach(function(m) {
+      chain = chain.then(function() {
+        return PhotoStore.getBlob(m.id).then(function(b) {
+          if (!b) return null;
+          return PhotoStore.blobToDataUrl(b).then(function(url) {
+            photos.push({ id: m.id, category: m.category, code: m.code, ts: m.ts, lat: m.lat, lng: m.lng, dataUrl: url });
+          });
+        });
+      });
+    });
+    return chain.then(function() { return photos; });
   }).then(function(photos) {
+    var urlById = {};
+    photos.forEach(function(p) { if (p) urlById[p.id] = p.dataUrl; });
+    // รูปที่ย้ายไปอยู่ที่เก็บรูปแล้ว (อ้างด้วย <ชื่อ>_ids) → ฝังกลับเป็น base64 ในตำแหน่งเดิม เพื่อให้ไฟล์ JSON แบบเดิมครบเหมือนเดิม
+    var FM = PhotoStore.FIELD_MAP, embedded = {};
+    Object.keys(FM).forEach(function(key) {
+      var cfg = FM[key];
+      (out[key] || []).forEach(function(rec) {
+        PhotoStore.holdersOf(cfg, rec).forEach(function(h) {
+          cfg.fields.forEach(function(f) {
+            var ids = Array.isArray(h[f.ids]) ? h[f.ids] : [];
+            var urls = ids.map(function(id) { return urlById[id]; }).filter(Boolean);
+            ids.forEach(function(id) { embedded[key + '|' + (rec[cfg.codeKey] || '') + '|' + id] = true; });
+            if (urls.length) h[f.data] = (urls.length === 1 && !Array.isArray(h[f.data])) ? urls[0] : (Array.isArray(h[f.data]) ? h[f.data].concat(urls) : urls);
+            delete h[f.ids];
+          });
+        });
+      });
+    });
     var by = {};
     photos.forEach(function(p) {
       if (!p || !p.code) return;
       var k = p.category + '|' + p.code;
-      (by[k] = by[k] || []).push(p.dataUrl);
+      (by[k] = by[k] || []).push({ id: p.id, url: p.dataUrl });
     });
-    function attach(records, codeKey, cat, field) {
+    function attach(records, codeKey, cat, field, storeKey) {
       (records || []).forEach(function(r) {
         if (!r) return;
         var c = r[codeKey];
         if (!c) return;
-        var urls = by[cat + '|' + c];
-        if (!urls || !urls.length) return;
+        var urls = (by[cat + '|' + c] || []).filter(function(x) { return !embedded[storeKey + '|' + c + '|' + x.id]; }).map(function(x) { return x.url; });
+        if (!urls.length) return;
         var cur = r[field];
         var arr = (cur == null) ? [] : (Array.isArray(cur) ? cur : [cur]);
         r[field] = arr.concat(urls);
       });
     }
-    attach(out.ltax_land, 'รหัสแปลงที่ดิน', 'land', 'รูปที่ดิน_data');
-    attach(out.ltax_building, 'รหัสสิ่งปลูกสร้าง', 'building', 'รูปภาพ_data');
-    attach(out.ltax_sign, 'รหัสป้าย', 'sign', 'รูปภาพ_data');
+    attach(out.ltax_land, 'รหัสแปลงที่ดิน', 'land', 'รูปที่ดิน_data', 'ltax_land');
+    attach(out.ltax_building, 'รหัสสิ่งปลูกสร้าง', 'building', 'รูปภาพ_data', 'ltax_building');
+    attach(out.ltax_sign, 'รหัสป้าย', 'sign', 'รูปภาพ_data', 'ltax_sign');
     out.ltax_photos = photos.map(function(p) {
       return { category: p.category, code: p.code, ts: p.ts, lat: p.lat || null, lng: p.lng || null, dataUrl: p.dataUrl };
     });
@@ -688,47 +687,31 @@ function downloadJson(name, obj) {
 function collectAll() {
   collectAllData().then(function(out) {
     downloadJson('ltax_data_all.json', out);
-  });
+  }).catch(collectErr);
 }
 
 function collectAllExcel() {
   collectAllData().then(function(out) {
-    try { localStorage.setItem('ltax_data_all', JSON.stringify(out)); } catch(e) {}
     downloadJson('ltax_data_all.json', out);
     alert('ดาวน์โหลด ltax_data_all.json แล้ว (' + out.ltax_owner.length + ' เจ้าของ, ' +
           out.ltax_land.length + ' ที่ดิน, ' + out.ltax_land_usage.length + ' การใช้ที่ดิน, ' +
           out.ltax_building.length + ' สิ่งปลูกสร้าง, ' + out.ltax_building_usage.length + ' การใช้สิ่งปลูกสร้าง, ' +
           out.ltax_sign.length + ' ป้าย, ' + (out.ltax_photos || []).length + ' รูป)\n\nนำไฟล์ไปวางที่โฟลเดอร์เดียวกับ json_to_excel.py แล้วรันเพื่อสร้าง Excel');
-  });
+  }).catch(collectErr);
 }
 
-function sendToPC() {
-  collectAllData().then(function(out) {
-    var btn = null;
-    try {
-      var btns = document.querySelectorAll('button');
-      for (var i = 0; i < btns.length; i++) if (btns[i].textContent.indexOf('ส่งข้อมูลไปคอมฯ') >= 0) { btn = btns[i]; break; }
-    } catch(e) {}
-    if (btn) btn.disabled = true;
-    fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(out)
-    }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, d: d }; }); })
-      .then(function(r) {
-        if (btn) btn.disabled = false;
-        if (r.ok && r.d.ok) alert('ส่งข้อมูลไปคอมฯ สำเร็จ\n' + r.d.msg + '\n\n' + (r.d.excel ? 'สร้าง Excel: ' + r.d.excel : '') + (r.d.photos ? '\nแยกรูป: ' + r.d.photos : ''));
-        else alert('ส่งข้อมูลไม่สำเร็จ: ' + (r.d && r.d.error ? r.d.error : 'server ไม่ตอบกลับ — ต้องเปิดผ่าน server (http://...) เท่านั้น'));
-      })
-      .catch(function(err) {
-        if (btn) btn.disabled = false;
-        alert('ส่งข้อมูลไม่สำเร็จ: ' + err + '\n\nต้องเข้าผ่าน server (http://...) ไม่ใช่เปิดไฟล์ตรง ถึงจะส่งไปคอมฯ ได้');
-      });
-  });
-}
+
 
 async function clearAll() {
-  if (!confirm('ล้างข้อมูลทั้งหมดในเบราว์เซอร์ (ทุกฟอร์ม + รูปทั้งหมด)?')) return;
+  var st = await PhotoStore.stats();
+  var recs = 0;
+  (await Promise.all(KEYS.map(function(k) { return LTAX_getAll(k[0]); }))).forEach(function(l) { recs += l.length; });
+  var warn = 'ล้างข้อมูลทั้งหมดในเบราว์เซอร์ (ทุกฟอร์ม ' + recs + ' รายการ + รูปทั้งหมด ' + st.total + ' รูป)?\n\n' +
+    (st.pending + st.unmatched > 0 ? '⚠ มีรูป ' + (st.pending + st.unmatched) + ' รูปที่ยังไม่ได้ดาวน์โหลด\n' : '') +
+    'ข้อมูลฟอร์มไม่มีสถานะส่งออก — ตรวจให้แน่ใจว่าส่งออกไฟล์ไปแล้ว\n' +
+    'ลบแล้วกู้คืนไม่ได้\n\nพิมพ์คำว่า ลบ เพื่อยืนยัน';
+  var t = prompt(warn);
+  if (t !== 'ลบ') return;
   await Promise.all(KEYS.map(function(k) { return LTAX_setAll(k[0], []); }));
   await LTAX_setAll('ltax_ref_owner', []);
   // เก็บกวาด localStorage เก่าที่อาจค้างจากเวอร์ชันก่อนหน้าด้วย (กันข้อมูลผีย้อนกลับมาตอน auto-migrate)
@@ -736,6 +719,7 @@ async function clearAll() {
   try { localStorage.removeItem('ltax_ref_owner'); } catch(e) {}
   try { localStorage.removeItem('ltax_data_all'); } catch(e) {}
   try { localStorage.removeItem('ltax_photos_fb'); } catch(e) {}
+  await PhotoStore.clearAll();
   if (window.indexedDB && typeof indexedDB.deleteDatabase === 'function') {
     try { indexedDB.deleteDatabase('ltax_photos_db'); } catch(e) {}
   }
@@ -754,15 +738,317 @@ async function refreshSummary() {
 }
 
 function renderPhotoStats() {
-  photoGetAll().then(function(photos) {
+  PhotoStore.stats().then(function(st) {
     var el = $('photoStats');
-    if (!el) return;
-    var n = photos.length;
-    var un = photos.filter(function(p) { return !p.code; }).length;
-    el.innerHTML = 'รูปในเครื่อง: <b>' + n + '</b> รูป' +
-      (un ? ' — <b style="color:#c62828;">รอจับคู่ ' + un + '</b>' : '') +
-      '<span style="color:#888;"> (ถ่าย/จับคู่/ลบ ได้ที่หน้าถ่ายรูป — รูปจะแนบเข้ากับข้อมูลตอน "รวมข้อมูล")</span>';
+    if (el) {
+      var notSent = st.pending + st.unmatched;
+      el.innerHTML = 'รูปในเครื่อง: <b>' + st.total + '</b> รูป' +
+        (st.unmatched ? ' — <b style="color:#c62828;">รอจับคู่ ' + st.unmatched + '</b>' : '') +
+        (notSent ? ' — ยังไม่ได้ดาวน์โหลด <b>' + notSent + '</b>' : '') +
+        '<span style="color:#888;"> (ถ่าย/จับคู่/ลบ ได้ที่หน้าถ่ายรูป)</span>';
+    }
+  }).catch(function() {});
+  refreshExportUI();
+}
+
+/* =========================================================
+   ดาวน์โหลดข้อมูลทั้งหมด (ZIP) — ข้อมูล + รูปเป็นไฟล์จริง (ไม่ฝัง base64)
+   แบ่งเป็นหลายไฟล์ ไฟล์ละ ≤ EXP_BATCH รูป — แต่ละไฟล์มี data.json (ข้อมูลทุกหมวด) + manifest.json + photos/<แปลง>/<รหัส>_NN.jpg
+   ใช้งานออฟไลน์ได้ทั้งหมด · ขั้นตอน 2 จังหวะต่อไฟล์ (สร้างไฟล์ → กดบันทึก/แชร์) เพราะ iPhone/iPad ต้องกดแชร์ทันทีหลังการแตะ
+   ไฟล์ถัดไปจะสร้างให้อัตโนมัติหลังบันทึกไฟล์ก่อนหน้าเสร็จ
+   ========================================================= */
+var EXP_BATCH = 300;                   // รูปต่อไฟล์
+var EXP_MAX_BYTES = 45 * 1048576;      // หรือไม่เกินกี่ MB ต่อไฟล์ (แล้วแต่อย่างใดถึงก่อน)
+var EXP = { blob: null, name: '', ids: [], busy: false, done: {}, incl: false, batchNo: 0, batchesTotal: 0 };
+
+function expPad(n, w) { n = String(n); while (n.length < w) n = '0' + n; return n; }
+function expStamp(d) {
+  d = d || new Date();
+  return d.getFullYear() + expPad(d.getMonth() + 1, 2) + expPad(d.getDate(), 2) + '-' + expPad(d.getHours(), 2) + expPad(d.getMinutes(), 2);
+}
+function expLabel() {
+  var v = '';
+  try { v = localStorage.getItem('ltax_export_label') || ''; } catch (e) {}
+  return PhotoStore.safeName(v.trim() || PhotoStore.deviceId());
+}
+function expSaveLabel() {
+  var el = $('expLabel');
+  if (!el) return;
+  try { localStorage.setItem('ltax_export_label', el.value.trim()); } catch (e) {}
+}
+function expNextSeq() {
+  var n = 0;
+  try { n = parseInt(localStorage.getItem('ltax_export_seq') || '0', 10) || 0; } catch (e) {}
+  return n + 1;
+}
+function expCommitSeq(n) { try { localStorage.setItem('ltax_export_seq', String(n)); } catch (e) {} }
+function expMsg(t, isErr) {
+  var el = $('expMsg');
+  if (!el) return;
+  el.style.color = isErr ? '#c62828' : '#1b4f8a';
+  el.textContent = t || '';
+}
+function fmtMBx(b) { return (b / 1048576).toFixed(1) + ' MB'; }
+
+function refreshExportUI() {
+  if (!window.PhotoStore || !$('expStat')) return Promise.resolve();
+  var lab = $('expLabel');
+  if (lab && document.activeElement !== lab) {
+    try { lab.value = localStorage.getItem('ltax_export_label') || ''; } catch (e) {}
+  }
+  return PhotoStore.stats().then(function(st) {
+    var batches = Math.ceil(st.pending / EXP_BATCH);
+    var t = 'รูปที่ยังไม่ได้ดาวน์โหลด: <b>' + st.pending + '</b> รูป' +
+            (batches > 1 ? ' (ประมาณ ' + batches + ' ไฟล์)' : '') +
+            ' · ดาวน์โหลดแล้ว ' + st.exported + ' รูป';
+    if (st.unmatched) t += '<br><b style="color:#c62828;">⚠ มีรูปรอจับคู่ ' + st.unmatched + ' รูป — จะไม่ถูกดาวน์โหลดจนกว่าจะจับคู่รหัส</b>';
+    $('expStat').innerHTML = t;
+    var del = $('expDelBtn');
+    if (del) del.disabled = st.exported === 0;
+    var build = $('expBuildBtn');
+    if (build) build.disabled = EXP.busy;
+  }).catch(function() {});
+}
+
+function expReset() {
+  EXP.blob = null; EXP.name = ''; EXP.ids = [];
+  var s = $('expSaveBtn'), d = $('expDlLink'), c = $('expCancelLink'), b = $('expBuildBtn');
+  if (s) s.style.display = 'none';
+  if (d) d.style.display = 'none';
+  if (c) c.style.display = 'none';
+  if (b) { b.style.display = ''; b.disabled = false; }
+}
+function expCancel() {
+  expReset();
+  EXP.done = {}; EXP.batchNo = 0; EXP.batchesTotal = 0;
+  expMsg('หยุดแล้ว — ไฟล์ที่บันทึกไปแล้วยังใช้ได้ · ไฟล์ที่ยังไม่ได้บันทึก จะถูกสร้างใหม่เมื่อกดเริ่มอีกครั้ง');
+  refreshExportUI();
+}
+
+/* คัดลอกเรคคอร์ดฟอร์ม → เอา base64 ออก ใส่ path ไฟล์แทน
+   - ช่องรูปอยู่ที่ "ตัวถือ" (holder): ตัวเรคคอร์ด หรือแต่ละรายการใช้ประโยชน์ที่ดิน (PhotoStore.FIELD_MAP บอกว่าหมวดไหนอยู่ตรงไหน)
+   - <ชื่อ>_ids (รูปที่ย้ายเข้าที่เก็บรูปแล้ว) → ชื่อไฟล์จริง · รูปที่ยังฝังอยู่ (ข้อมูลเก่า) → แยกเป็นไฟล์ (รูปเดียวกันที่ถูกคัดลอกหลายที่ รวมเป็นไฟล์เดียว)
+   - รูปถ่ายตามรหัส (หน้าถ่ายรูป) ผูกกับเรคคอร์ดหมวดที่ camera:true
+   - ใส่รายการไฟล์ใน <ชื่อ>_files · ช่อง Path ... ชี้ไฟล์แรก (ชื่อเดิมเก็บที่ "Path ..._ชื่อเดิม") */
+function expPrepareData(lists, metasAll) {
+  var FM = PhotoStore.FIELD_MAP;
+  var data = {}, formEntries = [], formManifest = [], seen = {}, nForm = {};
+  var camByKey = {}, metaById = {};
+  metasAll.forEach(function(m) { metaById[m.id] = m; });
+  metasAll.filter(function(m) { return m.code; }).sort(function(a, b) { return (a.seq || 0) - (b.seq || 0); }).forEach(function(m) {
+    var k = m.category + '|' + m.code;
+    (camByKey[k] = camByKey[k] || []).push(PhotoStore.fileName(m));
   });
+
+  KEYS.forEach(function(k, i) {
+    var key = k[0];
+    var cfg = FM[key];
+    data[key] = (lists[i] || []).map(function(rec) {
+      var r = JSON.parse(JSON.stringify(rec));
+      if (!cfg) return r;
+      var code = String(r[cfg.codeKey] || '').trim();
+      PhotoStore.holdersOf(cfg, r).forEach(function(h) {
+        cfg.fields.forEach(function(f) {
+          var orig = h[f.data];
+          var formPaths = [];
+          if (code) {
+            PhotoStore.dataUrlsOf(orig).forEach(function(u) {
+              var sk = cfg.cat + '|' + code + '|' + u;
+              if (!seen[sk]) {
+                nForm[code] = (nForm[code] || 0) + 1;
+                var ext = /^data:image\/png/.test(u) ? 'png' : (/^data:image\/webp/.test(u) ? 'webp' : 'jpg');
+                var name = 'photos/' + PhotoStore.safeName(PhotoStore.parcelOf(code)) + '/' + PhotoStore.safeName(code) + '_F' + expPad(nForm[code], 2) + '.' + ext;
+                seen[sk] = name;
+                formEntries.push({ name: name, url: u });
+                formManifest.push({ file: name, code: code, category: cfg.cat, source: 'form' });
+              }
+              formPaths.push(seen[sk]);
+            });
+          }
+          if (PhotoStore.dataUrlsOf(orig).length) {
+            h[f.data] = Array.isArray(orig) ? orig.filter(function(u) { return PhotoStore.dataUrlsOf([u]).length === 0; }) : '';
+          }
+          var idFiles = (Array.isArray(h[f.ids]) ? h[f.ids] : []).map(function(id) { return metaById[id]; })
+            .filter(function(m) { return m && m.code && m.seq; }).map(function(m) { return PhotoStore.fileName(m); });
+          var camFiles = (cfg.camera && h === r) ? (camByKey[cfg.cat + '|' + code] || []) : [];
+          var files = PhotoStore.uniq(formPaths.concat(idFiles, camFiles));
+          h[f.files] = files;
+          if (files.length) {
+            if (h[f.path] && h[f.path] !== files[0]) h[f.path + '_ชื่อเดิม'] = h[f.path];
+            h[f.path] = files[0];
+          }
+        });
+      });
+      return r;
+    });
+  });
+  return { data: data, formEntries: formEntries, formManifest: formManifest };
+}
+
+/* เลือกรูปเข้าไฟล์ละ ≤ EXP_BATCH รูป และ ≤ EXP_MAX_BYTES */
+function expTakeBatch(pool) {
+  var batch = [], bytes = 0;
+  for (var i = 0; i < pool.length; i++) {
+    if (batch.length >= EXP_BATCH || (batch.length && bytes + (pool[i].bytes || 0) > EXP_MAX_BYTES)) break;
+    batch.push(pool[i]);
+    bytes += pool[i].bytes || 0;
+  }
+  return batch;
+}
+
+/* ปุ่ม "เริ่มดาวน์โหลดข้อมูลทั้งหมด" */
+function expStart() {
+  if (EXP.busy) return;
+  EXP.done = {}; EXP.batchNo = 0; EXP.batchesTotal = 0;
+  EXP.incl = !!($('expInclAll') && $('expInclAll').checked);
+  expBuild(true);
+}
+
+async function expBuild(isFirst) {
+  if (EXP.busy) return;
+  if (!window.PhotoStore) { alert('ไม่พบ photo_store.js'); return; }
+  EXP.busy = true;
+  var buildBtn = $('expBuildBtn');
+  if (buildBtn) buildBtn.disabled = true;
+  try {
+    expMsg('กำลังตรวจรูป...');
+    var st = await PhotoStore.stats();
+    if (isFirst && st.unmatched > 0 && !confirm('มีรูปรอจับคู่ ' + st.unmatched + ' รูป — รูปเหล่านี้จะไม่ถูกดาวน์โหลดในรอบนี้\n\nทำต่อหรือไม่?')) {
+      expMsg('ยกเลิก — ไปจับคู่รูปที่หน้าถ่ายรูปก่อนได้');
+      EXP.busy = false; if (buildBtn) buildBtn.disabled = false;
+      return;
+    }
+    await PhotoStore.assignSeq();
+    var metasAll = await PhotoStore.listMeta();
+    var pool = metasAll.filter(function(m) { return m.code && !EXP.done[m.id] && (EXP.incl || m.status !== 'exported'); })
+                       .sort(function(a, b) { return (a.ts || 0) - (b.ts || 0); });
+    if (isFirst) {
+      var n = 0, rest = pool.slice();
+      while (rest.length) { var b0 = expTakeBatch(rest); rest = rest.slice(b0.length); n++; }
+      EXP.batchesTotal = Math.max(1, n);
+    }
+    var batch = expTakeBatch(pool);
+    EXP.batchNo++;
+    var tag = 'ชุด ' + EXP.batchNo + ' จาก ' + EXP.batchesTotal;
+
+    var lists = await Promise.all(KEYS.map(function(k) { return LTAX_getAll(k[0]); }));
+    var prep = expPrepareData(lists, metasAll);
+    var now = new Date();
+    var label = expLabel();
+    var seq = expNextSeq();
+    var counts = {};
+    KEYS.forEach(function(k) { counts[k[0]] = (prep.data[k[0]] || []).length; });
+
+    var head = {
+      format: 'ltax-survey-export', version: 2, device_id: PhotoStore.deviceId(), label: label,
+      exported_at: now.toISOString(), part: seq
+    };
+    var dataJson = {};
+    Object.keys(head).forEach(function(k) { dataJson[k] = head[k]; });
+    KEYS.forEach(function(k) { dataJson[k[0]] = prep.data[k[0]]; });
+
+    var entries = [{ name: 'data.json', text: JSON.stringify(dataJson, null, 1) }];
+    batch.forEach(function(m) {
+      entries.push({ name: PhotoStore.fileName(m), getBlob: (function(id) { return function() { return PhotoStore.getBlob(id); }; })(m.id), sha: true, mtime: m.ts });
+    });
+    prep.formEntries.forEach(function(e) {
+      entries.push({ name: e.name, getBlob: (function(u) { return function() { return Promise.resolve(PhotoStore.dataUrlToBlob(u)); }; })(e.url), sha: true });
+    });
+
+    expMsg(tag + ' — กำลังสร้างไฟล์ 0/' + (entries.length + 1) + ' (อย่าปิดหน้านี้)');
+    var result = await PhotoStore.makeZip(entries, {
+      onProgress: function(d, t) { if (d % 10 === 0 || d === t) expMsg(tag + ' — กำลังสร้างไฟล์ ' + d + '/' + t + ' (อย่าปิดหน้านี้)'); },
+      extraAfter: function(hashes) {
+        var photos = batch.map(function(m) {
+          var fn = PhotoStore.fileName(m);
+          return { photo_id: m.id, file: fn, code: m.code, category: m.category, seq: m.seq, ts: m.ts, lat: m.lat, lng: m.lng, bytes: m.bytes, sha256: hashes[fn] || '' };
+        });
+        var forms = prep.formManifest.map(function(f) { f.sha256 = hashes[f.file] || ''; return f; });
+        var manifest = {
+          format: 'ltax-survey-export', version: 2, device_id: head.device_id, label: label, part: seq,
+          exported_at: head.exported_at, counts: counts, photo_count: photos.length, photos: photos, form_photos: forms,
+          remaining_after_this: Math.max(0, pool.length - batch.length)
+        };
+        return [{ name: 'manifest.json', text: JSON.stringify(manifest, null, 1) }];
+      }
+    });
+
+    EXP.blob = result.blob;
+    EXP.name = 'ltax_' + label + '_' + expStamp(now) + '_' + expPad(seq, 3) + '.zip';
+    EXP.ids = batch.map(function(m) { return m.id; });
+    EXP.seq = seq;
+    EXP.remaining = Math.max(0, pool.length - batch.length);
+
+    $('expBuildBtn').style.display = 'none';
+    $('expSaveBtn').style.display = '';
+    $('expSaveBtn').textContent = 'บันทึก/แชร์ ' + tag + ' (' + fmtMBx(EXP.blob.size) + ' · ' + batch.length + ' รูป)';
+    $('expDlLink').style.display = '';
+    $('expCancelLink').style.display = '';
+    var extra = prep.formEntries.length ? ' · รวมรูปที่แนบในฟอร์ม ' + prep.formEntries.length + ' รูป' : '';
+    var note = (isFirst && pool.length === 0) ? ' (ไม่มีรูปใหม่ — ข้อมูลอย่างเดียว)' : '';
+    expMsg(tag + ' พร้อมแล้ว: ' + EXP.name + extra + note + ' — กดปุ่มสีเขียวเพื่อบันทึก (iPhone/iPad: เลือก "บันทึกไปยังไฟล์")');
+  } catch (err) {
+    console.error(err);
+    expReset();
+    expMsg('สร้างไฟล์ไม่สำเร็จ: ' + (err && err.message || err), true);
+  }
+  EXP.busy = false;
+  refreshExportUI();
+}
+
+/* ต้องเรียกแบบ sync จากการแตะปุ่ม (ห้าม await ก่อน navigator.share) */
+function expSave(forceDownload) {
+  if (!EXP.blob) { expMsg('ยังไม่มีไฟล์ที่เตรียมไว้', true); return; }
+  var blob = EXP.blob, name = EXP.name, ids = EXP.ids.slice(), seq = EXP.seq, remaining = EXP.remaining;
+  var batchNo = EXP.batchNo, total = EXP.batchesTotal;
+  function saved(how) {
+    expCommitSeq(seq);
+    ids.forEach(function(id) { EXP.done[id] = true; });
+    expReset();
+    var p = ids.length ? PhotoStore.markExported(ids) : Promise.resolve();
+    p.then(function() { return refreshExportUI(); }).then(function() { return refreshSummary(); }).then(function() {
+      if (remaining > 0) {
+        expMsg('✓ ' + how + ' ' + name + ' (ชุด ' + batchNo + ' จาก ' + total + ') — กำลังเตรียมชุดถัดไป...');
+        return expBuild(false);
+      }
+      expMsg('✓ ' + how + ' ' + name + ' — ดาวน์โหลดครบทุกชุดแล้ว (' + batchNo + ' ไฟล์) · นำไฟล์ ZIP ทั้งหมดไปที่คอมฯ แล้วรัน python import_export.py *.zip');
+      EXP.done = {}; EXP.batchNo = 0; EXP.batchesTotal = 0;
+    });
+  }
+  function download() {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+    saved('สั่งดาวน์โหลดแล้ว (ตรวจในโฟลเดอร์ดาวน์โหลด/ไฟล์ของเครื่อง)');
+  }
+  if (!forceDownload && navigator.canShare && typeof File !== 'undefined') {
+    var file;
+    try { file = new File([blob], name, { type: 'application/zip' }); } catch (e) { file = null; }
+    if (file && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: name }).then(function() {
+        saved('บันทึกแล้ว');
+      }).catch(function(err) {
+        if (err && err.name === 'AbortError') { expMsg('ยกเลิก — ยังไม่ได้ทำเครื่องหมายว่าดาวน์โหลด (กดปุ่มสีเขียวใหม่ได้)'); return; }
+        expMsg('บันทึกไม่สำเร็จ (' + (err && err.name || err) + ') — ลองกด "ดาวน์โหลดตรง"', true);
+      });
+      return;
+    }
+  }
+  download();
+}
+
+async function expDeleteSent() {
+  var metas = await PhotoStore.listMeta();
+  var sent = metas.filter(function(m) { return m.code && m.status === 'exported'; });
+  if (!sent.length) { expMsg('ไม่มีรูปที่ดาวน์โหลดแล้ว'); return; }
+  var t = prompt('ลบรูปที่ดาวน์โหลดแล้ว ' + sent.length + ' รูปออกจากเครื่อง\n\n⚠ ทำเมื่อนำไฟล์ ZIP เข้าที่คอมฯ และตรวจแล้วเท่านั้น — ลบแล้วกู้คืนไม่ได้\n\nพิมพ์คำว่า ลบ เพื่อยืนยัน');
+  if (t !== 'ลบ') return;
+  await PhotoStore.remove(sent.map(function(m) { return m.id; }));
+  expMsg('ลบรูปที่ดาวน์โหลดแล้ว ' + sent.length + ' รูป ออกจากเครื่องแล้ว');
+  await refreshExportUI();
+  await refreshSummary();
 }
 
 /* =========================================================
@@ -848,6 +1134,28 @@ if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
 }
 
 refreshSummary();
+(function startPhotoStore() {
+  if (!window.PhotoStore) return;
+  PhotoStore.init().then(function() {
+    return PhotoStore.migrateLegacy(function(d, t) {
+      var el = $('photoStats');
+      if (el) el.innerHTML = '<b style="color:#7a5c00;">กำลังย้ายรูปเดิมเข้าที่เก็บใหม่ ' + d + '/' + t + ' — กรุณาอย่าปิดหน้านี้</b>';
+    });
+  }).then(function(r) {
+    if (r && (r.migrated || r.broken)) {
+      var msg = '';
+      if (r.migrated) msg += 'ย้ายรูปเดิมเข้าที่เก็บใหม่แล้ว ' + r.migrated + ' รูป\n';
+      if (r.broken) msg += 'พบรายการรูปเสียหาย ' + r.broken + ' รายการ (ภาพหายไปก่อนหน้านี้จากปุ่ม "ยกเลิกจับคู่" ของเวอร์ชันเก่า กู้คืนไม่ได้) — ลบรายการนั้นออกแล้ว';
+      alert(msg);
+    }
+    return PhotoStore.absorbExisting();
+  }).then(function(a) {
+    if (a && a.photos) {
+      alert('ย้ายรูปที่แนบในฟอร์ม ' + a.photos + ' รูป (' + a.records + ' รายการ) ไปเก็บรวมกับรูปถ่ายแล้ว\n\nดูได้ที่หน้าถ่ายรูป — ตามรหัสแปลง/อาคาร/ป้าย');
+    }
+    return refreshSummary();
+  }).catch(function(err) { console.error('PhotoStore init error:', err); });
+})();
 refreshRefStats();
 </script>
 </body>

@@ -92,6 +92,7 @@
 <script src="admin_data.js"></script>
 <script src="db.js"></script>
 <script src="db_helpers.js"></script>
+<script src="photo_store.js"></script>
 </head>
 <body>
 <div id="view-home">
@@ -228,643 +229,58 @@
     </li>
   </ul>
 
+  <div class="panel" style="background:#fff; border:2px solid #1b4f8a; border-radius:6px; padding:16px 18px; margin-top:20px;">
+    <div style="font-size:15px; font-weight:bold; color:#1b4f8a; margin-bottom:6px;">ดาวน์โหลดข้อมูลทั้งหมด (ZIP)</div>
+    <div id="expStat" style="font-size:13px; color:#555; margin-bottom:10px; line-height:1.7;"></div>
+    <div style="font-size:13px; margin-bottom:8px;">ชื่อเครื่อง/ผู้สำรวจ (ใช้ตั้งชื่อไฟล์): <input type="text" id="expLabel" maxlength="20" style="padding:6px 8px; border:1px solid #b0b0b0; border-radius:4px; width:150px;" onchange="expSaveLabel()"></div>
+    <label style="font-size:13px; display:block; margin-bottom:10px;"><input type="checkbox" id="expInclAll"> รวมรูปที่เคยดาวน์โหลดแล้วด้วย (สำรองเต็ม — ไฟล์เยอะ/ช้ากว่า)</label>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button type="button" class="btn btn-main" id="expBuildBtn" onclick="expStart()">เริ่มดาวน์โหลดข้อมูลทั้งหมด</button>
+      <button type="button" class="btn btn-main" id="expSaveBtn" style="display:none; background:#2e7d32; border-color:#1b5e20;" onclick="expSave(false)">บันทึก/แชร์ไฟล์</button>
+      <a href="#" id="expDlLink" style="display:none; font-size:13px;" onclick="expSave(true); return false;">ดาวน์โหลดตรง</a>
+      <a href="#" id="expCancelLink" style="display:none; font-size:13px;" onclick="expCancel(); return false;">หยุด</a>
+    </div>
+    <div id="expMsg" style="font-size:13px; color:#1b4f8a; margin-top:10px; min-height:18px;"></div>
+    <div style="margin-top:10px;"><button type="button" class="btn btn-danger" id="expDelBtn" onclick="expDeleteSent()">ลบรูปที่ดาวน์โหลดแล้วออกจากเครื่อง</button></div>
+    <div style="font-size:12px; color:#888; margin-top:10px; line-height:1.7;">
+      <b>วิธีใช้:</b> กด "เริ่มดาวน์โหลดข้อมูลทั้งหมด" → กดปุ่มสีเขียว "บันทึก/แชร์" แล้วเลือก <b>"บันทึกไปยังไฟล์"</b> (iPhone/iPad) หรือบันทึกลงเครื่อง (Android) — ชุดถัดไปจะเตรียมให้เองจนครบ ทำออฟไลน์ได้ทั้งหมด<br>
+      ไฟล์ ZIP แต่ละชุดมี <b>data.json</b> (ข้อมูลทุกหมวดครบทุกชุด) + <b>manifest.json</b> + โฟลเดอร์ <b>photos/</b> (รูปจริง) · ปกติจะดาวน์โหลดเฉพาะรูปใหม่ที่ยังไม่เคยดาวน์โหลด<br>
+      <b>ควรดาวน์โหลดทุกวันหลังเลิกงาน</b> (ข้อมูลอยู่ในเครื่องนี้เครื่องเดียว) · ย้ายไฟล์เข้าคอมฯ ด้วยวิธีที่สะดวก (สายเคเบิล / Google Drive / LINE) แล้วรัน <b>python import_export.py *.zip</b> · ลบรูปออกจากเครื่องเมื่อนำเข้าที่คอมฯ และตรวจแล้วเท่านั้น
+    </div>
+  </div>
+
   <div class="panel" style="background:#fff; border:1px solid #c8c8c8; border-radius:6px; padding:16px 18px; margin-top:20px;">
-    <div style="font-size:15px; font-weight:bold; color:#1b4f8a; margin-bottom:10px;">รวมข้อมูลเพื่อนำไปสร้าง Excel</div>
+    <div style="font-size:15px; font-weight:bold; color:#1b4f8a; margin-bottom:10px;">ข้อมูลในเครื่อง</div>
     <div id="summary" style="font-size:13px; color:#555; margin-bottom:12px; line-height:1.8;"></div>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button type="button" class="btn btn-main" onclick="collectAll()">รวมข้อมูล (JSON)</button>
-      <button type="button" class="btn btn-main" onclick="collectAllExcel()">สร้างไฟล์ Excel</button>
-      <button type="button" class="btn btn-main" onclick="sendToPC()">ส่งข้อมูลไปคอมฯ</button>
       <button type="button" class="btn btn-danger" onclick="clearAll()">ล้างข้อมูลทั้งหมด</button>
     </div>
-    <div style="font-size:12px; color:#888; margin-top:10px;">รวมข้อมูล = ดาวน์โหลดไฟล์ JSON กลางไฟล์เดียว (รูปจากหน้าถ่ายรูปจะถูกแนบเข้ากับแปลง/อาคาร/ป้ายให้อัตโนมัติ)<br><b>ส่งข้อมูลไปคอมฯ</b> = ส่งไปยังเครื่องคอมฯ ที่เปิดเว็บนี้ไว้ (แปลงเป็น Excel ให้อัตโนมัติ) — ใช้ได้เมื่อเข้าผ่าน server เท่านั้น</div>
+    <details style="margin-top:12px;">
+      <summary style="cursor:pointer; font-size:13px; color:#1b4f8a;">วิธีเดิม: รวมเป็นไฟล์ JSON ไฟล์เดียว (เหมาะกับรูปไม่เกินไม่กี่ร้อยรูป)</summary>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <button type="button" class="btn btn-main" onclick="collectAll()">รวมข้อมูล (JSON)</button>
+        <button type="button" class="btn btn-main" onclick="collectAllExcel()">ดาวน์โหลด ltax_data_all.json</button>
+      </div>
+      <div style="font-size:12px; color:#888; margin-top:8px;">ฝังรูปเป็น base64 ลงในไฟล์ JSON ไฟล์เดียว — รูปเยอะแล้วเครื่องอาจค้าง ให้ใช้ "ดาวน์โหลดข้อมูลทั้งหมด (ZIP)" ด้านบนแทน</div>
+    </details>
+  </div>
   </div>
 
   <div class="note">
     <b>ลำดับการทำงาน:</b> เพิ่มเจ้าของทรัพย์สินก่อน แล้วค่อยเพิ่ม ที่ดิน → การใช้ประโยชน์ที่ดิน / สิ่งปลูกสร้าง → การใช้ประโยชน์สิ่งปลูกสร้าง / ป้าย<br>
-    ปุ่ม <b>บันทึก</b> ของแต่ละฟอร์มจะเก็บข้อมูลไว้ในเครื่อง (IndexedDB) เท่านั้น — ไม่สร้างไฟล์หลุดออกมา เมื่อกรอกครบแล้วกลับมาหน้านี้ กด <b>รวมข้อมูล</b> เพื่อดาวน์โหลดเป็นไฟล์ JSON ไฟล์เดียว (รวมทุกหมวด) จากนั้นรัน <b>json_to_excel.py</b> เพื่อสร้าง Excel template ที่บอทอ่านได้<br><br>
-    <b>รูปภาพ:</b> เลือกรูปในฟอร์มแล้วระบบจะฝังตัวรูป (ฐาน 64) ลงในไฟล์ JSON เอง หรือจะถ่ายเป็นชุดผ่านหน้าถ่ายรูป (เลือกหมวด+รหัสก่อนถ่าย ระบบจำรหัสล่าสุดให้ — กันจับคู่ผิด) — ใช้ได้ทุกเครื่อง ไม่ต้องหอบไฟล์รูปแยกกลับมา
+    ปุ่ม <b>บันทึก</b> ของแต่ละฟอร์มจะเก็บข้อมูลไว้ในเครื่อง (IndexedDB) เท่านั้น — ไม่สร้างไฟล์หลุดออกมา เมื่อสำรวจเสร็จกด <b>ดาวน์โหลดข้อมูลทั้งหมด (ZIP)</b> แล้วนำไฟล์ไปรัน <b>import_export.py</b> บนคอมฯ ได้ <b>ltax_data_all.json</b> + โฟลเดอร์ <b>photos/</b> (และ Excel ไว้ดู) สำหรับให้บอทนำขึ้น LTAX Online<br><br>
+    <b>รูปภาพ:</b> ถ่ายเป็นชุดผ่านหน้าถ่ายรูป (เลือกหมวด+รหัสก่อนถ่าย ระบบจำรหัสล่าสุดให้ — กันจับคู่ผิด) หรือเลือกจากคลังรูปในเครื่อง รูปทุกใบเก็บเป็นไฟล์แยกในเครื่อง ไม่ฝังลงข้อมูลฟอร์ม
   </div>
 
   <div class="tip">
-    <b>โหมดแอป (PWA):</b> ติดตั้งครั้งแรกจากหน้าเว็บจริง (ต้องมีเน็ต) → จากนั้นใช้งานออฟไลน์ได้ 100% ข้อมูลทุกอย่างเก็บในเครื่อง ไม่ส่งผ่านเน็ต ยกเว้นปุ่ม <b>ส่งข้อมูลไปคอมฯ</b> ที่ต้องใช้ในวงแลนกับเครื่องคอมฯ ที่เปิด server ไว้
+    <b>โหมดแอป (PWA):</b> ติดตั้งครั้งแรกจากหน้าเว็บ (ต้องมีเน็ต ครั้งเดียว) → จากนั้นใช้งานออฟไลน์ได้ 100% ข้อมูลทุกอย่างเก็บในเครื่อง ไม่ส่งผ่านเน็ต · การอัปเดตแอปต้องมีเน็ตเป็นครั้งคราว ควรทำก่อนออกสำรวจ
   </div>
 </div>
 
-<script src="admin_data.js"></script>
-<script src="db.js"></script>
-<script>
-/* =========================================================
-   ค้นหา / ดูข้อมูลที่กรอกแล้ว (จาก LTAXDB — IndexedDB)
-   ========================================================= */
-var SEARCH_META = {
-  'ltax_owner':          { label: 'เจ้าของทรัพย์สิน',       form: 'ltax_owner',          key: 'เลขบัตรประชาชน', desc: function(r){ return r['ชื่อ'] + ' ' + r['นามสกุล']; } },
-  'ltax_land':           { label: 'ที่ดิน',                 form: 'ltax_land',           key: 'รหัสแปลงที่ดิน',   desc: function(r){ return r['ตำบล'] + ' / ไร่-งาน-วา ' + r['ไร่'] + '-' + r['งาน'] + '-' + r['ตร.วา']; } },
-  'ltax_land_usage':     { label: 'การใช้ประโยชน์ที่ดิน',   form: 'ltax_land_usage',     key: 'รหัสแปลงที่ดิน',   desc: function(r){ var us=r['รายการใช้ประโยชน์']||[]; return us.length + ' รายการใช้'; } },
-  'ltax_building':       { label: 'สิ่งปลูกสร้าง',          form: 'ltax_building',       key: 'รหัสสิ่งปลูกสร้าง', desc: function(r){ return 'แปลง ' + r['รหัสแปลงที่ดิน'] + ' / เลขที่บ้าน ' + r['เลขที่บ้าน']; } },
-  'ltax_building_usage': { label: 'การใช้ประโยชน์สิ่งปลูกสร้าง', form: 'ltax_building_usage', key: 'รหัสสิ่งปลูกสร้าง', desc: function(r){ var us=r['รายการใช้ประโยชน์']||[]; return us.length + ' รายการใช้'; } },
-  'ltax_sign':           { label: 'ป้าย',                  form: 'ltax_sign',           key: 'รหัสป้าย',         desc: function(r){ return r['ชื่อสถานประกอบการค้า/กิจการ'] + ' / ' + r['กว้าง (ซม.)'] + 'x' + r['ยาว (ซม.)']; } }
-};
 
-var KEYS = [
-  ['ltax_owner', 'เจ้าของทรัพย์สิน'],
-  ['ltax_land', 'ที่ดิน'],
-  ['ltax_land_usage', 'การใช้ประโยชน์ที่ดิน'],
-  ['ltax_building', 'สิ่งปลูกสร้าง'],
-  ['ltax_building_usage', 'การใช้ประโยชน์สิ่งปลูกสร้าง'],
-  ['ltax_sign', 'ป้าย']
-];
 
-function $(id) { return document.getElementById(id); }
 
-// ข้อมูลทั้งหมดอ่าน/เขียนผ่าน LTAXDB (IndexedDB) — ดู db.js
-function getList(key) {
-  return LTAX_getAll(key);
-}
 
-async function checkFormPrerequisites(formId) {
-  // ฟอร์มป้ายเปิดได้เสมอ
-  if (formId === 'ltax_sign') return true;
-
-  // ฟอร์มเจ้าของเปิดได้เสมอ (เป็นจุดเริ่มต้น)
-  if (formId === 'ltax_owner') return true;
-
-  // ฟอร์มถ่ายรูปเปิดได้เสมอ
-  if (formId === 'ltax_photo') return true;
-
-  // ตรวจสอบฟอร์มที่ดิน: ต้องมีเจ้าของอย่างน้อย 1 รายการ
-  if (formId === 'ltax_land') {
-    var owners = await getList('ltax_owner');
-    if (owners.length === 0) {
-      alert('⚠ ต้องเพิ่มเจ้าของทรัพย์สินก่อนจึงจะเพิ่มที่ดินได้\n\nกรุณาเพิ่มเจ้าของทรัพย์สินก่อน แล้วค่อยเพิ่มที่ดิน');
-      return false;
-    }
-    return true;
-  }
-
-  // ตรวจสอบฟอร์มการใช้ประโยชน์ที่ดิน: ต้องมีที่ดินอย่างน้อย 1 แปลง
-  if (formId === 'ltax_land_usage') {
-    var lands = await getList('ltax_land');
-    if (lands.length === 0) {
-      alert('⚠ ต้องเพิ่มที่ดินก่อนจึงจะกรอกการใช้ประโยชน์ที่ดินได้\n\nกรุณาเพิ่มที่ดินก่อน แล้วค่อยกรอกการใช้ประโยชน์ที่ดิน');
-      return false;
-    }
-    return true;
-  }
-
-  // ตรวจสอบฟอร์มสิ่งปลูกสร้าง: ต้องมีที่ดิน + การใช้ประโยชน์ที่ดิน
-  if (formId === 'ltax_building') {
-    var lands2 = await getList('ltax_land');
-    var landUsages = await getList('ltax_land_usage');
-
-    if (lands2.length === 0) {
-      alert('⚠ ต้องเพิ่มที่ดินก่อนจึงจะเพิ่มสิ่งปลูกสร้างได้\n\nกรุณาเพิ่มที่ดินก่อน แล้วค่อยเพิ่มสิ่งปลูกสร้าง');
-      return false;
-    }
-
-    if (landUsages.length === 0) {
-      alert('⚠ ต้องกรอกการใช้ประโยชน์ที่ดินก่อนจึงจะเพิ่มสิ่งปลูกสร้างได้\n\nกรุณากรอกการใช้ประโยชน์ที่ดินก่อน แล้วค่อยเพิ่มสิ่งปลูกสร้าง');
-      return false;
-    }
-
-    return true;
-  }
-
-  // ตรวจสอบฟอร์มการใช้ประโยชน์สิ่งปลูกสร้าง: ต้องมีสิ่งปลูกสร้าง
-  if (formId === 'ltax_building_usage') {
-    var buildings = await getList('ltax_building');
-    if (buildings.length === 0) {
-      alert('⚠ ต้องเพิ่มสิ่งปลูกสร้างก่อนจึงจะกรอกการใช้ประโยชน์สิ่งปลูกสร้างได้\n\nกรุณาเพิ่มสิ่งปลูกสร้างก่อน แล้วค่อยกรอกการใช้ประโยชน์สิ่งปลูกสร้าง');
-      return false;
-    }
-    return true;
-  }
-
-  return true; // ฟอร์มอื่น ๆ เปิดได้ปกติ
-}
-
-function flatSearchText(rec) {
-  var parts = [];
-  function walk(o) {
-    if (o == null) return;
-    if (typeof o === 'object') { for (var k in o) walk(o[k]); }
-    else parts.push(String(o));
-  }
-  walk(rec);
-  return parts.join(' ').toLowerCase();
-}
-
-async function doSearch() {
-  var q = $('searchInput').value.trim().toLowerCase();
-  var box = $('searchResult');
-  var hint = $('searchHint');
-  if (!q) { hint.innerHTML = 'พิมพ์คำค้นก่อน แล้วกด ค้นหา'; box.innerHTML = ''; return; }
-
-  var groups = [];
-  for (var gi = 0; gi < KEYS.length; gi++) {
-    var key = KEYS[gi][0], label = KEYS[gi][1];
-    var meta = SEARCH_META[key];
-    var hits = [];
-    var records = await getList(key);
-    records.forEach(function(rec, i) {
-      if (flatSearchText(rec).indexOf(q) >= 0) hits.push({ rec: rec, idx: i });
-    });
-    if (hits.length) groups.push({ key: key, meta: meta, hits: hits });
-  }
-
-  hint.innerHTML = '';
-  if (!groups.length) {
-    box.innerHTML = '<div class="search-empty">ไม่พบข้อมูลที่ตรงกับ "' + $('searchInput').value.trim() + '"</div>';
-    return;
-  }
-
-  var total = groups.reduce(function(s, g) { return s + g.hits.length; }, 0);
-  var h = '<div style="font-size:13px; color:#555; margin-bottom:8px;">พบ ' + total + ' รายการ</div>';
-  h += '<table class="search-result"><thead><tr><th width="100">หมวด</th><th>รายการ</th><th>รายละเอียด</th><th width="240">จัดการ</th></tr></thead><tbody>';
-  groups.forEach(function(g) {
-    h += '<tr class="grp"><td colspan="4">' + g.meta.label + ' (' + g.hits.length + ')</td></tr>';
-    g.hits.forEach(function(hit) {
-      var key = hit.rec[g.meta.key] || ('#' + (hit.idx + 1));
-      var actionBtns = '<div class="action-group"><a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">แก้ไข</a>';
-      if (g.key === 'ltax_owner') {
-        actionBtns += '<a class="btn btn-registry" href="#" onclick="openAssetRegistry(\'' + String(key).replace(/'/g, "\\'") + '\'); return false;">ทะเบียน</a>';
-      }
-      actionBtns += '<a class="btn btn-delete-row" href="#" onclick="deleteRecord(\'' + g.key + '\',' + hit.idx + '); return false;">ลบ</a>';
-      actionBtns += '</div>';
-      h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + (g.meta.desc(hit.rec) || '') + '</td>' +
-           '<td>' + actionBtns + '</td></tr>';
-    });
-  });
-  h += '</tbody></table>';
-  box.innerHTML = h;
-}
-
-function clearSearch() {
-  $('searchInput').value = '';
-  $('searchHint').innerHTML = 'ค้นหาในข้อมูลที่บันทึกไว้ (IndexedDB) — ข้อมูลของ: เจ้าของ / ที่ดิน / การใช้ที่ดิน / สิ่งปลูกสร้าง / การใช้สิ่งปลูกสร้าง / ป้าย';
-  $('searchResult').innerHTML = '';
-}
-
-function openAssetRegistry(psnId) {
-  openForm('ltax_asset', '?psnId=' + encodeURIComponent(psnId));
-}
-
-function saveList(key, arr) {
-  return LTAX_setAll(key, arr);
-}
-
-async function deleteRecord(lkey, idx) {
-  var meta = SEARCH_META[lkey];
-  var label = meta ? meta.label : lkey;
-  var list = await getList(lkey);
-  if (idx < 0 || idx >= list.length) { alert('ไม่พบรายการที่จะลบ'); return; }
-  var rec = list[idx];
-  var recKey = rec[meta.key] || ('#' + (idx + 1));
-  var recDesc = meta.desc(rec) || '';
-  if (!confirm('ยืนยันลบ ' + label + ':\n\n' + recKey + ' — ' + recDesc + '\n\n⚠ การลบจะกระทบข้อมูลที่ผูกกับรายการนี้ (ถ้ามี) เช่น ที่ดิน/อาคารของเจ้าของนี้')) return;
-  list.splice(idx, 1);
-  await saveList(lkey, list);
-  // ลบข้อมูลรวมที่ cache ไว้ด้วย
-  try { localStorage.removeItem('ltax_data_all'); } catch(e) {}
-  // ปรับ index ใหม่ — search ใหม่
-  await doSearch();
-}
-
-/* =========================================================
-   นำเข้าข้อมูลอ้างอิง (เจ้าของทรัพย์สินเดิม) — เก็บผ่าน LTAXDB store 'ltax_ref_owner' (IndexedDB)
-   ใช้เติมอัตโนมัติ (autofill) ในฟอร์มเพิ่มเจ้าของทรัพย์สิน
-   ========================================================= */
-var REF_OWNER_HEADER_ALIASES = {
-  'เลขบัตรประชาชน': ['เลขบัตรประชาชน', 'เลขบัตร', 'เลขประจำตัวประชาชน', 'เลขที่บัตรประชาชน', 'psnid', 'id'],
-  'คำนำหน้า':      ['คำนำหน้า', 'คำนำหน้าชื่อ', 'prefix'],
-  'ชื่อ':          ['ชื่อ', 'firstname', 'first name'],
-  'นามสกุล':       ['นามสกุล', 'lastname', 'last name'],
-  'เลขที่บ้าน':     ['เลขที่บ้าน', 'บ้านเลขที่'],
-  'หมู่ที่':        ['หมู่ที่', 'หมู่'],
-  'ถนน':          ['ถนน'],
-  'ซอย':          ['ซอย'],
-  'ตำบล':          ['ตำบล'],
-  'อำเภอ':         ['อำเภอ'],
-  'จังหวัด':        ['จังหวัด'],
-  'รหัสไปรษณีย์':   ['รหัสไปรษณีย์', 'ไปรษณีย์'],
-  'โทรศัพท์':       ['โทรศัพท์', 'เบอร์โทร', 'tel', 'phone']
-};
-
-function splitCSVLine(line) {
-  var out = [], cur = '', inQ = false;
-  for (var i = 0; i < line.length; i++) {
-    var c = line[i];
-    if (inQ) {
-      if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
-      else cur += c;
-    } else {
-      if (c === '"') inQ = true;
-      else if (c === ',') { out.push(cur); cur = ''; }
-      else cur += c;
-    }
-  }
-  out.push(cur);
-  return out;
-}
-
-function parseCSV(text) {
-  var lines = text.replace(/\r/g, '').split('\n').filter(function(l) { return l.trim() !== ''; });
-  if (!lines.length) return [];
-  var headers = splitCSVLine(lines[0]);
-  return lines.slice(1).map(function(line) {
-    var cells = splitCSVLine(line);
-    var obj = {};
-    headers.forEach(function(h, i) { obj[h.trim()] = (cells[i] || '').trim(); });
-    return obj;
-  });
-}
-
-function normalizeRefRow(row) {
-  var out = {};
-  var lowerMap = {};
-  Object.keys(row).forEach(function(k) { lowerMap[k.trim().toLowerCase()] = row[k]; });
-  Object.keys(REF_OWNER_HEADER_ALIASES).forEach(function(canon) {
-    var aliases = REF_OWNER_HEADER_ALIASES[canon];
-    for (var i = 0; i < aliases.length; i++) {
-      var key = aliases[i].toLowerCase();
-      if (lowerMap.hasOwnProperty(key)) { out[canon] = String(lowerMap[key]).trim(); return; }
-    }
-    out[canon] = '';
-  });
-  return out;
-}
-
-async function processRefRows(rows) {
-  var list = await getList('ltax_ref_owner');
-  var byId = {};
-  list.forEach(function(r, i) { if (r['เลขบัตรประชาชน']) byId[r['เลขบัตรประชาชน']] = i; });
-
-  var added = 0, updated = 0, skipped = 0;
-  rows.forEach(function(raw) {
-    var r = normalizeRefRow(raw);
-    var psn = String(r['เลขบัตรประชาชน'] || '').replace(/[^0-9]/g, '').trim();
-    if (!psn) { skipped++; return; }
-    r['เลขบัตรประชาชน'] = psn;
-    if (byId.hasOwnProperty(psn)) { list[byId[psn]] = r; updated++; }
-    else { list.push(r); byId[psn] = list.length - 1; added++; }
-  });
-
-  try {
-    await saveList('ltax_ref_owner', list);
-  } catch(e) {
-    alert('บันทึกข้อมูลอ้างอิงไม่สำเร็จ: ' + e);
-    return;
-  }
-
-  await refreshRefStats();
-  alert('นำเข้าสำเร็จ — เพิ่มใหม่ ' + added + ' รายการ, อัปเดต ' + updated + ' รายการ' +
-        (skipped ? ', ข้าม ' + skipped + ' แถว (ไม่มีเลขบัตรประชาชน)' : ''));
-  $('refOwnerFile').value = '';
-}
-
-function loadXLSXLib(cb) {
-  if (window.XLSX) { cb(); return; }
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-  s.onload = cb;
-  s.onerror = function() {
-    alert('โหลดตัวอ่านไฟล์ Excel ไม่ได้ — ต้องมีอินเทอร์เน็ตตอนนำเข้าไฟล์ .xlsx/.xls ครั้งแรก\nลองต่อเน็ตแล้วนำเข้าใหม่ หรือแปลงไฟล์เป็น .csv แทน');
-  };
-  document.head.appendChild(s);
-}
-
-function importRefOwners() {
-  var input = $('refOwnerFile');
-  var file = input.files && input.files[0];
-  if (!file) { alert('เลือกไฟล์ก่อน'); return; }
-  var name = file.name.toLowerCase();
-
-  if (name.endsWith('.csv')) {
-    var reader = new FileReader();
-    reader.onload = function(e) { processRefRows(parseCSV(e.target.result)); };
-    reader.onerror = function() { alert('อ่านไฟล์ CSV ไม่สำเร็จ'); };
-    reader.readAsText(file, 'utf-8');
-    return;
-  }
-
-  loadXLSXLib(function() {
-    if (!window.XLSX) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-        var sheet = wb.Sheets[wb.SheetNames[0]];
-        var rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-        processRefRows(rows);
-      } catch(err) {
-        alert('อ่านไฟล์ Excel ไม่สำเร็จ: ' + err);
-      }
-    };
-    reader.onerror = function() { alert('อ่านไฟล์ Excel ไม่สำเร็จ'); };
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-async function refreshRefStats() {
-  var list = await getList('ltax_ref_owner');
-  var el = $('refOwnerStats');
-  if (el) el.textContent = 'ข้อมูลอ้างอิงเจ้าของทรัพย์สิน: ' + list.length + ' รายการ';
-}
-
-async function clearRefOwners() {
-  if (!confirm('ล้างข้อมูลอ้างอิงเจ้าของทรัพย์สินทั้งหมด? (ข้อมูลที่สำรวจแล้วในเครื่องจะไม่หาย ลบเฉพาะข้อมูลอ้างอิงที่นำเข้าไว้)')) return;
-  await LTAX_setAll('ltax_ref_owner', []);
-  try { localStorage.removeItem('ltax_ref_owner'); } catch(e) {}
-  await refreshRefStats();
-}
-
-/* =========================================================
-   ระบบภาพถ่าย — IndexedDB (สำรองเป็น localStorage ถ้าเว็บวิวเก่า)
-   ========================================================= */
-var photoBackend = null;
-function detectPhotoBackend() {
-  if (photoBackend) return photoBackend;
-  if (window.indexedDB && typeof indexedDB.open === 'function') photoBackend = 'idb';
-  else photoBackend = 'ls';
-  return photoBackend;
-}
-function _photoDB() {
-  return new Promise(function(res, rej) {
-    var rq = indexedDB.open('ltax_photos_db', 1);
-    rq.onupgradeneeded = function(e) {
-      var db = e.target.result;
-      if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', { keyPath: 'id' });
-    };
-    rq.onsuccess = function() { res(rq.result); };
-    rq.onerror = function() { rej(rq.error); };
-  });
-}
-function photoPut(rec) {
-  if (detectPhotoBackend() === 'ls') {
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]'); } catch(e) { list = []; }
-    var i = -1;
-    for (var j = 0; j < list.length; j++) if (list[j].id === rec.id) { i = j; break; }
-    if (i >= 0) list[i] = rec; else list.push(rec);
-    try { localStorage.setItem('ltax_photos_fb', JSON.stringify(list)); } catch(e) { return Promise.reject(e); }
-    return Promise.resolve();
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readwrite');
-      tx.objectStore('photos').put(rec);
-      tx.oncomplete = function() { res(); };
-      tx.onerror = function() { rej(tx.error); };
-    });
-  });
-}
-function photoGetAll() {
-  if (detectPhotoBackend() === 'ls') {
-    try { return Promise.resolve(JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]')); }
-    catch(e) { return Promise.resolve([]); }
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readonly');
-      var rq = tx.objectStore('photos').getAll();
-      rq.onsuccess = function() { res(rq.result || []); };
-      rq.onerror = function() { rej(rq.error); };
-    });
-  });
-}
-function photoDelete(ids) {
-  if (!ids || !ids.length) return Promise.resolve();
-  if (detectPhotoBackend() === 'ls') {
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]'); } catch(e) { list = []; }
-    list = list.filter(function(p) { return ids.indexOf(p.id) < 0; });
-    localStorage.setItem('ltax_photos_fb', JSON.stringify(list));
-    return Promise.resolve();
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readwrite');
-      var st = tx.objectStore('photos');
-      ids.forEach(function(id) { st.delete(id); });
-      tx.oncomplete = function() { res(); };
-      tx.onerror = function() { rej(tx.error); };
-    });
-  });
-}
-
-/* =========================================================
-   รวมข้อมูล + แนบรูปจากหน้าถ่ายรูปเข้ากับแปลง/อาคาร/ป้าย
-   ========================================================= */
-function collectAllData() {
-  var out = {};
-  return Promise.all(KEYS.map(function(k) { return getList(k[0]); })).then(function(lists) {
-    KEYS.forEach(function(k, i) { out[k[0]] = lists[i]; });
-    return photoGetAll();
-  }).then(function(photos) {
-    var by = {};
-    photos.forEach(function(p) {
-      if (!p || !p.code) return;
-      var k = p.category + '|' + p.code;
-      (by[k] = by[k] || []).push(p.dataUrl);
-    });
-    function attach(records, codeKey, cat, field) {
-      (records || []).forEach(function(r) {
-        if (!r) return;
-        var c = r[codeKey];
-        if (!c) return;
-        var urls = by[cat + '|' + c];
-        if (!urls || !urls.length) return;
-        var cur = r[field];
-        var arr = (cur == null) ? [] : (Array.isArray(cur) ? cur : [cur]);
-        r[field] = arr.concat(urls);
-      });
-    }
-    attach(out.ltax_land, 'รหัสแปลงที่ดิน', 'land', 'รูปที่ดิน_data');
-    attach(out.ltax_building, 'รหัสสิ่งปลูกสร้าง', 'building', 'รูปภาพ_data');
-    attach(out.ltax_sign, 'รหัสป้าย', 'sign', 'รูปภาพ_data');
-    out.ltax_photos = photos.map(function(p) {
-      return { category: p.category, code: p.code, ts: p.ts, lat: p.lat || null, lng: p.lng || null, dataUrl: p.dataUrl };
-    });
-    return out;
-  });
-}
-
-function downloadJson(name, obj) {
-  var blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json;charset=utf-8' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
-}
-
-function collectAll() {
-  collectAllData().then(function(out) {
-    downloadJson('ltax_data_all.json', out);
-  });
-}
-
-function collectAllExcel() {
-  collectAllData().then(function(out) {
-    try { localStorage.setItem('ltax_data_all', JSON.stringify(out)); } catch(e) {}
-    downloadJson('ltax_data_all.json', out);
-    alert('ดาวน์โหลด ltax_data_all.json แล้ว (' + out.ltax_owner.length + ' เจ้าของ, ' +
-          out.ltax_land.length + ' ที่ดิน, ' + out.ltax_land_usage.length + ' การใช้ที่ดิน, ' +
-          out.ltax_building.length + ' สิ่งปลูกสร้าง, ' + out.ltax_building_usage.length + ' การใช้สิ่งปลูกสร้าง, ' +
-          out.ltax_sign.length + ' ป้าย, ' + (out.ltax_photos || []).length + ' รูป)\n\nนำไฟล์ไปวางที่โฟลเดอร์เดียวกับ json_to_excel.py แล้วรันเพื่อสร้าง Excel');
-  });
-}
-
-function sendToPC() {
-  collectAllData().then(function(out) {
-    var btn = null;
-    try {
-      var btns = document.querySelectorAll('button');
-      for (var i = 0; i < btns.length; i++) if (btns[i].textContent.indexOf('ส่งข้อมูลไปคอมฯ') >= 0) { btn = btns[i]; break; }
-    } catch(e) {}
-    if (btn) btn.disabled = true;
-    fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(out)
-    }).then(function(res) { return res.json().then(function(d) { return { ok: res.ok, d: d }; }); })
-      .then(function(r) {
-        if (btn) btn.disabled = false;
-        if (r.ok && r.d.ok) alert('ส่งข้อมูลไปคอมฯ สำเร็จ\n' + r.d.msg + '\n\n' + (r.d.excel ? 'สร้าง Excel: ' + r.d.excel : '') + (r.d.photos ? '\nแยกรูป: ' + r.d.photos : ''));
-        else alert('ส่งข้อมูลไม่สำเร็จ: ' + (r.d && r.d.error ? r.d.error : 'server ไม่ตอบกลับ — ต้องเปิดผ่าน server (http://...) เท่านั้น'));
-      })
-      .catch(function(err) {
-        if (btn) btn.disabled = false;
-        alert('ส่งข้อมูลไม่สำเร็จ: ' + err + '\n\nต้องเข้าผ่าน server (http://...) ไม่ใช่เปิดไฟล์ตรง ถึงจะส่งไปคอมฯ ได้');
-      });
-  });
-}
-
-async function clearAll() {
-  if (!confirm('ล้างข้อมูลทั้งหมดในเบราว์เซอร์ (ทุกฟอร์ม + รูปทั้งหมด)?')) return;
-  await Promise.all(KEYS.map(function(k) { return LTAX_setAll(k[0], []); }));
-  await LTAX_setAll('ltax_ref_owner', []);
-  // เก็บกวาด localStorage เก่าที่อาจค้างจากเวอร์ชันก่อนหน้าด้วย (กันข้อมูลผีย้อนกลับมาตอน auto-migrate)
-  KEYS.forEach(function(k) { try { localStorage.removeItem(k[0]); } catch(e) {} });
-  try { localStorage.removeItem('ltax_ref_owner'); } catch(e) {}
-  try { localStorage.removeItem('ltax_data_all'); } catch(e) {}
-  try { localStorage.removeItem('ltax_photos_fb'); } catch(e) {}
-  if (window.indexedDB && typeof indexedDB.deleteDatabase === 'function') {
-    try { indexedDB.deleteDatabase('ltax_photos_db'); } catch(e) {}
-  }
-  await refreshSummary();
-  await refreshRefStats();
-  alert('ล้างข้อมูลเรียบร้อย');
-}
-
-async function refreshSummary() {
-  var lists = await Promise.all(KEYS.map(function(k) { return getList(k[0]); }));
-  var lines = KEYS.map(function(k, i) {
-    return '<b>' + k[1] + '</b>: ' + lists[i].length + ' รายการ';
-  }).join(' &nbsp;|&nbsp; ');
-  $('summary').innerHTML = lines;
-  renderPhotoStats();
-}
-
-function renderPhotoStats() {
-  photoGetAll().then(function(photos) {
-    var el = $('photoStats');
-    if (!el) return;
-    var n = photos.length;
-    var un = photos.filter(function(p) { return !p.code; }).length;
-    el.innerHTML = 'รูปในเครื่อง: <b>' + n + '</b> รูป' +
-      (un ? ' — <b style="color:#c62828;">รอจับคู่ ' + un + '</b>' : '') +
-      '<span style="color:#888;"> (ถ่าย/จับคู่/ลบ ได้ที่หน้าถ่ายรูป — รูปจะแนบเข้ากับข้อมูลตอน "รวมข้อมูล")</span>';
-  });
-}
-
-/* =========================================================
-   SPA router — เปิดฟอร์ม (เทมเพลตในหน้าเดียว)
-   ========================================================= */
-window.__editQuery = null;
-
-function showView(which) {
-  $('view-home').style.display = (which === 'home') ? 'block' : 'none';
-  $('view-form').style.display = (which === 'form') ? 'block' : 'none';
-}
-
-async function openForm(id, editQuery) {
-  window.__editQuery = editQuery || null;
-
-  // ตรวจสอบ guard สำหรับฟอร์มต่าง ๆ (ยกเว้นการแก้ไขข้อมูลเก่า)
-  if (!window.__editQuery && !(await checkFormPrerequisites(id))) {
-    return;
-  }
-
-  var t = document.getElementById('tpl-' + id);
-  var shell = $('view-form');
-  if (!t || !shell) { alert('ไม่พบฟอร์ม: ' + id); return; }
-  shell.innerHTML = '';
-  shell.appendChild(t.content.cloneNode(true));
-  var js = document.getElementById('js-' + id);
-  if (js && js.textContent) {
-    var s = document.createElement('script');
-    s.textContent = js.textContent;
-    shell.appendChild(s);
-  }
-  showView('form');
-  window.scrollTo(0, 0);
-}
-
-function openFormEdit(key, idx) {
-  openForm(key, '?editKey=' + encodeURIComponent(key) + '&editIdx=' + idx);
-}
-
-function closeForm() {
-  $('view-form').innerHTML = '';
-  showView('home');
-  window.__editQuery = null;
-  refreshSummary();
-  window.scrollTo(0, 0);
-}
-window.__goHome = closeForm;
-
-/* =========================================================
-   PWA — ติดตั้งแอป + service worker (เฉพาะเมื่อเข้า http/https)
-   ========================================================= */
-var deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  deferredPrompt = e;
-  var b = $('installBtn');
-  if (b) b.style.display = 'inline-block';
-  var h = $('installHint');
-  if (h) h.innerHTML = ' (เบราว์เซอร์รองรับ — กดปุ่มนี้ได้เลย)';
-});
-
-function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt = null;
-    return;
-  }
-  alert('วิธีติดตั้ง:\n\n' +
-        'iPhone/iPad: กดปุ่ม Share (สี่เหลี่ยมลูกศรขึ้น) → "เพิ่มไปที่หน้าจอโฮม"\n\n' +
-        'Android (Chrome): กด ⋮ → "เพิ่มไปที่หน้าจอหลัก" (หรือ "ติดตั้งแอป")\n\n' +
-        'หลังติดตั้งแล้วเปิดจากไอคอนบนหน้าจอ — ใช้งานออฟไลน์ได้เลย');
-}
-
-if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('sw.js').then(function() {
-      var h = $('installHint');
-      if (h) h.innerHTML = ' (พร้อมติดตั้งแล้ว — ระบบจะใช้งานออฟไลน์ได้หลังติดตั้งครั้งแรก)';
-    }).catch(function(err) {
-      console.warn('Service worker register failed:', err);
-    });
-  });
-}
-
-refreshSummary();
-refreshRefStats();
-</script>
 
 </div>
 <div id="view-form" style="display:none;"></div>
@@ -943,6 +359,7 @@ refreshRefStats();
   .ref-item .ad { font-size: 12px; color: #888; }
   .ref-empty { padding: 8px 10px; color: #888; font-size: 13px; }
 </style>
+
 
 
 <header>
@@ -1180,6 +597,8 @@ refreshRefStats();
 
 
 
+
+
 </template>
 
 <template id="tpl-ltax_land">
@@ -1255,6 +674,7 @@ refreshRefStats();
   .owner-row input { flex: 1; padding: 4px 6px; border: 1px solid #b0b0b0; border-radius: 3px; }
   .owner-row .small { flex: 0 0 90px; }
 </style>
+
 
 
 <header>
@@ -1533,6 +953,8 @@ refreshRefStats();
 
 
 
+
+
 </template>
 
 <template id="tpl-ltax_land_usage">
@@ -1593,6 +1015,7 @@ refreshRefStats();
     padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
   }
 </style>
+
 
 
 <header>
@@ -1801,6 +1224,8 @@ refreshRefStats();
 
 
 
+
+
 </template>
 
 <template id="tpl-ltax_building">
@@ -1869,6 +1294,7 @@ refreshRefStats();
     padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
   }
 </style>
+
 
 
 <header>
@@ -2127,6 +1553,8 @@ refreshRefStats();
 
 
 
+
+
 </template>
 
 <template id="tpl-ltax_building_usage">
@@ -2181,6 +1609,7 @@ refreshRefStats();
     padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
   }
 </style>
+
 
 
 <header>
@@ -2345,6 +1774,8 @@ refreshRefStats();
 
 
 
+
+
 </template>
 
 <template id="tpl-ltax_sign">
@@ -2413,6 +1844,7 @@ refreshRefStats();
     padding: 6px 10px; border-radius: 4px 4px 0 0; font-size: 13px;
   }
 </style>
+
 
 
 <header>
@@ -2649,6 +2081,8 @@ refreshRefStats();
 
 
 
+
+
 </template>
 
 <template id="tpl-ltax_asset">
@@ -2770,6 +2204,7 @@ refreshRefStats();
 </style>
 
 
+
 <header class="no-print">
   <div><b>LTAX</b> ONLINE :: ทะเบียนทรัพย์สินและเจ้าของ (AST001)</div>
   <div class="org">ผู้ใช้งาน : <b>นางนิชานันท์ ปรือปรัง</b> / สังกัด : อบต.ปรือใหญ่ จ.ศรีสะเกษ / ปีภาษี 2569</div>
@@ -2802,6 +2237,8 @@ refreshRefStats();
   </div>
 
 </div>
+
+
 
 
 
@@ -2925,6 +2362,16 @@ refreshRefStats();
     background: rgba(0,0,0,.8); color: #fff; padding: 10px 18px; border-radius: 6px;
     font-size: 13px; z-index: 99; display: none;
   }
+
+  .ph img { cursor: pointer; }
+  .ph .noimg { width: 82px; height: 82px; background: #cfd8dc; color: #546e7a; font-size: 11px; display: flex; align-items: center; justify-content: center; border-radius: 3px; cursor: pointer; }
+  .ph .sent { font-size: 10px; color: #2e7d32; text-align: center; }
+  .more-row { margin-top: 8px; text-align: center; }
+  .mig-stat { display: none; background: #fff8e1; border: 1px solid #ffe082; color: #7a5c00; padding: 8px 12px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; }
+  .view-mask { position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 80; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 10px; }
+  .view-mask img { max-width: 100%; max-height: 82vh; object-fit: contain; }
+  .view-mask .cap { color: #fff; font-size: 13px; margin-top: 8px; }
+  .view-mask .close { margin-top: 10px; }
 </style>
 
 
@@ -2934,6 +2381,8 @@ refreshRefStats();
 </header>
 
 <div class="container">
+
+  <div class="mig-stat" id="migStat"></div>
 
   <div class="panel">
     <div class="panel-head">ถ่ายรูปใหม่ — เลือกหมวด + รหัสแปลงก่อนถ่าย (ระบบจำรหัสล่าสุด)</div>
@@ -2954,9 +2403,12 @@ refreshRefStats();
       <div class="capture-row">
         <button type="button" class="btn btn-cam" onclick="doCapture()">ถ่ายรูป (รหัสปัจจุบัน)<span id="camCode"></span></button>
         <button type="button" class="btn btn-quick" onclick="doCaptureQuick()">ถ่ายด่วน<br>ยังไม่เลือก</button>
+        <button type="button" class="btn btn-quick" onclick="doGallery()">เลือกจากคลังรูป<br>(เลือกได้หลายรูป)</button>
       </div>
       <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none;">
+      <input type="file" id="galInput" accept="image/*" multiple style="display:none;">
       <div id="gpsStatus" style="font-size:12px; color:#888; margin-top:8px;"></div>
+      <div id="storeStat" style="font-size:12px; color:#555; margin-top:6px;"></div>
       <div class="recent" id="recentStrip"></div>
     </div>
   </div>
@@ -2972,6 +2424,7 @@ refreshRefStats();
         <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelected()">ลบที่เลือก</button>
       </div>
       <div id="unmatchedList"></div>
+      <div class="more-row" id="unMore"></div>
       <div class="tip" style="background:#e8f5e9; border:1px solid #a5d6a7; color:#1b5e20; padding:8px 10px; border-radius:4px; font-size:12px; margin-top:8px;">
         จัดกลุ่มอัตโนมัติตามเวลาถ่ายและตำแหน่ง GPS (ถ้าเปิดไว้) — รูปที่ถ่ายติดกันน่าจะเป็นแปลงเดียวกัน เลือกทั้งกลุ่มแล้วจับคู่รหัสเดียวจบทั้งกลุ่ม
       </div>
@@ -2989,6 +2442,7 @@ refreshRefStats();
       </div>
       <div class="stat-line" id="mtStat"></div>
       <div class="grp-grid" id="matchedList"></div>
+      <div class="more-row" id="mtMore"></div>
       <div style="margin-top:10px; text-align:right;">
         <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllPhotos()">ลบรูปทั้งหมดในเครื่อง</button>
       </div>
@@ -3016,7 +2470,14 @@ refreshRefStats();
   </div>
 </div>
 
+<div class="view-mask" id="viewModal" onclick="closeView()">
+  <img id="viewImg" alt="">
+  <div class="cap" id="viewCap"></div>
+  <button type="button" class="btn btn-outline close" onclick="closeView()">ปิด</button>
+</div>
+
 <div class="toast" id="toast"></div>
+
 
 
 
@@ -3025,6 +2486,7 @@ refreshRefStats();
 
 <!-- สคริปต์ของฟอร์ม — แยกเก็บ ไม่รันตอนโหลด (รันเมื่อเปิดฟอร์ม) -->
 <script type="text/plain" id="js-ltax_owner">
+
 
 
 
@@ -3477,9 +2939,11 @@ function applyNextCtx() {
 }
 setTimeout(applyNextCtx, 0);
 
+
 </script>
 
 <script type="text/plain" id="js-ltax_land">
+
 
 
 
@@ -3802,9 +3266,11 @@ function showSavedModal(info, next, opts) {
   $('ltaxModal').style.display = 'flex';
 }
 function hideSavedModal() { $('ltaxModal').style.display = 'none'; }
+
 </script>
 
 <script type="text/plain" id="js-ltax_land_usage">
+
 
 
 
@@ -4293,9 +3759,11 @@ function applyNextCtx() {
   window.__dirty = true;
 }
 setTimeout(function() { fillParcelPick(); recalcRemain(); updateParcelHint(); }, 100);
+
 </script>
 
 <script type="text/plain" id="js-ltax_building">
+
 /* ประเภทสิ่งปลูกสร้าง (รหัสจริงจากระบบ 101-614) */
 var BUILDING_TYPES = [
   ['101','101 - บ้านพักอาศัยไม้ชั้นเดียว'],['102','102 - บ้านพักอาศัยไม้ชั้นเดียวใต้ถุนสูง'],
@@ -5071,9 +4539,11 @@ function autoFillLandArea(parcelCode) {
     });
   });
 }
+
 </script>
 
 <script type="text/plain" id="js-ltax_building_usage">
+
 
 
 
@@ -5365,9 +4835,11 @@ function applyNextCtx() {
   if (c.psnId) $('psnId').value = c.psnId;
   window.__dirty = true;
 }
+
 </script>
 
 <script type="text/plain" id="js-ltax_sign">
+
 
 
 
@@ -5745,9 +5217,11 @@ function applyNextCtx() {
   if (c.parcelCode) $('landParcelCode').value = c.parcelCode;
   window.__dirty = true;
 }
+
 </script>
 
 <script type="text/plain" id="js-ltax_asset">
+
 
 
 
@@ -6208,9 +5682,12 @@ function goBack() {
   });
 })();
 
+
 </script>
 
 <script type="text/plain" id="js-ltax_photo">
+
+
 
 
 
@@ -6230,6 +5707,11 @@ var unmatched = [];   // cache photos code==''
 var allPhotos = [];
 var lastGps = null;
 var noCodeFlag = false;
+var CAT_RE = {   // รูปแบบรหัส: zone(2 หลัก)+block(1 ตัวอักษร)+lot(3 หลัก) / อาคาร -Bxxx / ป้าย -Pxxx
+  'land':     /^\d{2}[A-Z]\d{3}$/,
+  'building': /^\d{2}[A-Z]\d{3}-B\d{3}$/,
+  'sign':     /^\d{2}[A-Z]\d{3}-P\d{3}$/
+};
 
 function $(id) { return document.getElementById(id); }
 
@@ -6276,10 +5758,13 @@ function onCodeInput() {
   }
   var hit = getCodes(lastCat).filter(function(c) { return c.code === v; });
   if (hit.length) {
-    info.innerHTML = '✓ จับคู่กับ <b>' + v + '</b> — ' + PHOTO_CATS[lastCat].label + (hit[0].desc ? ' (' + hit[0].desc + ')' : '');
+    info.innerHTML = '✓ จับคู่กับ <b>' + escHtml(v) + '</b> — ' + PHOTO_CATS[lastCat].label + (hit[0].desc ? ' (' + hit[0].desc + ')' : '');
     info.style.color = '#1b5e20';
+  } else if (!CAT_RE[lastCat].test(v)) {
+    info.innerHTML = '⚠ รหัส <b>' + escHtml(v) + '</b> ไม่ตรงรูปแบบของหมวด' + PHOTO_CATS[lastCat].label + ' — ตรวจตัวอักษร/ตัวเลขอีกครั้ง (เช่น ' + ({land:'01A001', building:'01A001-B001', sign:'01A001-P001'})[lastCat] + ')';
+    info.style.color = '#c62828';
   } else {
-    info.innerHTML = 'รหัส <b>' + v + '</b> ยังไม่พบในข้อมูลที่กรอก (อาจกรอกฟอร์มยังไม่ครบ) — ถ่ายได้ แต่จะต้องมาแก้ทีหลัง';
+    info.innerHTML = 'รหัส <b>' + escHtml(v) + '</b> ยังไม่พบในข้อมูลที่กรอก (อาจกรอกฟอร์มยังไม่ครบ) — ถ่ายได้ แต่จะต้องมาแก้ทีหลัง';
     info.style.color = '#7a5c00';
   }
   localStorage.setItem('ltax_photo_lastcode_' + lastCat, v);
@@ -6307,82 +5792,36 @@ function setCat(cat) {
   }
 }
 
+
 /* =========================================================
-   ระบบภาพถ่าย — IndexedDB (สำรอง localStorage)
+   ระบบภาพถ่าย — ใช้ PhotoStore (photo_store.js)
+   รูปเก็บเป็น Blob + ภาพย่อ แยกจากข้อมูลรูป (meta) ·
+   การจับคู่/ยกเลิกจับคู่แก้เฉพาะ meta จึงไม่มีทางทำให้รูปหาย ·
+   หน้านี้โหลดเฉพาะ meta (เล็ก) ไม่โหลดตัวรูปทั้งหมดเข้าหน่วยความจำ
    ========================================================= */
-var photoBackend = null;
-function detectPhotoBackend() {
-  if (photoBackend) return photoBackend;
-  if (window.indexedDB && typeof indexedDB.open === 'function') photoBackend = 'idb';
-  else photoBackend = 'ls';
-  return photoBackend;
-}
-function _photoDB() {
-  return new Promise(function(res, rej) {
-    var rq = indexedDB.open('ltax_photos_db', 1);
-    rq.onupgradeneeded = function(e) {
-      var db = e.target.result;
-      if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', { keyPath: 'id' });
-    };
-    rq.onsuccess = function() { res(rq.result); };
-    rq.onerror = function() { rej(rq.error); };
+var PAGE = 60;                 // แสดงทีละกี่รูป
+var matchedLimit = PAGE, unmatchedLimit = PAGE;
+var viewUrl = null;
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
-function photoPut(rec) {
-  if (detectPhotoBackend() === 'ls') {
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]'); } catch(e) { list = []; }
-    var i = -1;
-    for (var j = 0; j < list.length; j++) if (list[j].id === rec.id) { i = j; break; }
-    if (i >= 0) list[i] = rec; else list.push(rec);
-    try { localStorage.setItem('ltax_photos_fb', JSON.stringify(list)); } catch(e) { return Promise.reject(e); }
-    return Promise.resolve();
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readwrite');
-      tx.objectStore('photos').put(rec);
-      tx.oncomplete = function() { res(); };
-      tx.onerror = function() { rej(tx.error); };
-    });
+function fmtMB(b) { return (b / 1048576).toFixed(b >= 10485760 ? 0 : 1) + ' MB'; }
+function calcStats(list) {
+  var s = { total: list.length, unmatched: 0, matched: 0, pending: 0, exported: 0, bytes: 0 };
+  list.forEach(function(m) {
+    s.bytes += m.bytes || 0;
+    if (!m.code) { s.unmatched++; return; }
+    s.matched++;
+    if (m.status === 'exported') s.exported++; else s.pending++;
   });
-}
-function photoGetAll() {
-  if (detectPhotoBackend() === 'ls') {
-    try { return Promise.resolve(JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]')); }
-    catch(e) { return Promise.resolve([]); }
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readonly');
-      var rq = tx.objectStore('photos').getAll();
-      rq.onsuccess = function() { res(rq.result || []); };
-      rq.onerror = function() { rej(rq.error); };
-    });
-  });
-}
-function photoDelete(ids) {
-  if (!ids || !ids.length) return Promise.resolve();
-  if (detectPhotoBackend() === 'ls') {
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]'); } catch(e) { list = []; }
-    list = list.filter(function(p) { return ids.indexOf(p.id) < 0; });
-    localStorage.setItem('ltax_photos_fb', JSON.stringify(list));
-    return Promise.resolve();
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readwrite');
-      var st = tx.objectStore('photos');
-      ids.forEach(function(id) { st.delete(id); });
-      tx.oncomplete = function() { res(); };
-      tx.onerror = function() { rej(tx.error); };
-    });
-  });
+  return s;
 }
 
 /* =========================================================
-   GPS + การบีบอัดรูป
+   GPS
    ========================================================= */
 function getGps(cb) {
   if (lastGps) { cb(lastGps); return; }
@@ -6396,72 +5835,80 @@ function getGps(cb) {
   }, { timeout: 4000, maximumAge: 60000 });
 }
 
-function compressImage(file, maxW, quality, cb) {
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var rawUrl = e.target.result;
-    var img = new Image();
-    img.onload = function() {
-      var scale = Math.min(1, maxW / Math.max(img.width, img.height));
-      var c = document.createElement('canvas');
-      c.width = Math.round(img.width * scale);
-      c.height = Math.round(img.height * scale);
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-      cb(c.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = function() { cb(rawUrl); };
-    img.src = rawUrl;
-  };
-  reader.readAsDataURL(file);
-}
-
 /* =========================================================
    การถ่ายรูป
    ========================================================= */
 function doCapture() { noCodeFlag = false; $('camInput').click(); }
 function doCaptureQuick() { noCodeFlag = true; $('camInput').click(); }
 
-$('camInput').addEventListener('change', function(e) {
-  var files = e.target.files;
-  if (!files || !files.length) return;
-  var code = noCodeFlag ? '' : $('codeInput').value.trim().toUpperCase();
-  var cat = noCodeFlag ? '' : lastCat;
-  if (!code) { cat = ''; }
-
-  getGps(function(gps) {
-    var lat = gps ? gps.lat : null;
-    var lng = gps ? gps.lng : null;
-    var todo = Array.prototype.slice.call(files);
-    var done = 0;
-
+/* ประมวลผลรูปทีละไฟล์ต่อเนื่อง (ไม่โหลดทีเดียวทั้งหมด) — ใช้ร่วมกันทั้งกล้องและคลังรูป
+   รูปจากคลังรูป: ใช้วันเวลาของไฟล์เป็นเวลาถ่าย, ไม่ใส่ GPS ปัจจุบัน (ตำแหน่งตอนนี้ไม่ใช่ที่ที่ถ่าย),
+   และข้ามรูปที่เคยเลือกแล้ว (ชื่อ+ขนาด+วันที่แก้ไขตรงกัน) กันเลือกซ้ำ */
+function addFiles(files, opts) {
+  var known = {};
+  allPhotos.forEach(function(p) { if (p.srcKey) known[p.srcKey] = true; });
+  var done = 0, skipped = 0, errors = [], i = 0, total = files.length;
+  return new Promise(function(resolve) {
     function next() {
-      if (!todo.length) {
-        if (done) { toast('บันทึก ' + done + ' รูป' + (code ? ' → ' + code : ' (รอจับคู่)')); refreshAll(); }
-        e.target.value = '';
-        return;
-      }
-      var f = todo.shift();
-      compressImage(f, 1280, 0.72, function(dataUrl) {
-        var rec = {
-          id: 'p' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-          category: cat,
-          code: code,
-          dataUrl: dataUrl,
-          ts: Date.now(),
-          lat: lat,
-          lng: lng,
-          fileName: f.name || ''
-        };
-        photoPut(rec).then(function() {
-          done++;
-          next();
-        }).catch(function(err) {
-          alert('บันทึกรูปไม่สำเร็จ: ' + err + '\n\nพื้นที่เก็บอาจเต็ม — ลดขนาดรูป หรือลบรูปเก่า');
-          next();
-        });
-      });
+      if (i >= total) { resolve({ done: done, skipped: skipped, errors: errors }); return; }
+      var f = files[i++];
+      var key = opts.gallery ? [f.name, f.size, f.lastModified].join('|') : '';
+      if (opts.gallery && known[key]) { skipped++; next(); return; }
+      if (opts.gallery) known[key] = true;
+      if (total > 1) toast('กำลังบันทึก ' + i + '/' + total + ' ...');
+      PhotoStore.addPhoto(f, {
+        category: opts.cat, code: opts.code,
+        lat: opts.gallery ? null : (opts.gps ? opts.gps.lat : null),
+        lng: opts.gallery ? null : (opts.gps ? opts.gps.lng : null),
+        ts: (opts.gallery && f.lastModified) ? f.lastModified : 0,
+        source: opts.gallery ? 'gallery' : 'camera', srcKey: key, fileName: f.name || ''
+      }).then(function() { done++; })
+        .catch(function(err) { errors.push(err); })
+        .then(function() { setTimeout(next, 0); });
     }
     next();
+  });
+}
+function reportAdd(res, code) {
+  var t = res.done ? ('บันทึก ' + res.done + ' รูป' + (code ? ' → ' + code : ' (รอจับคู่)')) : '';
+  if (res.skipped) t += (t ? ' · ' : '') + 'ข้ามรูปที่เคยเลือกแล้ว ' + res.skipped + ' รูป';
+  if (t) toast(t);
+  if (res.errors.length) {
+    var q = res.errors.some(function(x) { return x && x.name === 'QuotaExceededError'; });
+    alert('บันทึกรูปไม่สำเร็จ ' + res.errors.length + ' รูป\n\n' + (q
+      ? 'พื้นที่เก็บข้อมูลเต็ม — ดาวน์โหลดรูปที่ยังไม่ได้ดาวน์โหลดไว้ก่อน แล้วลบรูปที่ดาวน์โหลดแล้วออกจากเครื่อง'
+      : String(res.errors[0] && res.errors[0].message || res.errors[0])));
+  }
+}
+function currentTarget() {
+  var code = noCodeFlag ? '' : $('codeInput').value.trim().toUpperCase();
+  return { code: code, cat: code ? lastCat : '' };
+}
+
+$('camInput').addEventListener('change', function(e) {
+  var input = e.target;
+  var files = Array.prototype.slice.call(input.files || []);
+  if (!files.length) return;
+  var t = currentTarget();
+  getGps(function(gps) {
+    addFiles(files, { code: t.code, cat: t.cat, gps: gps, gallery: false }).then(function(res) {
+      input.value = '';
+      reportAdd(res, t.code);
+      refreshAll();
+    });
+  });
+});
+
+function doGallery() { noCodeFlag = false; $('galInput').click(); }
+$('galInput').addEventListener('change', function(e) {
+  var input = e.target;
+  var files = Array.prototype.slice.call(input.files || []);
+  if (!files.length) return;
+  var t = currentTarget();
+  addFiles(files, { code: t.code, cat: t.cat, gps: null, gallery: true }).then(function(res) {
+    input.value = '';
+    reportAdd(res, t.code);
+    refreshAll();
   });
 });
 
@@ -6473,11 +5920,13 @@ function fmtTime(ts) {
   function p(n) { return (n < 10 ? '0' : '') + n; }
   return p(d.getHours()) + ':' + p(d.getMinutes());
 }
+
 function fmtFull(ts) {
   var d = new Date(ts);
   function p(n) { return (n < 10 ? '0' : '') + n; }
   return (d.getDate()) + '/' + (d.getMonth() + 1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
+
 function haversine(a, b) {
   if (!a || !b || a.lat == null || b.lat == null) return null;
   var R = 6371000, toR = Math.PI / 180;
@@ -6507,12 +5956,34 @@ function groupPhotos(list) {
 }
 
 function refreshAll() {
-  photoGetAll().then(function(photos) {
-    allPhotos = photos;
-    unmatched = photos.filter(function(p) { return !p.code; });
-    renderUnmatched();
-    renderMatched();
-    renderRecent();
+  return PhotoStore.listMeta().then(function(list) {
+    allPhotos = list;
+    var ids = {};
+    list.forEach(function(p) { ids[p.id] = true; });
+    Object.keys(selection).forEach(function(k) { if (!ids[k]) delete selection[k]; });
+    renderAll();
+  }).catch(function(err) { toast('อ่านรูปไม่สำเร็จ: ' + err); });
+}
+
+/* วาดใหม่จากข้อมูลที่โหลดไว้แล้ว (ไม่อ่านฐานข้อมูลซ้ำ) — ใช้ตอนติ๊กเลือก/เปลี่ยนตัวกรอง */
+function renderAll() {
+  unmatched = allPhotos.filter(function(p) { return !p.code; });
+  renderUnmatched();
+  renderMatched();
+  renderRecent();
+  updateStoreStat();
+}
+
+function updateStoreStat() {
+  var s = calcStats(allPhotos);
+  PhotoStore.storage().then(function(st) {
+    var t = 'รูปในเครื่อง <b>' + s.total + '</b> รูป (' + fmtMB(s.bytes) + ')';
+    if (s.pending + s.unmatched) t += ' · ยังไม่ได้ดาวน์โหลด <b>' + (s.pending + s.unmatched) + '</b>';
+    if (st && st.quota) t += ' · พื้นที่เบราว์เซอร์ใช้ไป ' + fmtMB(st.usage) + ' จาก ' + fmtMB(st.quota);
+    t += PhotoStore.persisted
+      ? ' · ✓ เครื่องจะไม่ล้างข้อมูลเอง'
+      : ' · <span style="color:#c62828;">⚠ เครื่องอาจล้างข้อมูลเองเมื่อพื้นที่ตึง (iPhone/iPad: ควรติดตั้งแอปไว้ที่หน้าจอโฮม)</span>';
+    $('storeStat').innerHTML = t;
   });
 }
 
@@ -6520,49 +5991,61 @@ function renderRecent() {
   var recent = allPhotos.slice().sort(function(a, b) { return b.ts - a.ts; }).slice(0, 6);
   var h = '';
   recent.forEach(function(p) {
-    h += '<img src="' + p.dataUrl + '" title="' + (p.code || 'รอจับคู่') + '">';
+    if (p.thumb) h += '<img src="' + p.thumb + '" title="' + escHtml(p.code || 'รอจับคู่') + '" onclick="viewPhoto(\'' + p.id + '\')">';
   });
   $('recentStrip').innerHTML = h ? h : '<span class="empty">ยังไม่มีรูปที่เพิ่งถ่าย</span>';
 }
 
 function renderUnmatched() {
-  $('unStat').innerHTML = 'รอจับคู่: <b>' + unmatched.length + '</b> รูป';
+  var nSel = Object.keys(selection).length;
+  $('unStat').innerHTML = 'รอจับคู่: <b>' + unmatched.length + '</b> รูป' + (nSel ? ' · เลือกแล้ว <b>' + nSel + '</b>' : '');
   var box = $('unmatchedList');
   if (!unmatched.length) {
     box.innerHTML = '<div class="empty">ไม่มีรูปที่รอจับคู่ — ถ่ายแล้วลืมเลือกรหัสจะมาตกอยู่ที่นี่</div>';
+    $('unMore').innerHTML = '';
     return;
   }
   var groups = groupPhotos(unmatched);
-  var h = '';
+  var h = '', shown = 0;
   groups.forEach(function(g, gi) {
+    if (shown >= unmatchedLimit) return;
+    var part = g.slice(0, unmatchedLimit - shown);
+    shown += part.length;
     var all = g.every(function(p) { return selection[p.id]; });
     h += '<div class="grp-head" onclick="toggleGroup(' + gi + ', event)">' +
          '<input type="checkbox" ' + (all ? 'checked' : '') + ' onclick="event.stopPropagation()">' +
          'กลุ่ม ' + (gi + 1) + ' — ' + fmtFull(g[0].ts) + (g.length > 1 ? ' ถึง ' + fmtTime(g[g.length - 1].ts) : '') +
          ' · ' + g.length + ' รูป</div>';
     h += '<div class="grp-grid">';
-    g.forEach(function(p) {
-      h += photoCell(p);
-    });
+    part.forEach(function(p) { h += photoCell(p); });
     h += '</div>';
   });
   box.innerHTML = h;
+  $('unMore').innerHTML = unmatched.length > shown
+    ? '<button type="button" class="btn btn-outline btn-sm" onclick="moreUnmatched()">แสดงเพิ่ม (เหลือ ' + (unmatched.length - shown) + ' รูป)</button>' : '';
+}
+function moreUnmatched() { unmatchedLimit += PAGE; renderUnmatched(); }
+
+function photoImg(p) {
+  var click = ' onclick="viewPhoto(\'' + p.id + '\')"';
+  return p.thumb ? '<img src="' + p.thumb + '" loading="lazy"' + click + '>' : '<div class="noimg"' + click + '>ดูรูป</div>';
 }
 
 function photoCell(p) {
   var sel = selection[p.id];
   var tm = fmtTime(p.ts);
+  var done = p.status === 'exported' ? '<div class="sent">✓ ดาวน์โหลดแล้ว</div>' : '';
   if (p.code) {
     return '<div class="ph' + (sel ? ' sel' : '') + '">' +
-           '<img src="' + p.dataUrl + '">' +
+           photoImg(p) +
            '<div class="tm">' + tm + '</div>' +
-           '<div class="code">' + p.code + '</div>' +
+           '<div class="code">' + escHtml(p.code) + '</div>' + done +
            '<a class="un" href="#" onclick="unmatchPhoto(\'' + p.id + '\'); return false;">ยกเลิกจับคู่</a>' +
            '<a class="x" href="#" onclick="delPhoto(\'' + p.id + '\'); return false;">&#215;</a>' +
            '</div>';
   }
   return '<div class="ph' + (sel ? ' sel' : '') + '">' +
-         '<img src="' + p.dataUrl + '">' +
+         photoImg(p) +
          '<input type="checkbox" class="cb" ' + (sel ? 'checked' : '') + ' onchange="toggleSel(\'' + p.id + '\', this.checked)">' +
          '<div class="tm">' + tm + '</div>' +
          '<a class="x" href="#" onclick="delPhoto(\'' + p.id + '\'); return false;">&#215;</a>' +
@@ -6575,18 +6058,42 @@ function renderMatched() {
   var box = $('matchedList');
   if (!matched.length) {
     box.innerHTML = '<div class="empty">ไม่มีรูปในหมวดนี้</div>';
+    $('mtMore').innerHTML = '';
     return;
   }
   var sorted = matched.slice().sort(function(a, b) { return b.ts - a.ts; });
-  box.innerHTML = sorted.map(function(p) { return photoCell(p); }).join('');
+  box.innerHTML = sorted.slice(0, matchedLimit).map(function(p) { return photoCell(p); }).join('');
+  $('mtMore').innerHTML = sorted.length > matchedLimit
+    ? '<button type="button" class="btn btn-outline btn-sm" onclick="moreMatched()">แสดงเพิ่ม (เหลือ ' + (sorted.length - matchedLimit) + ' รูป)</button>' : '';
 }
+function moreMatched() { matchedLimit += PAGE; renderMatched(); }
 
 function setFilter(f) {
   filter = f;
+  matchedLimit = PAGE;
   ['all', 'land', 'building', 'sign'].forEach(function(c) {
     $('flt-' + c).className = 'cat-tab' + (c === f ? ' on' : '');
   });
   renderMatched();
+}
+
+/* ดูรูปเต็ม (โหลดตัวรูปเฉพาะรูปที่กด) */
+function viewPhoto(id) {
+  var m = allPhotos.filter(function(p) { return p.id === id; })[0];
+  PhotoStore.getBlob(id).then(function(b) {
+    if (!b) { toast('ไม่พบไฟล์รูป'); return; }
+    closeView();
+    viewUrl = URL.createObjectURL(b);
+    $('viewImg').src = viewUrl;
+    $('viewCap').textContent = (m && m.code ? m.code : 'รอจับคู่') + (m ? ' · ' + fmtFull(m.ts) : '') + (m && m.bytes ? ' · ' + Math.round(m.bytes / 1024) + ' KB' : '');
+    $('viewModal').style.display = 'flex';
+  }).catch(function(err) { toast('เปิดรูปไม่สำเร็จ: ' + err); });
+}
+function closeView() {
+  var img = $('viewImg');
+  if (img) img.removeAttribute('src');
+  if (viewUrl) { URL.revokeObjectURL(viewUrl); viewUrl = null; }
+  $('viewModal').style.display = 'none';
 }
 
 /* =========================================================
@@ -6594,7 +6101,7 @@ function setFilter(f) {
    ========================================================= */
 function toggleSel(id, on) {
   if (on) selection[id] = true; else delete selection[id];
-  refreshAll();
+  renderAll();
 }
 function toggleGroup(gi, ev) {
   var groups = groupPhotos(unmatched);
@@ -6603,15 +6110,15 @@ function toggleGroup(gi, ev) {
   g.forEach(function(p) {
     if (all) delete selection[p.id]; else selection[p.id] = true;
   });
-  refreshAll();
+  renderAll();
 }
 function selectAllUnmatched() {
   unmatched.forEach(function(p) { selection[p.id] = true; });
-  refreshAll();
+  renderAll();
 }
 function clearSelection() {
   selection = {};
-  refreshAll();
+  renderAll();
 }
 function getSelected() {
   return unmatched.filter(function(p) { return selection[p.id]; });
@@ -6620,7 +6127,7 @@ function deleteSelected() {
   var sel = getSelected();
   if (!sel.length) { toast('ยังไม่ได้เลือกรูป'); return; }
   if (!confirm('ลบ ' + sel.length + ' รูปที่เลือก?')) return;
-  photoDelete(sel.map(function(p) { return p.id; })).then(function() {
+  PhotoStore.remove(sel.map(function(p) { return p.id; })).then(function() {
     sel.forEach(function(p) { delete selection[p.id]; });
     toast('ลบ ' + sel.length + ' รูปแล้ว');
     refreshAll();
@@ -6628,17 +6135,27 @@ function deleteSelected() {
 }
 function delPhoto(id) {
   if (!confirm('ลบรูปนี้?')) return;
-  photoDelete([id]).then(function() {
+  PhotoStore.remove([id]).then(function() {
     delete selection[id];
     refreshAll();
   });
 }
+/* แก้เฉพาะข้อมูลรูป (รหัส/หมวด) — ตัวรูป เวลา และพิกัด GPS ไม่ถูกแตะ */
 function unmatchPhoto(id) {
-  photoPut({ id: id, code: '', category: '' }).then(function() { refreshAll(); });
+  PhotoStore.updateMeta(id, { code: '', category: '' }).then(refreshAll)
+    .catch(function(err) { toast('ยกเลิกจับคู่ไม่สำเร็จ: ' + err); });
 }
 function deleteAllPhotos() {
-  if (!confirm('ลบรูปทั้งหมดในเครื่อง (' + allPhotos.length + ' รูป)?\n\nทำแล้วกู้คืนไม่ได้')) return;
-  photoDelete(allPhotos.map(function(p) { return p.id; })).then(function() { refreshAll(); });
+  if (!allPhotos.length) { toast('ไม่มีรูปในเครื่อง'); return; }
+  var s = calcStats(allPhotos);
+  var notSent = s.pending + s.unmatched;
+  if (notSent > 0) {
+    var t = prompt('⚠ มีรูป ' + notSent + ' รูปที่ยังไม่ได้ดาวน์โหลด\nถ้าลบแล้วกู้คืนไม่ได้\n\nพิมพ์คำว่า ลบ เพื่อยืนยันการลบรูปทั้งหมด ' + allPhotos.length + ' รูป');
+    if (t !== 'ลบ') return;
+  } else if (!confirm('ลบรูปทั้งหมดในเครื่อง (' + allPhotos.length + ' รูป — ดาวน์โหลดแล้วทั้งหมด)?\n\nทำแล้วกู้คืนไม่ได้')) {
+    return;
+  }
+  PhotoStore.remove(allPhotos.map(function(p) { return p.id; })).then(refreshAll);
 }
 
 /* =========================================================
@@ -6680,23 +6197,12 @@ function applyMatch(code) {
   var sel = getSelected();
   if (!sel.length) { closeMatchModal(); return; }
   var ids = sel.map(function(p) { return p.id; });
-  /* อ่าน record เดิมแล้วแก้ category/code แล้วเขียนทับ (ไม่แตะ dataUrl/ts) */
-  photoGetAll().then(function(all) {
-    var ops = [];
-    all.forEach(function(p) {
-      if (ids.indexOf(p.id) >= 0) {
-        p.category = matchCat;
-        p.code = code;
-        ops.push(photoPut(p));
-      }
-    });
-    return Promise.all(ops);
-  }).then(function() {
+  PhotoStore.updateMany(ids, { category: matchCat, code: code }).then(function() {
     selection = {};
     closeMatchModal();
     toast('จับคู่ ' + ids.length + ' รูป → ' + code);
     refreshAll();
-  });
+  }).catch(function(err) { toast('จับคู่ไม่สำเร็จ: ' + err); });
 }
 
 function closeMatchModal() {
@@ -6722,8 +6228,934 @@ function goBack() {
 /* init */
 setCat('land');
 refreshAll();
+if (!window.PhotoStore) {
+  alert('ไม่พบ photo_store.js — ตรวจสอบว่าไฟล์ถูกอัปโหลดครบ');
+} else {
+  PhotoStore.init().then(function() {
+    return PhotoStore.migrateLegacy(function(d, t) {
+      var el = $('migStat');
+      if (!el) return;
+      el.style.display = 'block';
+      el.textContent = 'กำลังย้ายรูปเดิมเข้าที่เก็บใหม่ ' + d + '/' + t + ' — กรุณาอย่าปิดหน้านี้';
+    });
+  }).then(function(r) {
+    var el = $('migStat');
+    if (el) {
+      var msg = '';
+      if (r && r.migrated) msg += 'ย้ายรูปเดิมเข้าที่เก็บใหม่แล้ว ' + r.migrated + ' รูป. ';
+      if (r && r.broken) msg += 'พบรายการรูปเสียหาย ' + r.broken + ' รายการ (ภาพหายไปก่อนหน้านี้จากปุ่ม "ยกเลิกจับคู่" ของเวอร์ชันเก่า — กู้คืนไม่ได้ ลบรายการนั้นออกแล้ว). ';
+      if (r && r.left) msg += 'ย้ายไม่สำเร็จ ' + r.left + ' รายการ จะลองใหม่ครั้งหน้า. ';
+      el.style.display = msg ? 'block' : 'none';
+      el.textContent = msg;
+    }
+    return refreshAll();
+  }).catch(function(err) { alert('เปิดที่เก็บรูปไม่สำเร็จ: ' + err); });
+}
 
 </script>
 
+<script>
+/* ===== สคริปต์หน้าแรก + router + PWA (จาก home.html) ===== */
+
+
+
+
+
+
+
+/* =========================================================
+   ค้นหา / ดูข้อมูลที่กรอกแล้ว (จาก LTAXDB — IndexedDB)
+   ========================================================= */
+var SEARCH_META = {
+  'ltax_owner':          { label: 'เจ้าของทรัพย์สิน',       form: 'ltax_owner',          key: 'เลขบัตรประชาชน', desc: function(r){ return r['ชื่อ'] + ' ' + r['นามสกุล']; } },
+  'ltax_land':           { label: 'ที่ดิน',                 form: 'ltax_land',           key: 'รหัสแปลงที่ดิน',   desc: function(r){ return r['ตำบล'] + ' / ไร่-งาน-วา ' + r['ไร่'] + '-' + r['งาน'] + '-' + r['ตร.วา']; } },
+  'ltax_land_usage':     { label: 'การใช้ประโยชน์ที่ดิน',   form: 'ltax_land_usage',     key: 'รหัสแปลงที่ดิน',   desc: function(r){ var us=r['รายการใช้ประโยชน์']||[]; return us.length + ' รายการใช้'; } },
+  'ltax_building':       { label: 'สิ่งปลูกสร้าง',          form: 'ltax_building',       key: 'รหัสสิ่งปลูกสร้าง', desc: function(r){ return 'แปลง ' + r['รหัสแปลงที่ดิน'] + ' / เลขที่บ้าน ' + r['เลขที่บ้าน']; } },
+  'ltax_building_usage': { label: 'การใช้ประโยชน์สิ่งปลูกสร้าง', form: 'ltax_building_usage', key: 'รหัสสิ่งปลูกสร้าง', desc: function(r){ var us=r['รายการใช้ประโยชน์']||[]; return us.length + ' รายการใช้'; } },
+  'ltax_sign':           { label: 'ป้าย',                  form: 'ltax_sign',           key: 'รหัสป้าย',         desc: function(r){ return r['ชื่อสถานประกอบการค้า/กิจการ'] + ' / ' + r['กว้าง (ซม.)'] + 'x' + r['ยาว (ซม.)']; } }
+};
+
+var KEYS = [
+  ['ltax_owner', 'เจ้าของทรัพย์สิน'],
+  ['ltax_land', 'ที่ดิน'],
+  ['ltax_land_usage', 'การใช้ประโยชน์ที่ดิน'],
+  ['ltax_building', 'สิ่งปลูกสร้าง'],
+  ['ltax_building_usage', 'การใช้ประโยชน์สิ่งปลูกสร้าง'],
+  ['ltax_sign', 'ป้าย']
+];
+
+function $(id) { return document.getElementById(id); }
+
+// ข้อมูลทั้งหมดอ่าน/เขียนผ่าน LTAXDB (IndexedDB) — ดู db.js
+function getList(key) {
+  return LTAX_getAll(key);
+}
+
+async function checkFormPrerequisites(formId) {
+  // ฟอร์มป้ายเปิดได้เสมอ
+  if (formId === 'ltax_sign') return true;
+
+  // ฟอร์มเจ้าของเปิดได้เสมอ (เป็นจุดเริ่มต้น)
+  if (formId === 'ltax_owner') return true;
+
+  // ฟอร์มถ่ายรูปเปิดได้เสมอ
+  if (formId === 'ltax_photo') return true;
+
+  // ตรวจสอบฟอร์มที่ดิน: ต้องมีเจ้าของอย่างน้อย 1 รายการ
+  if (formId === 'ltax_land') {
+    var owners = await getList('ltax_owner');
+    if (owners.length === 0) {
+      alert('⚠ ต้องเพิ่มเจ้าของทรัพย์สินก่อนจึงจะเพิ่มที่ดินได้\n\nกรุณาเพิ่มเจ้าของทรัพย์สินก่อน แล้วค่อยเพิ่มที่ดิน');
+      return false;
+    }
+    return true;
+  }
+
+  // ตรวจสอบฟอร์มการใช้ประโยชน์ที่ดิน: ต้องมีที่ดินอย่างน้อย 1 แปลง
+  if (formId === 'ltax_land_usage') {
+    var lands = await getList('ltax_land');
+    if (lands.length === 0) {
+      alert('⚠ ต้องเพิ่มที่ดินก่อนจึงจะกรอกการใช้ประโยชน์ที่ดินได้\n\nกรุณาเพิ่มที่ดินก่อน แล้วค่อยกรอกการใช้ประโยชน์ที่ดิน');
+      return false;
+    }
+    return true;
+  }
+
+  // ตรวจสอบฟอร์มสิ่งปลูกสร้าง: ต้องมีที่ดิน + การใช้ประโยชน์ที่ดิน
+  if (formId === 'ltax_building') {
+    var lands2 = await getList('ltax_land');
+    var landUsages = await getList('ltax_land_usage');
+
+    if (lands2.length === 0) {
+      alert('⚠ ต้องเพิ่มที่ดินก่อนจึงจะเพิ่มสิ่งปลูกสร้างได้\n\nกรุณาเพิ่มที่ดินก่อน แล้วค่อยเพิ่มสิ่งปลูกสร้าง');
+      return false;
+    }
+
+    if (landUsages.length === 0) {
+      alert('⚠ ต้องกรอกการใช้ประโยชน์ที่ดินก่อนจึงจะเพิ่มสิ่งปลูกสร้างได้\n\nกรุณากรอกการใช้ประโยชน์ที่ดินก่อน แล้วค่อยเพิ่มสิ่งปลูกสร้าง');
+      return false;
+    }
+
+    return true;
+  }
+
+  // ตรวจสอบฟอร์มการใช้ประโยชน์สิ่งปลูกสร้าง: ต้องมีสิ่งปลูกสร้าง
+  if (formId === 'ltax_building_usage') {
+    var buildings = await getList('ltax_building');
+    if (buildings.length === 0) {
+      alert('⚠ ต้องเพิ่มสิ่งปลูกสร้างก่อนจึงจะกรอกการใช้ประโยชน์สิ่งปลูกสร้างได้\n\nกรุณาเพิ่มสิ่งปลูกสร้างก่อน แล้วค่อยกรอกการใช้ประโยชน์สิ่งปลูกสร้าง');
+      return false;
+    }
+    return true;
+  }
+
+  return true; // ฟอร์มอื่น ๆ เปิดได้ปกติ
+}
+
+function flatSearchText(rec) {
+  var parts = [];
+  function walk(o) {
+    if (o == null) return;
+    if (typeof o === 'object') { for (var k in o) walk(o[k]); }
+    else parts.push(String(o));
+  }
+  walk(rec);
+  return parts.join(' ').toLowerCase();
+}
+
+async function doSearch() {
+  var q = $('searchInput').value.trim().toLowerCase();
+  var box = $('searchResult');
+  var hint = $('searchHint');
+  if (!q) { hint.innerHTML = 'พิมพ์คำค้นก่อน แล้วกด ค้นหา'; box.innerHTML = ''; return; }
+
+  var groups = [];
+  for (var gi = 0; gi < KEYS.length; gi++) {
+    var key = KEYS[gi][0], label = KEYS[gi][1];
+    var meta = SEARCH_META[key];
+    var hits = [];
+    var records = await getList(key);
+    records.forEach(function(rec, i) {
+      if (flatSearchText(rec).indexOf(q) >= 0) hits.push({ rec: rec, idx: i });
+    });
+    if (hits.length) groups.push({ key: key, meta: meta, hits: hits });
+  }
+
+  hint.innerHTML = '';
+  if (!groups.length) {
+    box.innerHTML = '<div class="search-empty">ไม่พบข้อมูลที่ตรงกับ "' + $('searchInput').value.trim() + '"</div>';
+    return;
+  }
+
+  var total = groups.reduce(function(s, g) { return s + g.hits.length; }, 0);
+  var h = '<div style="font-size:13px; color:#555; margin-bottom:8px;">พบ ' + total + ' รายการ</div>';
+  h += '<table class="search-result"><thead><tr><th width="100">หมวด</th><th>รายการ</th><th>รายละเอียด</th><th width="240">จัดการ</th></tr></thead><tbody>';
+  groups.forEach(function(g) {
+    h += '<tr class="grp"><td colspan="4">' + g.meta.label + ' (' + g.hits.length + ')</td></tr>';
+    g.hits.forEach(function(hit) {
+      var key = hit.rec[g.meta.key] || ('#' + (hit.idx + 1));
+      var actionBtns = '<div class="action-group"><a class="btn btn-edit" href="#" onclick="openFormEdit(\'' + g.key + '\',' + hit.idx + '); return false;">แก้ไข</a>';
+      if (g.key === 'ltax_owner') {
+        actionBtns += '<a class="btn btn-registry" href="#" onclick="openAssetRegistry(\'' + String(key).replace(/'/g, "\\'") + '\'); return false;">ทะเบียน</a>';
+      }
+      actionBtns += '<a class="btn btn-delete-row" href="#" onclick="deleteRecord(\'' + g.key + '\',' + hit.idx + '); return false;">ลบ</a>';
+      actionBtns += '</div>';
+      h += '<tr><td>' + g.meta.label + '</td><td><b>' + key + '</b></td><td>' + (g.meta.desc(hit.rec) || '') + '</td>' +
+           '<td>' + actionBtns + '</td></tr>';
+    });
+  });
+  h += '</tbody></table>';
+  box.innerHTML = h;
+}
+
+function clearSearch() {
+  $('searchInput').value = '';
+  $('searchHint').innerHTML = 'ค้นหาในข้อมูลที่บันทึกไว้ (IndexedDB) — ข้อมูลของ: เจ้าของ / ที่ดิน / การใช้ที่ดิน / สิ่งปลูกสร้าง / การใช้สิ่งปลูกสร้าง / ป้าย';
+  $('searchResult').innerHTML = '';
+}
+
+function openAssetRegistry(psnId) {
+  openForm('ltax_asset', '?psnId=' + encodeURIComponent(psnId));
+}
+
+function saveList(key, arr) {
+  return LTAX_setAll(key, arr);
+}
+
+async function deleteRecord(lkey, idx) {
+  var meta = SEARCH_META[lkey];
+  var label = meta ? meta.label : lkey;
+  var list = await getList(lkey);
+  if (idx < 0 || idx >= list.length) { alert('ไม่พบรายการที่จะลบ'); return; }
+  var rec = list[idx];
+  var recKey = rec[meta.key] || ('#' + (idx + 1));
+  var recDesc = meta.desc(rec) || '';
+  if (!confirm('ยืนยันลบ ' + label + ':\n\n' + recKey + ' — ' + recDesc + '\n\n⚠ การลบจะกระทบข้อมูลที่ผูกกับรายการนี้ (ถ้ามี) เช่น ที่ดิน/อาคารของเจ้าของนี้')) return;
+  list.splice(idx, 1);
+  await saveList(lkey, list);
+  // ลบข้อมูลรวมที่ cache ไว้ด้วย
+  try { localStorage.removeItem('ltax_data_all'); } catch(e) {}
+  // ปรับ index ใหม่ — search ใหม่
+  await doSearch();
+}
+
+/* =========================================================
+   นำเข้าข้อมูลอ้างอิง (เจ้าของทรัพย์สินเดิม) — เก็บผ่าน LTAXDB store 'ltax_ref_owner' (IndexedDB)
+   ใช้เติมอัตโนมัติ (autofill) ในฟอร์มเพิ่มเจ้าของทรัพย์สิน
+   ========================================================= */
+var REF_OWNER_HEADER_ALIASES = {
+  'เลขบัตรประชาชน': ['เลขบัตรประชาชน', 'เลขบัตร', 'เลขประจำตัวประชาชน', 'เลขที่บัตรประชาชน', 'psnid', 'id'],
+  'คำนำหน้า':      ['คำนำหน้า', 'คำนำหน้าชื่อ', 'prefix'],
+  'ชื่อ':          ['ชื่อ', 'firstname', 'first name'],
+  'นามสกุล':       ['นามสกุล', 'lastname', 'last name'],
+  'เลขที่บ้าน':     ['เลขที่บ้าน', 'บ้านเลขที่'],
+  'หมู่ที่':        ['หมู่ที่', 'หมู่'],
+  'ถนน':          ['ถนน'],
+  'ซอย':          ['ซอย'],
+  'ตำบล':          ['ตำบล'],
+  'อำเภอ':         ['อำเภอ'],
+  'จังหวัด':        ['จังหวัด'],
+  'รหัสไปรษณีย์':   ['รหัสไปรษณีย์', 'ไปรษณีย์'],
+  'โทรศัพท์':       ['โทรศัพท์', 'เบอร์โทร', 'tel', 'phone']
+};
+
+function splitCSVLine(line) {
+  var out = [], cur = '', inQ = false;
+  for (var i = 0; i < line.length; i++) {
+    var c = line[i];
+    if (inQ) {
+      if (c === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === ',') { out.push(cur); cur = ''; }
+      else cur += c;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+function parseCSV(text) {
+  var lines = text.replace(/\r/g, '').split('\n').filter(function(l) { return l.trim() !== ''; });
+  if (!lines.length) return [];
+  var headers = splitCSVLine(lines[0]);
+  return lines.slice(1).map(function(line) {
+    var cells = splitCSVLine(line);
+    var obj = {};
+    headers.forEach(function(h, i) { obj[h.trim()] = (cells[i] || '').trim(); });
+    return obj;
+  });
+}
+
+function normalizeRefRow(row) {
+  var out = {};
+  var lowerMap = {};
+  Object.keys(row).forEach(function(k) { lowerMap[k.trim().toLowerCase()] = row[k]; });
+  Object.keys(REF_OWNER_HEADER_ALIASES).forEach(function(canon) {
+    var aliases = REF_OWNER_HEADER_ALIASES[canon];
+    for (var i = 0; i < aliases.length; i++) {
+      var key = aliases[i].toLowerCase();
+      if (lowerMap.hasOwnProperty(key)) { out[canon] = String(lowerMap[key]).trim(); return; }
+    }
+    out[canon] = '';
+  });
+  return out;
+}
+
+async function processRefRows(rows) {
+  var list = await getList('ltax_ref_owner');
+  var byId = {};
+  list.forEach(function(r, i) { if (r['เลขบัตรประชาชน']) byId[r['เลขบัตรประชาชน']] = i; });
+
+  var added = 0, updated = 0, skipped = 0;
+  rows.forEach(function(raw) {
+    var r = normalizeRefRow(raw);
+    var psn = String(r['เลขบัตรประชาชน'] || '').replace(/[^0-9]/g, '').trim();
+    if (!psn) { skipped++; return; }
+    r['เลขบัตรประชาชน'] = psn;
+    if (byId.hasOwnProperty(psn)) { list[byId[psn]] = r; updated++; }
+    else { list.push(r); byId[psn] = list.length - 1; added++; }
+  });
+
+  try {
+    await saveList('ltax_ref_owner', list);
+  } catch(e) {
+    alert('บันทึกข้อมูลอ้างอิงไม่สำเร็จ: ' + e);
+    return;
+  }
+
+  await refreshRefStats();
+  alert('นำเข้าสำเร็จ — เพิ่มใหม่ ' + added + ' รายการ, อัปเดต ' + updated + ' รายการ' +
+        (skipped ? ', ข้าม ' + skipped + ' แถว (ไม่มีเลขบัตรประชาชน)' : ''));
+  $('refOwnerFile').value = '';
+}
+
+function loadXLSXLib(cb) {
+  if (window.XLSX) { cb(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload = cb;
+  s.onerror = function() {
+    alert('โหลดตัวอ่านไฟล์ Excel ไม่ได้ — ต้องมีอินเทอร์เน็ตตอนนำเข้าไฟล์ .xlsx/.xls ครั้งแรก\nลองต่อเน็ตแล้วนำเข้าใหม่ หรือแปลงไฟล์เป็น .csv แทน');
+  };
+  document.head.appendChild(s);
+}
+
+function importRefOwners() {
+  var input = $('refOwnerFile');
+  var file = input.files && input.files[0];
+  if (!file) { alert('เลือกไฟล์ก่อน'); return; }
+  var name = file.name.toLowerCase();
+
+  if (name.endsWith('.csv')) {
+    var reader = new FileReader();
+    reader.onload = function(e) { processRefRows(parseCSV(e.target.result)); };
+    reader.onerror = function() { alert('อ่านไฟล์ CSV ไม่สำเร็จ'); };
+    reader.readAsText(file, 'utf-8');
+    return;
+  }
+
+  loadXLSXLib(function() {
+    if (!window.XLSX) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        var sheet = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        processRefRows(rows);
+      } catch(err) {
+        alert('อ่านไฟล์ Excel ไม่สำเร็จ: ' + err);
+      }
+    };
+    reader.onerror = function() { alert('อ่านไฟล์ Excel ไม่สำเร็จ'); };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+async function refreshRefStats() {
+  var list = await getList('ltax_ref_owner');
+  var el = $('refOwnerStats');
+  if (el) el.textContent = 'ข้อมูลอ้างอิงเจ้าของทรัพย์สิน: ' + list.length + ' รายการ';
+}
+
+async function clearRefOwners() {
+  if (!confirm('ล้างข้อมูลอ้างอิงเจ้าของทรัพย์สินทั้งหมด? (ข้อมูลที่สำรวจแล้วในเครื่องจะไม่หาย ลบเฉพาะข้อมูลอ้างอิงที่นำเข้าไว้)')) return;
+  await LTAX_setAll('ltax_ref_owner', []);
+  try { localStorage.removeItem('ltax_ref_owner'); } catch(e) {}
+  await refreshRefStats();
+}
+
+/* =========================================================
+   ระบบภาพถ่าย — ใช้ PhotoStore (photo_store.js) ร่วมกับหน้าถ่ายรูป
+   ========================================================= */
+function photoGetAll() { return PhotoStore.listMeta(); }   // ข้อมูลรูป (meta) เท่านั้น ไม่รวมตัวรูป
+
+/* =========================================================
+   รวมข้อมูล + แนบรูปจากหน้าถ่ายรูปเข้ากับแปลง/อาคาร/ป้าย
+   ========================================================= */
+function collectErr(err) {
+  if (err && err.message === 'cancelled') return;
+  alert('รวมข้อมูลไม่สำเร็จ: ' + (err && err.message || err) + '\n\nถ้ามีรูปเยอะ แนะนำให้ใช้ "ส่งออก ZIP" แทน');
+}
+
+/* วิธีเดิม: ฝังรูปเป็น base64 ลงใน JSON ไฟล์เดียว — เหมาะกับรูปไม่กี่ร้อยรูป
+   (รูปเยอะ ใช้ "ส่งออก ZIP (รูป + ข้อมูล)" ด้านบนแทน) */
+function collectAllData() {
+  var out = {};
+  return Promise.all(KEYS.map(function(k) { return LTAX_getAll(k[0]); })).then(function(lists) {
+    KEYS.forEach(function(k, i) { out[k[0]] = lists[i]; });
+    return PhotoStore.listMeta();
+  }).then(function(metas) {
+    if (metas.length > 300 && !confirm('มีรูป ' + metas.length + ' รูป — การรวมเป็นไฟล์ JSON ไฟล์เดียวใช้หน่วยความจำมากและอาจทำให้แอปค้าง\n\nแนะนำให้ใช้ปุ่ม "ส่งออก ZIP" แทน\n\nต้องการทำต่อด้วยวิธีเดิมหรือไม่?')) {
+      throw new Error('cancelled');
+    }
+    var photos = [];
+    var chain = Promise.resolve();
+    metas.forEach(function(m) {
+      chain = chain.then(function() {
+        return PhotoStore.getBlob(m.id).then(function(b) {
+          if (!b) return null;
+          return PhotoStore.blobToDataUrl(b).then(function(url) {
+            photos.push({ id: m.id, category: m.category, code: m.code, ts: m.ts, lat: m.lat, lng: m.lng, dataUrl: url });
+          });
+        });
+      });
+    });
+    return chain.then(function() { return photos; });
+  }).then(function(photos) {
+    var urlById = {};
+    photos.forEach(function(p) { if (p) urlById[p.id] = p.dataUrl; });
+    // รูปที่ย้ายไปอยู่ที่เก็บรูปแล้ว (อ้างด้วย <ชื่อ>_ids) → ฝังกลับเป็น base64 ในตำแหน่งเดิม เพื่อให้ไฟล์ JSON แบบเดิมครบเหมือนเดิม
+    var FM = PhotoStore.FIELD_MAP, embedded = {};
+    Object.keys(FM).forEach(function(key) {
+      var cfg = FM[key];
+      (out[key] || []).forEach(function(rec) {
+        PhotoStore.holdersOf(cfg, rec).forEach(function(h) {
+          cfg.fields.forEach(function(f) {
+            var ids = Array.isArray(h[f.ids]) ? h[f.ids] : [];
+            var urls = ids.map(function(id) { return urlById[id]; }).filter(Boolean);
+            ids.forEach(function(id) { embedded[key + '|' + (rec[cfg.codeKey] || '') + '|' + id] = true; });
+            if (urls.length) h[f.data] = (urls.length === 1 && !Array.isArray(h[f.data])) ? urls[0] : (Array.isArray(h[f.data]) ? h[f.data].concat(urls) : urls);
+            delete h[f.ids];
+          });
+        });
+      });
+    });
+    var by = {};
+    photos.forEach(function(p) {
+      if (!p || !p.code) return;
+      var k = p.category + '|' + p.code;
+      (by[k] = by[k] || []).push({ id: p.id, url: p.dataUrl });
+    });
+    function attach(records, codeKey, cat, field, storeKey) {
+      (records || []).forEach(function(r) {
+        if (!r) return;
+        var c = r[codeKey];
+        if (!c) return;
+        var urls = (by[cat + '|' + c] || []).filter(function(x) { return !embedded[storeKey + '|' + c + '|' + x.id]; }).map(function(x) { return x.url; });
+        if (!urls.length) return;
+        var cur = r[field];
+        var arr = (cur == null) ? [] : (Array.isArray(cur) ? cur : [cur]);
+        r[field] = arr.concat(urls);
+      });
+    }
+    attach(out.ltax_land, 'รหัสแปลงที่ดิน', 'land', 'รูปที่ดิน_data', 'ltax_land');
+    attach(out.ltax_building, 'รหัสสิ่งปลูกสร้าง', 'building', 'รูปภาพ_data', 'ltax_building');
+    attach(out.ltax_sign, 'รหัสป้าย', 'sign', 'รูปภาพ_data', 'ltax_sign');
+    out.ltax_photos = photos.map(function(p) {
+      return { category: p.category, code: p.code, ts: p.ts, lat: p.lat || null, lng: p.lng || null, dataUrl: p.dataUrl };
+    });
+    return out;
+  });
+}
+
+function downloadJson(name, obj) {
+  var blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 2000);
+}
+
+function collectAll() {
+  collectAllData().then(function(out) {
+    downloadJson('ltax_data_all.json', out);
+  }).catch(collectErr);
+}
+
+function collectAllExcel() {
+  collectAllData().then(function(out) {
+    downloadJson('ltax_data_all.json', out);
+    alert('ดาวน์โหลด ltax_data_all.json แล้ว (' + out.ltax_owner.length + ' เจ้าของ, ' +
+          out.ltax_land.length + ' ที่ดิน, ' + out.ltax_land_usage.length + ' การใช้ที่ดิน, ' +
+          out.ltax_building.length + ' สิ่งปลูกสร้าง, ' + out.ltax_building_usage.length + ' การใช้สิ่งปลูกสร้าง, ' +
+          out.ltax_sign.length + ' ป้าย, ' + (out.ltax_photos || []).length + ' รูป)\n\nนำไฟล์ไปวางที่โฟลเดอร์เดียวกับ json_to_excel.py แล้วรันเพื่อสร้าง Excel');
+  }).catch(collectErr);
+}
+
+
+
+async function clearAll() {
+  var st = await PhotoStore.stats();
+  var recs = 0;
+  (await Promise.all(KEYS.map(function(k) { return LTAX_getAll(k[0]); }))).forEach(function(l) { recs += l.length; });
+  var warn = 'ล้างข้อมูลทั้งหมดในเบราว์เซอร์ (ทุกฟอร์ม ' + recs + ' รายการ + รูปทั้งหมด ' + st.total + ' รูป)?\n\n' +
+    (st.pending + st.unmatched > 0 ? '⚠ มีรูป ' + (st.pending + st.unmatched) + ' รูปที่ยังไม่ได้ดาวน์โหลด\n' : '') +
+    'ข้อมูลฟอร์มไม่มีสถานะส่งออก — ตรวจให้แน่ใจว่าส่งออกไฟล์ไปแล้ว\n' +
+    'ลบแล้วกู้คืนไม่ได้\n\nพิมพ์คำว่า ลบ เพื่อยืนยัน';
+  var t = prompt(warn);
+  if (t !== 'ลบ') return;
+  await Promise.all(KEYS.map(function(k) { return LTAX_setAll(k[0], []); }));
+  await LTAX_setAll('ltax_ref_owner', []);
+  // เก็บกวาด localStorage เก่าที่อาจค้างจากเวอร์ชันก่อนหน้าด้วย (กันข้อมูลผีย้อนกลับมาตอน auto-migrate)
+  KEYS.forEach(function(k) { try { localStorage.removeItem(k[0]); } catch(e) {} });
+  try { localStorage.removeItem('ltax_ref_owner'); } catch(e) {}
+  try { localStorage.removeItem('ltax_data_all'); } catch(e) {}
+  try { localStorage.removeItem('ltax_photos_fb'); } catch(e) {}
+  await PhotoStore.clearAll();
+  if (window.indexedDB && typeof indexedDB.deleteDatabase === 'function') {
+    try { indexedDB.deleteDatabase('ltax_photos_db'); } catch(e) {}
+  }
+  await refreshSummary();
+  await refreshRefStats();
+  alert('ล้างข้อมูลเรียบร้อย');
+}
+
+async function refreshSummary() {
+  var lists = await Promise.all(KEYS.map(function(k) { return getList(k[0]); }));
+  var lines = KEYS.map(function(k, i) {
+    return '<b>' + k[1] + '</b>: ' + lists[i].length + ' รายการ';
+  }).join(' &nbsp;|&nbsp; ');
+  $('summary').innerHTML = lines;
+  renderPhotoStats();
+}
+
+function renderPhotoStats() {
+  PhotoStore.stats().then(function(st) {
+    var el = $('photoStats');
+    if (el) {
+      var notSent = st.pending + st.unmatched;
+      el.innerHTML = 'รูปในเครื่อง: <b>' + st.total + '</b> รูป' +
+        (st.unmatched ? ' — <b style="color:#c62828;">รอจับคู่ ' + st.unmatched + '</b>' : '') +
+        (notSent ? ' — ยังไม่ได้ดาวน์โหลด <b>' + notSent + '</b>' : '') +
+        '<span style="color:#888;"> (ถ่าย/จับคู่/ลบ ได้ที่หน้าถ่ายรูป)</span>';
+    }
+  }).catch(function() {});
+  refreshExportUI();
+}
+
+/* =========================================================
+   ดาวน์โหลดข้อมูลทั้งหมด (ZIP) — ข้อมูล + รูปเป็นไฟล์จริง (ไม่ฝัง base64)
+   แบ่งเป็นหลายไฟล์ ไฟล์ละ ≤ EXP_BATCH รูป — แต่ละไฟล์มี data.json (ข้อมูลทุกหมวด) + manifest.json + photos/<แปลง>/<รหัส>_NN.jpg
+   ใช้งานออฟไลน์ได้ทั้งหมด · ขั้นตอน 2 จังหวะต่อไฟล์ (สร้างไฟล์ → กดบันทึก/แชร์) เพราะ iPhone/iPad ต้องกดแชร์ทันทีหลังการแตะ
+   ไฟล์ถัดไปจะสร้างให้อัตโนมัติหลังบันทึกไฟล์ก่อนหน้าเสร็จ
+   ========================================================= */
+var EXP_BATCH = 300;                   // รูปต่อไฟล์
+var EXP_MAX_BYTES = 45 * 1048576;      // หรือไม่เกินกี่ MB ต่อไฟล์ (แล้วแต่อย่างใดถึงก่อน)
+var EXP = { blob: null, name: '', ids: [], busy: false, done: {}, incl: false, batchNo: 0, batchesTotal: 0 };
+
+function expPad(n, w) { n = String(n); while (n.length < w) n = '0' + n; return n; }
+function expStamp(d) {
+  d = d || new Date();
+  return d.getFullYear() + expPad(d.getMonth() + 1, 2) + expPad(d.getDate(), 2) + '-' + expPad(d.getHours(), 2) + expPad(d.getMinutes(), 2);
+}
+function expLabel() {
+  var v = '';
+  try { v = localStorage.getItem('ltax_export_label') || ''; } catch (e) {}
+  return PhotoStore.safeName(v.trim() || PhotoStore.deviceId());
+}
+function expSaveLabel() {
+  var el = $('expLabel');
+  if (!el) return;
+  try { localStorage.setItem('ltax_export_label', el.value.trim()); } catch (e) {}
+}
+function expNextSeq() {
+  var n = 0;
+  try { n = parseInt(localStorage.getItem('ltax_export_seq') || '0', 10) || 0; } catch (e) {}
+  return n + 1;
+}
+function expCommitSeq(n) { try { localStorage.setItem('ltax_export_seq', String(n)); } catch (e) {} }
+function expMsg(t, isErr) {
+  var el = $('expMsg');
+  if (!el) return;
+  el.style.color = isErr ? '#c62828' : '#1b4f8a';
+  el.textContent = t || '';
+}
+function fmtMBx(b) { return (b / 1048576).toFixed(1) + ' MB'; }
+
+function refreshExportUI() {
+  if (!window.PhotoStore || !$('expStat')) return Promise.resolve();
+  var lab = $('expLabel');
+  if (lab && document.activeElement !== lab) {
+    try { lab.value = localStorage.getItem('ltax_export_label') || ''; } catch (e) {}
+  }
+  return PhotoStore.stats().then(function(st) {
+    var batches = Math.ceil(st.pending / EXP_BATCH);
+    var t = 'รูปที่ยังไม่ได้ดาวน์โหลด: <b>' + st.pending + '</b> รูป' +
+            (batches > 1 ? ' (ประมาณ ' + batches + ' ไฟล์)' : '') +
+            ' · ดาวน์โหลดแล้ว ' + st.exported + ' รูป';
+    if (st.unmatched) t += '<br><b style="color:#c62828;">⚠ มีรูปรอจับคู่ ' + st.unmatched + ' รูป — จะไม่ถูกดาวน์โหลดจนกว่าจะจับคู่รหัส</b>';
+    $('expStat').innerHTML = t;
+    var del = $('expDelBtn');
+    if (del) del.disabled = st.exported === 0;
+    var build = $('expBuildBtn');
+    if (build) build.disabled = EXP.busy;
+  }).catch(function() {});
+}
+
+function expReset() {
+  EXP.blob = null; EXP.name = ''; EXP.ids = [];
+  var s = $('expSaveBtn'), d = $('expDlLink'), c = $('expCancelLink'), b = $('expBuildBtn');
+  if (s) s.style.display = 'none';
+  if (d) d.style.display = 'none';
+  if (c) c.style.display = 'none';
+  if (b) { b.style.display = ''; b.disabled = false; }
+}
+function expCancel() {
+  expReset();
+  EXP.done = {}; EXP.batchNo = 0; EXP.batchesTotal = 0;
+  expMsg('หยุดแล้ว — ไฟล์ที่บันทึกไปแล้วยังใช้ได้ · ไฟล์ที่ยังไม่ได้บันทึก จะถูกสร้างใหม่เมื่อกดเริ่มอีกครั้ง');
+  refreshExportUI();
+}
+
+/* คัดลอกเรคคอร์ดฟอร์ม → เอา base64 ออก ใส่ path ไฟล์แทน
+   - ช่องรูปอยู่ที่ "ตัวถือ" (holder): ตัวเรคคอร์ด หรือแต่ละรายการใช้ประโยชน์ที่ดิน (PhotoStore.FIELD_MAP บอกว่าหมวดไหนอยู่ตรงไหน)
+   - <ชื่อ>_ids (รูปที่ย้ายเข้าที่เก็บรูปแล้ว) → ชื่อไฟล์จริง · รูปที่ยังฝังอยู่ (ข้อมูลเก่า) → แยกเป็นไฟล์ (รูปเดียวกันที่ถูกคัดลอกหลายที่ รวมเป็นไฟล์เดียว)
+   - รูปถ่ายตามรหัส (หน้าถ่ายรูป) ผูกกับเรคคอร์ดหมวดที่ camera:true
+   - ใส่รายการไฟล์ใน <ชื่อ>_files · ช่อง Path ... ชี้ไฟล์แรก (ชื่อเดิมเก็บที่ "Path ..._ชื่อเดิม") */
+function expPrepareData(lists, metasAll) {
+  var FM = PhotoStore.FIELD_MAP;
+  var data = {}, formEntries = [], formManifest = [], seen = {}, nForm = {};
+  var camByKey = {}, metaById = {};
+  metasAll.forEach(function(m) { metaById[m.id] = m; });
+  metasAll.filter(function(m) { return m.code; }).sort(function(a, b) { return (a.seq || 0) - (b.seq || 0); }).forEach(function(m) {
+    var k = m.category + '|' + m.code;
+    (camByKey[k] = camByKey[k] || []).push(PhotoStore.fileName(m));
+  });
+
+  KEYS.forEach(function(k, i) {
+    var key = k[0];
+    var cfg = FM[key];
+    data[key] = (lists[i] || []).map(function(rec) {
+      var r = JSON.parse(JSON.stringify(rec));
+      if (!cfg) return r;
+      var code = String(r[cfg.codeKey] || '').trim();
+      PhotoStore.holdersOf(cfg, r).forEach(function(h) {
+        cfg.fields.forEach(function(f) {
+          var orig = h[f.data];
+          var formPaths = [];
+          if (code) {
+            PhotoStore.dataUrlsOf(orig).forEach(function(u) {
+              var sk = cfg.cat + '|' + code + '|' + u;
+              if (!seen[sk]) {
+                nForm[code] = (nForm[code] || 0) + 1;
+                var ext = /^data:image\/png/.test(u) ? 'png' : (/^data:image\/webp/.test(u) ? 'webp' : 'jpg');
+                var name = 'photos/' + PhotoStore.safeName(PhotoStore.parcelOf(code)) + '/' + PhotoStore.safeName(code) + '_F' + expPad(nForm[code], 2) + '.' + ext;
+                seen[sk] = name;
+                formEntries.push({ name: name, url: u });
+                formManifest.push({ file: name, code: code, category: cfg.cat, source: 'form' });
+              }
+              formPaths.push(seen[sk]);
+            });
+          }
+          if (PhotoStore.dataUrlsOf(orig).length) {
+            h[f.data] = Array.isArray(orig) ? orig.filter(function(u) { return PhotoStore.dataUrlsOf([u]).length === 0; }) : '';
+          }
+          var idFiles = (Array.isArray(h[f.ids]) ? h[f.ids] : []).map(function(id) { return metaById[id]; })
+            .filter(function(m) { return m && m.code && m.seq; }).map(function(m) { return PhotoStore.fileName(m); });
+          var camFiles = (cfg.camera && h === r) ? (camByKey[cfg.cat + '|' + code] || []) : [];
+          var files = PhotoStore.uniq(formPaths.concat(idFiles, camFiles));
+          h[f.files] = files;
+          if (files.length) {
+            if (h[f.path] && h[f.path] !== files[0]) h[f.path + '_ชื่อเดิม'] = h[f.path];
+            h[f.path] = files[0];
+          }
+        });
+      });
+      return r;
+    });
+  });
+  return { data: data, formEntries: formEntries, formManifest: formManifest };
+}
+
+/* เลือกรูปเข้าไฟล์ละ ≤ EXP_BATCH รูป และ ≤ EXP_MAX_BYTES */
+function expTakeBatch(pool) {
+  var batch = [], bytes = 0;
+  for (var i = 0; i < pool.length; i++) {
+    if (batch.length >= EXP_BATCH || (batch.length && bytes + (pool[i].bytes || 0) > EXP_MAX_BYTES)) break;
+    batch.push(pool[i]);
+    bytes += pool[i].bytes || 0;
+  }
+  return batch;
+}
+
+/* ปุ่ม "เริ่มดาวน์โหลดข้อมูลทั้งหมด" */
+function expStart() {
+  if (EXP.busy) return;
+  EXP.done = {}; EXP.batchNo = 0; EXP.batchesTotal = 0;
+  EXP.incl = !!($('expInclAll') && $('expInclAll').checked);
+  expBuild(true);
+}
+
+async function expBuild(isFirst) {
+  if (EXP.busy) return;
+  if (!window.PhotoStore) { alert('ไม่พบ photo_store.js'); return; }
+  EXP.busy = true;
+  var buildBtn = $('expBuildBtn');
+  if (buildBtn) buildBtn.disabled = true;
+  try {
+    expMsg('กำลังตรวจรูป...');
+    var st = await PhotoStore.stats();
+    if (isFirst && st.unmatched > 0 && !confirm('มีรูปรอจับคู่ ' + st.unmatched + ' รูป — รูปเหล่านี้จะไม่ถูกดาวน์โหลดในรอบนี้\n\nทำต่อหรือไม่?')) {
+      expMsg('ยกเลิก — ไปจับคู่รูปที่หน้าถ่ายรูปก่อนได้');
+      EXP.busy = false; if (buildBtn) buildBtn.disabled = false;
+      return;
+    }
+    await PhotoStore.assignSeq();
+    var metasAll = await PhotoStore.listMeta();
+    var pool = metasAll.filter(function(m) { return m.code && !EXP.done[m.id] && (EXP.incl || m.status !== 'exported'); })
+                       .sort(function(a, b) { return (a.ts || 0) - (b.ts || 0); });
+    if (isFirst) {
+      var n = 0, rest = pool.slice();
+      while (rest.length) { var b0 = expTakeBatch(rest); rest = rest.slice(b0.length); n++; }
+      EXP.batchesTotal = Math.max(1, n);
+    }
+    var batch = expTakeBatch(pool);
+    EXP.batchNo++;
+    var tag = 'ชุด ' + EXP.batchNo + ' จาก ' + EXP.batchesTotal;
+
+    var lists = await Promise.all(KEYS.map(function(k) { return LTAX_getAll(k[0]); }));
+    var prep = expPrepareData(lists, metasAll);
+    var now = new Date();
+    var label = expLabel();
+    var seq = expNextSeq();
+    var counts = {};
+    KEYS.forEach(function(k) { counts[k[0]] = (prep.data[k[0]] || []).length; });
+
+    var head = {
+      format: 'ltax-survey-export', version: 2, device_id: PhotoStore.deviceId(), label: label,
+      exported_at: now.toISOString(), part: seq
+    };
+    var dataJson = {};
+    Object.keys(head).forEach(function(k) { dataJson[k] = head[k]; });
+    KEYS.forEach(function(k) { dataJson[k[0]] = prep.data[k[0]]; });
+
+    var entries = [{ name: 'data.json', text: JSON.stringify(dataJson, null, 1) }];
+    batch.forEach(function(m) {
+      entries.push({ name: PhotoStore.fileName(m), getBlob: (function(id) { return function() { return PhotoStore.getBlob(id); }; })(m.id), sha: true, mtime: m.ts });
+    });
+    prep.formEntries.forEach(function(e) {
+      entries.push({ name: e.name, getBlob: (function(u) { return function() { return Promise.resolve(PhotoStore.dataUrlToBlob(u)); }; })(e.url), sha: true });
+    });
+
+    expMsg(tag + ' — กำลังสร้างไฟล์ 0/' + (entries.length + 1) + ' (อย่าปิดหน้านี้)');
+    var result = await PhotoStore.makeZip(entries, {
+      onProgress: function(d, t) { if (d % 10 === 0 || d === t) expMsg(tag + ' — กำลังสร้างไฟล์ ' + d + '/' + t + ' (อย่าปิดหน้านี้)'); },
+      extraAfter: function(hashes) {
+        var photos = batch.map(function(m) {
+          var fn = PhotoStore.fileName(m);
+          return { photo_id: m.id, file: fn, code: m.code, category: m.category, seq: m.seq, ts: m.ts, lat: m.lat, lng: m.lng, bytes: m.bytes, sha256: hashes[fn] || '' };
+        });
+        var forms = prep.formManifest.map(function(f) { f.sha256 = hashes[f.file] || ''; return f; });
+        var manifest = {
+          format: 'ltax-survey-export', version: 2, device_id: head.device_id, label: label, part: seq,
+          exported_at: head.exported_at, counts: counts, photo_count: photos.length, photos: photos, form_photos: forms,
+          remaining_after_this: Math.max(0, pool.length - batch.length)
+        };
+        return [{ name: 'manifest.json', text: JSON.stringify(manifest, null, 1) }];
+      }
+    });
+
+    EXP.blob = result.blob;
+    EXP.name = 'ltax_' + label + '_' + expStamp(now) + '_' + expPad(seq, 3) + '.zip';
+    EXP.ids = batch.map(function(m) { return m.id; });
+    EXP.seq = seq;
+    EXP.remaining = Math.max(0, pool.length - batch.length);
+
+    $('expBuildBtn').style.display = 'none';
+    $('expSaveBtn').style.display = '';
+    $('expSaveBtn').textContent = 'บันทึก/แชร์ ' + tag + ' (' + fmtMBx(EXP.blob.size) + ' · ' + batch.length + ' รูป)';
+    $('expDlLink').style.display = '';
+    $('expCancelLink').style.display = '';
+    var extra = prep.formEntries.length ? ' · รวมรูปที่แนบในฟอร์ม ' + prep.formEntries.length + ' รูป' : '';
+    var note = (isFirst && pool.length === 0) ? ' (ไม่มีรูปใหม่ — ข้อมูลอย่างเดียว)' : '';
+    expMsg(tag + ' พร้อมแล้ว: ' + EXP.name + extra + note + ' — กดปุ่มสีเขียวเพื่อบันทึก (iPhone/iPad: เลือก "บันทึกไปยังไฟล์")');
+  } catch (err) {
+    console.error(err);
+    expReset();
+    expMsg('สร้างไฟล์ไม่สำเร็จ: ' + (err && err.message || err), true);
+  }
+  EXP.busy = false;
+  refreshExportUI();
+}
+
+/* ต้องเรียกแบบ sync จากการแตะปุ่ม (ห้าม await ก่อน navigator.share) */
+function expSave(forceDownload) {
+  if (!EXP.blob) { expMsg('ยังไม่มีไฟล์ที่เตรียมไว้', true); return; }
+  var blob = EXP.blob, name = EXP.name, ids = EXP.ids.slice(), seq = EXP.seq, remaining = EXP.remaining;
+  var batchNo = EXP.batchNo, total = EXP.batchesTotal;
+  function saved(how) {
+    expCommitSeq(seq);
+    ids.forEach(function(id) { EXP.done[id] = true; });
+    expReset();
+    var p = ids.length ? PhotoStore.markExported(ids) : Promise.resolve();
+    p.then(function() { return refreshExportUI(); }).then(function() { return refreshSummary(); }).then(function() {
+      if (remaining > 0) {
+        expMsg('✓ ' + how + ' ' + name + ' (ชุด ' + batchNo + ' จาก ' + total + ') — กำลังเตรียมชุดถัดไป...');
+        return expBuild(false);
+      }
+      expMsg('✓ ' + how + ' ' + name + ' — ดาวน์โหลดครบทุกชุดแล้ว (' + batchNo + ' ไฟล์) · นำไฟล์ ZIP ทั้งหมดไปที่คอมฯ แล้วรัน python import_export.py *.zip');
+      EXP.done = {}; EXP.batchNo = 0; EXP.batchesTotal = 0;
+    });
+  }
+  function download() {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+    saved('สั่งดาวน์โหลดแล้ว (ตรวจในโฟลเดอร์ดาวน์โหลด/ไฟล์ของเครื่อง)');
+  }
+  if (!forceDownload && navigator.canShare && typeof File !== 'undefined') {
+    var file;
+    try { file = new File([blob], name, { type: 'application/zip' }); } catch (e) { file = null; }
+    if (file && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: name }).then(function() {
+        saved('บันทึกแล้ว');
+      }).catch(function(err) {
+        if (err && err.name === 'AbortError') { expMsg('ยกเลิก — ยังไม่ได้ทำเครื่องหมายว่าดาวน์โหลด (กดปุ่มสีเขียวใหม่ได้)'); return; }
+        expMsg('บันทึกไม่สำเร็จ (' + (err && err.name || err) + ') — ลองกด "ดาวน์โหลดตรง"', true);
+      });
+      return;
+    }
+  }
+  download();
+}
+
+async function expDeleteSent() {
+  var metas = await PhotoStore.listMeta();
+  var sent = metas.filter(function(m) { return m.code && m.status === 'exported'; });
+  if (!sent.length) { expMsg('ไม่มีรูปที่ดาวน์โหลดแล้ว'); return; }
+  var t = prompt('ลบรูปที่ดาวน์โหลดแล้ว ' + sent.length + ' รูปออกจากเครื่อง\n\n⚠ ทำเมื่อนำไฟล์ ZIP เข้าที่คอมฯ และตรวจแล้วเท่านั้น — ลบแล้วกู้คืนไม่ได้\n\nพิมพ์คำว่า ลบ เพื่อยืนยัน');
+  if (t !== 'ลบ') return;
+  await PhotoStore.remove(sent.map(function(m) { return m.id; }));
+  expMsg('ลบรูปที่ดาวน์โหลดแล้ว ' + sent.length + ' รูป ออกจากเครื่องแล้ว');
+  await refreshExportUI();
+  await refreshSummary();
+}
+
+/* =========================================================
+   SPA router — เปิดฟอร์ม (เทมเพลตในหน้าเดียว)
+   ========================================================= */
+window.__editQuery = null;
+
+function showView(which) {
+  $('view-home').style.display = (which === 'home') ? 'block' : 'none';
+  $('view-form').style.display = (which === 'form') ? 'block' : 'none';
+}
+
+async function openForm(id, editQuery) {
+  window.__editQuery = editQuery || null;
+
+  // ตรวจสอบ guard สำหรับฟอร์มต่าง ๆ (ยกเว้นการแก้ไขข้อมูลเก่า)
+  if (!window.__editQuery && !(await checkFormPrerequisites(id))) {
+    return;
+  }
+
+  var t = document.getElementById('tpl-' + id);
+  var shell = $('view-form');
+  if (!t || !shell) { alert('ไม่พบฟอร์ม: ' + id); return; }
+  shell.innerHTML = '';
+  shell.appendChild(t.content.cloneNode(true));
+  var js = document.getElementById('js-' + id);
+  if (js && js.textContent) {
+    var s = document.createElement('script');
+    s.textContent = js.textContent;
+    shell.appendChild(s);
+  }
+  showView('form');
+  window.scrollTo(0, 0);
+}
+
+function openFormEdit(key, idx) {
+  openForm(key, '?editKey=' + encodeURIComponent(key) + '&editIdx=' + idx);
+}
+
+function closeForm() {
+  $('view-form').innerHTML = '';
+  showView('home');
+  window.__editQuery = null;
+  refreshSummary();
+  window.scrollTo(0, 0);
+}
+window.__goHome = closeForm;
+
+/* =========================================================
+   PWA — ติดตั้งแอป + service worker (เฉพาะเมื่อเข้า http/https)
+   ========================================================= */
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+  var b = $('installBtn');
+  if (b) b.style.display = 'inline-block';
+  var h = $('installHint');
+  if (h) h.innerHTML = ' (เบราว์เซอร์รองรับ — กดปุ่มนี้ได้เลย)';
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt = null;
+    return;
+  }
+  alert('วิธีติดตั้ง:\n\n' +
+        'iPhone/iPad: กดปุ่ม Share (สี่เหลี่ยมลูกศรขึ้น) → "เพิ่มไปที่หน้าจอโฮม"\n\n' +
+        'Android (Chrome): กด ⋮ → "เพิ่มไปที่หน้าจอหลัก" (หรือ "ติดตั้งแอป")\n\n' +
+        'หลังติดตั้งแล้วเปิดจากไอคอนบนหน้าจอ — ใช้งานออฟไลน์ได้เลย');
+}
+
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js').then(function() {
+      var h = $('installHint');
+      if (h) h.innerHTML = ' (พร้อมติดตั้งแล้ว — ระบบจะใช้งานออฟไลน์ได้หลังติดตั้งครั้งแรก)';
+    }).catch(function(err) {
+      console.warn('Service worker register failed:', err);
+    });
+  });
+}
+
+refreshSummary();
+(function startPhotoStore() {
+  if (!window.PhotoStore) return;
+  PhotoStore.init().then(function() {
+    return PhotoStore.migrateLegacy(function(d, t) {
+      var el = $('photoStats');
+      if (el) el.innerHTML = '<b style="color:#7a5c00;">กำลังย้ายรูปเดิมเข้าที่เก็บใหม่ ' + d + '/' + t + ' — กรุณาอย่าปิดหน้านี้</b>';
+    });
+  }).then(function(r) {
+    if (r && (r.migrated || r.broken)) {
+      var msg = '';
+      if (r.migrated) msg += 'ย้ายรูปเดิมเข้าที่เก็บใหม่แล้ว ' + r.migrated + ' รูป\n';
+      if (r.broken) msg += 'พบรายการรูปเสียหาย ' + r.broken + ' รายการ (ภาพหายไปก่อนหน้านี้จากปุ่ม "ยกเลิกจับคู่" ของเวอร์ชันเก่า กู้คืนไม่ได้) — ลบรายการนั้นออกแล้ว';
+      alert(msg);
+    }
+    return PhotoStore.absorbExisting();
+  }).then(function(a) {
+    if (a && a.photos) {
+      alert('ย้ายรูปที่แนบในฟอร์ม ' + a.photos + ' รูป (' + a.records + ' รายการ) ไปเก็บรวมกับรูปถ่ายแล้ว\n\nดูได้ที่หน้าถ่ายรูป — ตามรหัสแปลง/อาคาร/ป้าย');
+    }
+    return refreshSummary();
+  }).catch(function(err) { console.error('PhotoStore init error:', err); });
+})();
+refreshRefStats();
+
+</script>
 </body>
 </html>

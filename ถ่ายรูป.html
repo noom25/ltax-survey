@@ -119,6 +119,16 @@
     background: rgba(0,0,0,.8); color: #fff; padding: 10px 18px; border-radius: 6px;
     font-size: 13px; z-index: 99; display: none;
   }
+
+  .ph img { cursor: pointer; }
+  .ph .noimg { width: 82px; height: 82px; background: #cfd8dc; color: #546e7a; font-size: 11px; display: flex; align-items: center; justify-content: center; border-radius: 3px; cursor: pointer; }
+  .ph .sent { font-size: 10px; color: #2e7d32; text-align: center; }
+  .more-row { margin-top: 8px; text-align: center; }
+  .mig-stat { display: none; background: #fff8e1; border: 1px solid #ffe082; color: #7a5c00; padding: 8px 12px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; }
+  .view-mask { position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 80; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 10px; }
+  .view-mask img { max-width: 100%; max-height: 82vh; object-fit: contain; }
+  .view-mask .cap { color: #fff; font-size: 13px; margin-top: 8px; }
+  .view-mask .close { margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -129,6 +139,8 @@
 </header>
 
 <div class="container">
+
+  <div class="mig-stat" id="migStat"></div>
 
   <div class="panel">
     <div class="panel-head">ถ่ายรูปใหม่ — เลือกหมวด + รหัสแปลงก่อนถ่าย (ระบบจำรหัสล่าสุด)</div>
@@ -149,9 +161,12 @@
       <div class="capture-row">
         <button type="button" class="btn btn-cam" onclick="doCapture()">ถ่ายรูป (รหัสปัจจุบัน)<span id="camCode"></span></button>
         <button type="button" class="btn btn-quick" onclick="doCaptureQuick()">ถ่ายด่วน<br>ยังไม่เลือก</button>
+        <button type="button" class="btn btn-quick" onclick="doGallery()">เลือกจากคลังรูป<br>(เลือกได้หลายรูป)</button>
       </div>
       <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none;">
+      <input type="file" id="galInput" accept="image/*" multiple style="display:none;">
       <div id="gpsStatus" style="font-size:12px; color:#888; margin-top:8px;"></div>
+      <div id="storeStat" style="font-size:12px; color:#555; margin-top:6px;"></div>
       <div class="recent" id="recentStrip"></div>
     </div>
   </div>
@@ -167,6 +182,7 @@
         <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelected()">ลบที่เลือก</button>
       </div>
       <div id="unmatchedList"></div>
+      <div class="more-row" id="unMore"></div>
       <div class="tip" style="background:#e8f5e9; border:1px solid #a5d6a7; color:#1b5e20; padding:8px 10px; border-radius:4px; font-size:12px; margin-top:8px;">
         จัดกลุ่มอัตโนมัติตามเวลาถ่ายและตำแหน่ง GPS (ถ้าเปิดไว้) — รูปที่ถ่ายติดกันน่าจะเป็นแปลงเดียวกัน เลือกทั้งกลุ่มแล้วจับคู่รหัสเดียวจบทั้งกลุ่ม
       </div>
@@ -184,6 +200,7 @@
       </div>
       <div class="stat-line" id="mtStat"></div>
       <div class="grp-grid" id="matchedList"></div>
+      <div class="more-row" id="mtMore"></div>
       <div style="margin-top:10px; text-align:right;">
         <button type="button" class="btn btn-danger btn-sm" onclick="deleteAllPhotos()">ลบรูปทั้งหมดในเครื่อง</button>
       </div>
@@ -211,9 +228,16 @@
   </div>
 </div>
 
+<div class="view-mask" id="viewModal" onclick="closeView()">
+  <img id="viewImg" alt="">
+  <div class="cap" id="viewCap"></div>
+  <button type="button" class="btn btn-outline close" onclick="closeView()">ปิด</button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="db.js"></script>
+<script src="photo_store.js"></script>
 <script>
 /* =========================================================
    ข้อมูลหมวด + รายการรหัส (จาก LTAXDB — IndexedDB — ที่กรอกในฟอร์มแล้ว)
@@ -231,6 +255,11 @@ var unmatched = [];   // cache photos code==''
 var allPhotos = [];
 var lastGps = null;
 var noCodeFlag = false;
+var CAT_RE = {   // รูปแบบรหัส: zone(2 หลัก)+block(1 ตัวอักษร)+lot(3 หลัก) / อาคาร -Bxxx / ป้าย -Pxxx
+  'land':     /^\d{2}[A-Z]\d{3}$/,
+  'building': /^\d{2}[A-Z]\d{3}-B\d{3}$/,
+  'sign':     /^\d{2}[A-Z]\d{3}-P\d{3}$/
+};
 
 function $(id) { return document.getElementById(id); }
 
@@ -277,10 +306,13 @@ function onCodeInput() {
   }
   var hit = getCodes(lastCat).filter(function(c) { return c.code === v; });
   if (hit.length) {
-    info.innerHTML = '✓ จับคู่กับ <b>' + v + '</b> — ' + PHOTO_CATS[lastCat].label + (hit[0].desc ? ' (' + hit[0].desc + ')' : '');
+    info.innerHTML = '✓ จับคู่กับ <b>' + escHtml(v) + '</b> — ' + PHOTO_CATS[lastCat].label + (hit[0].desc ? ' (' + hit[0].desc + ')' : '');
     info.style.color = '#1b5e20';
+  } else if (!CAT_RE[lastCat].test(v)) {
+    info.innerHTML = '⚠ รหัส <b>' + escHtml(v) + '</b> ไม่ตรงรูปแบบของหมวด' + PHOTO_CATS[lastCat].label + ' — ตรวจตัวอักษร/ตัวเลขอีกครั้ง (เช่น ' + ({land:'01A001', building:'01A001-B001', sign:'01A001-P001'})[lastCat] + ')';
+    info.style.color = '#c62828';
   } else {
-    info.innerHTML = 'รหัส <b>' + v + '</b> ยังไม่พบในข้อมูลที่กรอก (อาจกรอกฟอร์มยังไม่ครบ) — ถ่ายได้ แต่จะต้องมาแก้ทีหลัง';
+    info.innerHTML = 'รหัส <b>' + escHtml(v) + '</b> ยังไม่พบในข้อมูลที่กรอก (อาจกรอกฟอร์มยังไม่ครบ) — ถ่ายได้ แต่จะต้องมาแก้ทีหลัง';
     info.style.color = '#7a5c00';
   }
   localStorage.setItem('ltax_photo_lastcode_' + lastCat, v);
@@ -308,82 +340,36 @@ function setCat(cat) {
   }
 }
 
+
 /* =========================================================
-   ระบบภาพถ่าย — IndexedDB (สำรอง localStorage)
+   ระบบภาพถ่าย — ใช้ PhotoStore (photo_store.js)
+   รูปเก็บเป็น Blob + ภาพย่อ แยกจากข้อมูลรูป (meta) ·
+   การจับคู่/ยกเลิกจับคู่แก้เฉพาะ meta จึงไม่มีทางทำให้รูปหาย ·
+   หน้านี้โหลดเฉพาะ meta (เล็ก) ไม่โหลดตัวรูปทั้งหมดเข้าหน่วยความจำ
    ========================================================= */
-var photoBackend = null;
-function detectPhotoBackend() {
-  if (photoBackend) return photoBackend;
-  if (window.indexedDB && typeof indexedDB.open === 'function') photoBackend = 'idb';
-  else photoBackend = 'ls';
-  return photoBackend;
-}
-function _photoDB() {
-  return new Promise(function(res, rej) {
-    var rq = indexedDB.open('ltax_photos_db', 1);
-    rq.onupgradeneeded = function(e) {
-      var db = e.target.result;
-      if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', { keyPath: 'id' });
-    };
-    rq.onsuccess = function() { res(rq.result); };
-    rq.onerror = function() { rej(rq.error); };
+var PAGE = 60;                 // แสดงทีละกี่รูป
+var matchedLimit = PAGE, unmatchedLimit = PAGE;
+var viewUrl = null;
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
-function photoPut(rec) {
-  if (detectPhotoBackend() === 'ls') {
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]'); } catch(e) { list = []; }
-    var i = -1;
-    for (var j = 0; j < list.length; j++) if (list[j].id === rec.id) { i = j; break; }
-    if (i >= 0) list[i] = rec; else list.push(rec);
-    try { localStorage.setItem('ltax_photos_fb', JSON.stringify(list)); } catch(e) { return Promise.reject(e); }
-    return Promise.resolve();
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readwrite');
-      tx.objectStore('photos').put(rec);
-      tx.oncomplete = function() { res(); };
-      tx.onerror = function() { rej(tx.error); };
-    });
+function fmtMB(b) { return (b / 1048576).toFixed(b >= 10485760 ? 0 : 1) + ' MB'; }
+function calcStats(list) {
+  var s = { total: list.length, unmatched: 0, matched: 0, pending: 0, exported: 0, bytes: 0 };
+  list.forEach(function(m) {
+    s.bytes += m.bytes || 0;
+    if (!m.code) { s.unmatched++; return; }
+    s.matched++;
+    if (m.status === 'exported') s.exported++; else s.pending++;
   });
-}
-function photoGetAll() {
-  if (detectPhotoBackend() === 'ls') {
-    try { return Promise.resolve(JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]')); }
-    catch(e) { return Promise.resolve([]); }
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readonly');
-      var rq = tx.objectStore('photos').getAll();
-      rq.onsuccess = function() { res(rq.result || []); };
-      rq.onerror = function() { rej(rq.error); };
-    });
-  });
-}
-function photoDelete(ids) {
-  if (!ids || !ids.length) return Promise.resolve();
-  if (detectPhotoBackend() === 'ls') {
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem('ltax_photos_fb') || '[]'); } catch(e) { list = []; }
-    list = list.filter(function(p) { return ids.indexOf(p.id) < 0; });
-    localStorage.setItem('ltax_photos_fb', JSON.stringify(list));
-    return Promise.resolve();
-  }
-  return _photoDB().then(function(db) {
-    return new Promise(function(res, rej) {
-      var tx = db.transaction('photos', 'readwrite');
-      var st = tx.objectStore('photos');
-      ids.forEach(function(id) { st.delete(id); });
-      tx.oncomplete = function() { res(); };
-      tx.onerror = function() { rej(tx.error); };
-    });
-  });
+  return s;
 }
 
 /* =========================================================
-   GPS + การบีบอัดรูป
+   GPS
    ========================================================= */
 function getGps(cb) {
   if (lastGps) { cb(lastGps); return; }
@@ -397,96 +383,80 @@ function getGps(cb) {
   }, { timeout: 4000, maximumAge: 60000 });
 }
 
-function compressImage(file, maxW, quality, maxBytes, cb) {
-  if (typeof maxBytes === 'function') { cb = maxBytes; maxBytes = null; } // เผื่อเรียกแบบเดิมไม่ระบุ maxBytes
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    var rawUrl = e.target.result;
-    var img = new Image();
-    img.onload = function() {
-      var srcW = img.width, srcH = img.height;
-      function render(targetMaxW, q) {
-        var scale = Math.min(1, targetMaxW / Math.max(srcW, srcH));
-        var c = document.createElement('canvas');
-        c.width = Math.round(srcW * scale) || 1;
-        c.height = Math.round(srcH * scale) || 1;
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        return c.toDataURL('image/jpeg', q);
-      }
-      function estBytes(dataUrl) {
-        var i = dataUrl.indexOf(',') + 1;
-        return Math.round((dataUrl.length - i) * 3 / 4);
-      }
-      var curW = maxW, curQ = quality;
-      var dataUrl = render(curW, curQ);
-      if (maxBytes) {
-        var tries = 0;
-        // ลดคุณภาพก่อน (ผลกระทบต่อความคมชัดน้อยกว่าลดขนาด) ถ้ายังไม่พอค่อยลดความกว้างลงทีละขั้น
-        while (estBytes(dataUrl) > maxBytes && tries < 10) {
-          tries++;
-          if (curQ > 0.4) {
-            curQ = Math.max(0.4, curQ - 0.1);
-          } else {
-            curW = Math.round(curW * 0.85);
-          }
-          dataUrl = render(curW, curQ);
-        }
-      }
-      cb(dataUrl);
-    };
-    img.onerror = function() { cb(rawUrl); };
-    img.src = rawUrl;
-  };
-  reader.readAsDataURL(file);
-}
-
 /* =========================================================
    การถ่ายรูป
    ========================================================= */
 function doCapture() { noCodeFlag = false; $('camInput').click(); }
 function doCaptureQuick() { noCodeFlag = true; $('camInput').click(); }
 
-$('camInput').addEventListener('change', function(e) {
-  var files = e.target.files;
-  if (!files || !files.length) return;
-  var code = noCodeFlag ? '' : $('codeInput').value.trim().toUpperCase();
-  var cat = noCodeFlag ? '' : lastCat;
-  if (!code) { cat = ''; }
-
-  getGps(function(gps) {
-    var lat = gps ? gps.lat : null;
-    var lng = gps ? gps.lng : null;
-    var todo = Array.prototype.slice.call(files);
-    var done = 0;
-
+/* ประมวลผลรูปทีละไฟล์ต่อเนื่อง (ไม่โหลดทีเดียวทั้งหมด) — ใช้ร่วมกันทั้งกล้องและคลังรูป
+   รูปจากคลังรูป: ใช้วันเวลาของไฟล์เป็นเวลาถ่าย, ไม่ใส่ GPS ปัจจุบัน (ตำแหน่งตอนนี้ไม่ใช่ที่ที่ถ่าย),
+   และข้ามรูปที่เคยเลือกแล้ว (ชื่อ+ขนาด+วันที่แก้ไขตรงกัน) กันเลือกซ้ำ */
+function addFiles(files, opts) {
+  var known = {};
+  allPhotos.forEach(function(p) { if (p.srcKey) known[p.srcKey] = true; });
+  var done = 0, skipped = 0, errors = [], i = 0, total = files.length;
+  return new Promise(function(resolve) {
     function next() {
-      if (!todo.length) {
-        if (done) { toast('บันทึก ' + done + ' รูป' + (code ? ' → ' + code : ' (รอจับคู่)')); refreshAll(); }
-        e.target.value = '';
-        return;
-      }
-      var f = todo.shift();
-      compressImage(f, 1024, 0.70, 800 * 1024, function(dataUrl) {
-        var rec = {
-          id: 'p' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
-          category: cat,
-          code: code,
-          dataUrl: dataUrl,
-          ts: Date.now(),
-          lat: lat,
-          lng: lng,
-          fileName: f.name || ''
-        };
-        photoPut(rec).then(function() {
-          done++;
-          next();
-        }).catch(function(err) {
-          alert('บันทึกรูปไม่สำเร็จ: ' + err + '\n\nพื้นที่เก็บอาจเต็ม — ลดขนาดรูป หรือลบรูปเก่า');
-          next();
-        });
-      });
+      if (i >= total) { resolve({ done: done, skipped: skipped, errors: errors }); return; }
+      var f = files[i++];
+      var key = opts.gallery ? [f.name, f.size, f.lastModified].join('|') : '';
+      if (opts.gallery && known[key]) { skipped++; next(); return; }
+      if (opts.gallery) known[key] = true;
+      if (total > 1) toast('กำลังบันทึก ' + i + '/' + total + ' ...');
+      PhotoStore.addPhoto(f, {
+        category: opts.cat, code: opts.code,
+        lat: opts.gallery ? null : (opts.gps ? opts.gps.lat : null),
+        lng: opts.gallery ? null : (opts.gps ? opts.gps.lng : null),
+        ts: (opts.gallery && f.lastModified) ? f.lastModified : 0,
+        source: opts.gallery ? 'gallery' : 'camera', srcKey: key, fileName: f.name || ''
+      }).then(function() { done++; })
+        .catch(function(err) { errors.push(err); })
+        .then(function() { setTimeout(next, 0); });
     }
     next();
+  });
+}
+function reportAdd(res, code) {
+  var t = res.done ? ('บันทึก ' + res.done + ' รูป' + (code ? ' → ' + code : ' (รอจับคู่)')) : '';
+  if (res.skipped) t += (t ? ' · ' : '') + 'ข้ามรูปที่เคยเลือกแล้ว ' + res.skipped + ' รูป';
+  if (t) toast(t);
+  if (res.errors.length) {
+    var q = res.errors.some(function(x) { return x && x.name === 'QuotaExceededError'; });
+    alert('บันทึกรูปไม่สำเร็จ ' + res.errors.length + ' รูป\n\n' + (q
+      ? 'พื้นที่เก็บข้อมูลเต็ม — ดาวน์โหลดรูปที่ยังไม่ได้ดาวน์โหลดไว้ก่อน แล้วลบรูปที่ดาวน์โหลดแล้วออกจากเครื่อง'
+      : String(res.errors[0] && res.errors[0].message || res.errors[0])));
+  }
+}
+function currentTarget() {
+  var code = noCodeFlag ? '' : $('codeInput').value.trim().toUpperCase();
+  return { code: code, cat: code ? lastCat : '' };
+}
+
+$('camInput').addEventListener('change', function(e) {
+  var input = e.target;
+  var files = Array.prototype.slice.call(input.files || []);
+  if (!files.length) return;
+  var t = currentTarget();
+  getGps(function(gps) {
+    addFiles(files, { code: t.code, cat: t.cat, gps: gps, gallery: false }).then(function(res) {
+      input.value = '';
+      reportAdd(res, t.code);
+      refreshAll();
+    });
+  });
+});
+
+function doGallery() { noCodeFlag = false; $('galInput').click(); }
+$('galInput').addEventListener('change', function(e) {
+  var input = e.target;
+  var files = Array.prototype.slice.call(input.files || []);
+  if (!files.length) return;
+  var t = currentTarget();
+  addFiles(files, { code: t.code, cat: t.cat, gps: null, gallery: true }).then(function(res) {
+    input.value = '';
+    reportAdd(res, t.code);
+    refreshAll();
   });
 });
 
@@ -498,11 +468,13 @@ function fmtTime(ts) {
   function p(n) { return (n < 10 ? '0' : '') + n; }
   return p(d.getHours()) + ':' + p(d.getMinutes());
 }
+
 function fmtFull(ts) {
   var d = new Date(ts);
   function p(n) { return (n < 10 ? '0' : '') + n; }
   return (d.getDate()) + '/' + (d.getMonth() + 1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
+
 function haversine(a, b) {
   if (!a || !b || a.lat == null || b.lat == null) return null;
   var R = 6371000, toR = Math.PI / 180;
@@ -532,12 +504,34 @@ function groupPhotos(list) {
 }
 
 function refreshAll() {
-  photoGetAll().then(function(photos) {
-    allPhotos = photos;
-    unmatched = photos.filter(function(p) { return !p.code; });
-    renderUnmatched();
-    renderMatched();
-    renderRecent();
+  return PhotoStore.listMeta().then(function(list) {
+    allPhotos = list;
+    var ids = {};
+    list.forEach(function(p) { ids[p.id] = true; });
+    Object.keys(selection).forEach(function(k) { if (!ids[k]) delete selection[k]; });
+    renderAll();
+  }).catch(function(err) { toast('อ่านรูปไม่สำเร็จ: ' + err); });
+}
+
+/* วาดใหม่จากข้อมูลที่โหลดไว้แล้ว (ไม่อ่านฐานข้อมูลซ้ำ) — ใช้ตอนติ๊กเลือก/เปลี่ยนตัวกรอง */
+function renderAll() {
+  unmatched = allPhotos.filter(function(p) { return !p.code; });
+  renderUnmatched();
+  renderMatched();
+  renderRecent();
+  updateStoreStat();
+}
+
+function updateStoreStat() {
+  var s = calcStats(allPhotos);
+  PhotoStore.storage().then(function(st) {
+    var t = 'รูปในเครื่อง <b>' + s.total + '</b> รูป (' + fmtMB(s.bytes) + ')';
+    if (s.pending + s.unmatched) t += ' · ยังไม่ได้ดาวน์โหลด <b>' + (s.pending + s.unmatched) + '</b>';
+    if (st && st.quota) t += ' · พื้นที่เบราว์เซอร์ใช้ไป ' + fmtMB(st.usage) + ' จาก ' + fmtMB(st.quota);
+    t += PhotoStore.persisted
+      ? ' · ✓ เครื่องจะไม่ล้างข้อมูลเอง'
+      : ' · <span style="color:#c62828;">⚠ เครื่องอาจล้างข้อมูลเองเมื่อพื้นที่ตึง (iPhone/iPad: ควรติดตั้งแอปไว้ที่หน้าจอโฮม)</span>';
+    $('storeStat').innerHTML = t;
   });
 }
 
@@ -545,49 +539,61 @@ function renderRecent() {
   var recent = allPhotos.slice().sort(function(a, b) { return b.ts - a.ts; }).slice(0, 6);
   var h = '';
   recent.forEach(function(p) {
-    h += '<img src="' + p.dataUrl + '" title="' + (p.code || 'รอจับคู่') + '">';
+    if (p.thumb) h += '<img src="' + p.thumb + '" title="' + escHtml(p.code || 'รอจับคู่') + '" onclick="viewPhoto(\'' + p.id + '\')">';
   });
   $('recentStrip').innerHTML = h ? h : '<span class="empty">ยังไม่มีรูปที่เพิ่งถ่าย</span>';
 }
 
 function renderUnmatched() {
-  $('unStat').innerHTML = 'รอจับคู่: <b>' + unmatched.length + '</b> รูป';
+  var nSel = Object.keys(selection).length;
+  $('unStat').innerHTML = 'รอจับคู่: <b>' + unmatched.length + '</b> รูป' + (nSel ? ' · เลือกแล้ว <b>' + nSel + '</b>' : '');
   var box = $('unmatchedList');
   if (!unmatched.length) {
     box.innerHTML = '<div class="empty">ไม่มีรูปที่รอจับคู่ — ถ่ายแล้วลืมเลือกรหัสจะมาตกอยู่ที่นี่</div>';
+    $('unMore').innerHTML = '';
     return;
   }
   var groups = groupPhotos(unmatched);
-  var h = '';
+  var h = '', shown = 0;
   groups.forEach(function(g, gi) {
+    if (shown >= unmatchedLimit) return;
+    var part = g.slice(0, unmatchedLimit - shown);
+    shown += part.length;
     var all = g.every(function(p) { return selection[p.id]; });
     h += '<div class="grp-head" onclick="toggleGroup(' + gi + ', event)">' +
          '<input type="checkbox" ' + (all ? 'checked' : '') + ' onclick="event.stopPropagation()">' +
          'กลุ่ม ' + (gi + 1) + ' — ' + fmtFull(g[0].ts) + (g.length > 1 ? ' ถึง ' + fmtTime(g[g.length - 1].ts) : '') +
          ' · ' + g.length + ' รูป</div>';
     h += '<div class="grp-grid">';
-    g.forEach(function(p) {
-      h += photoCell(p);
-    });
+    part.forEach(function(p) { h += photoCell(p); });
     h += '</div>';
   });
   box.innerHTML = h;
+  $('unMore').innerHTML = unmatched.length > shown
+    ? '<button type="button" class="btn btn-outline btn-sm" onclick="moreUnmatched()">แสดงเพิ่ม (เหลือ ' + (unmatched.length - shown) + ' รูป)</button>' : '';
+}
+function moreUnmatched() { unmatchedLimit += PAGE; renderUnmatched(); }
+
+function photoImg(p) {
+  var click = ' onclick="viewPhoto(\'' + p.id + '\')"';
+  return p.thumb ? '<img src="' + p.thumb + '" loading="lazy"' + click + '>' : '<div class="noimg"' + click + '>ดูรูป</div>';
 }
 
 function photoCell(p) {
   var sel = selection[p.id];
   var tm = fmtTime(p.ts);
+  var done = p.status === 'exported' ? '<div class="sent">✓ ดาวน์โหลดแล้ว</div>' : '';
   if (p.code) {
     return '<div class="ph' + (sel ? ' sel' : '') + '">' +
-           '<img src="' + p.dataUrl + '">' +
+           photoImg(p) +
            '<div class="tm">' + tm + '</div>' +
-           '<div class="code">' + p.code + '</div>' +
+           '<div class="code">' + escHtml(p.code) + '</div>' + done +
            '<a class="un" href="#" onclick="unmatchPhoto(\'' + p.id + '\'); return false;">ยกเลิกจับคู่</a>' +
            '<a class="x" href="#" onclick="delPhoto(\'' + p.id + '\'); return false;">&#215;</a>' +
            '</div>';
   }
   return '<div class="ph' + (sel ? ' sel' : '') + '">' +
-         '<img src="' + p.dataUrl + '">' +
+         photoImg(p) +
          '<input type="checkbox" class="cb" ' + (sel ? 'checked' : '') + ' onchange="toggleSel(\'' + p.id + '\', this.checked)">' +
          '<div class="tm">' + tm + '</div>' +
          '<a class="x" href="#" onclick="delPhoto(\'' + p.id + '\'); return false;">&#215;</a>' +
@@ -600,18 +606,42 @@ function renderMatched() {
   var box = $('matchedList');
   if (!matched.length) {
     box.innerHTML = '<div class="empty">ไม่มีรูปในหมวดนี้</div>';
+    $('mtMore').innerHTML = '';
     return;
   }
   var sorted = matched.slice().sort(function(a, b) { return b.ts - a.ts; });
-  box.innerHTML = sorted.map(function(p) { return photoCell(p); }).join('');
+  box.innerHTML = sorted.slice(0, matchedLimit).map(function(p) { return photoCell(p); }).join('');
+  $('mtMore').innerHTML = sorted.length > matchedLimit
+    ? '<button type="button" class="btn btn-outline btn-sm" onclick="moreMatched()">แสดงเพิ่ม (เหลือ ' + (sorted.length - matchedLimit) + ' รูป)</button>' : '';
 }
+function moreMatched() { matchedLimit += PAGE; renderMatched(); }
 
 function setFilter(f) {
   filter = f;
+  matchedLimit = PAGE;
   ['all', 'land', 'building', 'sign'].forEach(function(c) {
     $('flt-' + c).className = 'cat-tab' + (c === f ? ' on' : '');
   });
   renderMatched();
+}
+
+/* ดูรูปเต็ม (โหลดตัวรูปเฉพาะรูปที่กด) */
+function viewPhoto(id) {
+  var m = allPhotos.filter(function(p) { return p.id === id; })[0];
+  PhotoStore.getBlob(id).then(function(b) {
+    if (!b) { toast('ไม่พบไฟล์รูป'); return; }
+    closeView();
+    viewUrl = URL.createObjectURL(b);
+    $('viewImg').src = viewUrl;
+    $('viewCap').textContent = (m && m.code ? m.code : 'รอจับคู่') + (m ? ' · ' + fmtFull(m.ts) : '') + (m && m.bytes ? ' · ' + Math.round(m.bytes / 1024) + ' KB' : '');
+    $('viewModal').style.display = 'flex';
+  }).catch(function(err) { toast('เปิดรูปไม่สำเร็จ: ' + err); });
+}
+function closeView() {
+  var img = $('viewImg');
+  if (img) img.removeAttribute('src');
+  if (viewUrl) { URL.revokeObjectURL(viewUrl); viewUrl = null; }
+  $('viewModal').style.display = 'none';
 }
 
 /* =========================================================
@@ -619,7 +649,7 @@ function setFilter(f) {
    ========================================================= */
 function toggleSel(id, on) {
   if (on) selection[id] = true; else delete selection[id];
-  refreshAll();
+  renderAll();
 }
 function toggleGroup(gi, ev) {
   var groups = groupPhotos(unmatched);
@@ -628,15 +658,15 @@ function toggleGroup(gi, ev) {
   g.forEach(function(p) {
     if (all) delete selection[p.id]; else selection[p.id] = true;
   });
-  refreshAll();
+  renderAll();
 }
 function selectAllUnmatched() {
   unmatched.forEach(function(p) { selection[p.id] = true; });
-  refreshAll();
+  renderAll();
 }
 function clearSelection() {
   selection = {};
-  refreshAll();
+  renderAll();
 }
 function getSelected() {
   return unmatched.filter(function(p) { return selection[p.id]; });
@@ -645,7 +675,7 @@ function deleteSelected() {
   var sel = getSelected();
   if (!sel.length) { toast('ยังไม่ได้เลือกรูป'); return; }
   if (!confirm('ลบ ' + sel.length + ' รูปที่เลือก?')) return;
-  photoDelete(sel.map(function(p) { return p.id; })).then(function() {
+  PhotoStore.remove(sel.map(function(p) { return p.id; })).then(function() {
     sel.forEach(function(p) { delete selection[p.id]; });
     toast('ลบ ' + sel.length + ' รูปแล้ว');
     refreshAll();
@@ -653,17 +683,27 @@ function deleteSelected() {
 }
 function delPhoto(id) {
   if (!confirm('ลบรูปนี้?')) return;
-  photoDelete([id]).then(function() {
+  PhotoStore.remove([id]).then(function() {
     delete selection[id];
     refreshAll();
   });
 }
+/* แก้เฉพาะข้อมูลรูป (รหัส/หมวด) — ตัวรูป เวลา และพิกัด GPS ไม่ถูกแตะ */
 function unmatchPhoto(id) {
-  photoPut({ id: id, code: '', category: '' }).then(function() { refreshAll(); });
+  PhotoStore.updateMeta(id, { code: '', category: '' }).then(refreshAll)
+    .catch(function(err) { toast('ยกเลิกจับคู่ไม่สำเร็จ: ' + err); });
 }
 function deleteAllPhotos() {
-  if (!confirm('ลบรูปทั้งหมดในเครื่อง (' + allPhotos.length + ' รูป)?\n\nทำแล้วกู้คืนไม่ได้')) return;
-  photoDelete(allPhotos.map(function(p) { return p.id; })).then(function() { refreshAll(); });
+  if (!allPhotos.length) { toast('ไม่มีรูปในเครื่อง'); return; }
+  var s = calcStats(allPhotos);
+  var notSent = s.pending + s.unmatched;
+  if (notSent > 0) {
+    var t = prompt('⚠ มีรูป ' + notSent + ' รูปที่ยังไม่ได้ดาวน์โหลด\nถ้าลบแล้วกู้คืนไม่ได้\n\nพิมพ์คำว่า ลบ เพื่อยืนยันการลบรูปทั้งหมด ' + allPhotos.length + ' รูป');
+    if (t !== 'ลบ') return;
+  } else if (!confirm('ลบรูปทั้งหมดในเครื่อง (' + allPhotos.length + ' รูป — ดาวน์โหลดแล้วทั้งหมด)?\n\nทำแล้วกู้คืนไม่ได้')) {
+    return;
+  }
+  PhotoStore.remove(allPhotos.map(function(p) { return p.id; })).then(refreshAll);
 }
 
 /* =========================================================
@@ -705,23 +745,12 @@ function applyMatch(code) {
   var sel = getSelected();
   if (!sel.length) { closeMatchModal(); return; }
   var ids = sel.map(function(p) { return p.id; });
-  /* อ่าน record เดิมแล้วแก้ category/code แล้วเขียนทับ (ไม่แตะ dataUrl/ts) */
-  photoGetAll().then(function(all) {
-    var ops = [];
-    all.forEach(function(p) {
-      if (ids.indexOf(p.id) >= 0) {
-        p.category = matchCat;
-        p.code = code;
-        ops.push(photoPut(p));
-      }
-    });
-    return Promise.all(ops);
-  }).then(function() {
+  PhotoStore.updateMany(ids, { category: matchCat, code: code }).then(function() {
     selection = {};
     closeMatchModal();
     toast('จับคู่ ' + ids.length + ' รูป → ' + code);
     refreshAll();
-  });
+  }).catch(function(err) { toast('จับคู่ไม่สำเร็จ: ' + err); });
 }
 
 function closeMatchModal() {
@@ -747,6 +776,29 @@ function goBack() {
 /* init */
 setCat('land');
 refreshAll();
+if (!window.PhotoStore) {
+  alert('ไม่พบ photo_store.js — ตรวจสอบว่าไฟล์ถูกอัปโหลดครบ');
+} else {
+  PhotoStore.init().then(function() {
+    return PhotoStore.migrateLegacy(function(d, t) {
+      var el = $('migStat');
+      if (!el) return;
+      el.style.display = 'block';
+      el.textContent = 'กำลังย้ายรูปเดิมเข้าที่เก็บใหม่ ' + d + '/' + t + ' — กรุณาอย่าปิดหน้านี้';
+    });
+  }).then(function(r) {
+    var el = $('migStat');
+    if (el) {
+      var msg = '';
+      if (r && r.migrated) msg += 'ย้ายรูปเดิมเข้าที่เก็บใหม่แล้ว ' + r.migrated + ' รูป. ';
+      if (r && r.broken) msg += 'พบรายการรูปเสียหาย ' + r.broken + ' รายการ (ภาพหายไปก่อนหน้านี้จากปุ่ม "ยกเลิกจับคู่" ของเวอร์ชันเก่า — กู้คืนไม่ได้ ลบรายการนั้นออกแล้ว). ';
+      if (r && r.left) msg += 'ย้ายไม่สำเร็จ ' + r.left + ' รายการ จะลองใหม่ครั้งหน้า. ';
+      el.style.display = msg ? 'block' : 'none';
+      el.textContent = msg;
+    }
+    return refreshAll();
+  }).catch(function(err) { alert('เปิดที่เก็บรูปไม่สำเร็จ: ' + err); });
+}
 </script>
 </body>
 </html>

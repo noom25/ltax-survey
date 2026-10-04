@@ -14,6 +14,15 @@ class LTAXDB {
         this.initialized = false;
         this.initPromise = null;
         this.KEY = '__all__';
+        this._q = Promise.resolve(); // คิวเรียงลำดับงานแบบ อ่าน→แก้→เขียน (กันบันทึกซ้อนกันแล้วรายการหาย)
+    }
+
+    // รันงานทีละงานตามลำดับ: saveSurvey/updateSurvey/deleteSurvey เป็น get แล้ว set คนละ transaction
+    // ถ้าเรียกซ้อนกัน (กดบันทึกรัว ๆ / หลายฟอร์มพร้อมกัน) งานหลังจะอ่านรายการเก่าแล้วเขียนทับงานก่อนหน้าจนรายการหาย
+    _serial(fn) {
+        const p = this._q.then(function () { return fn(); });
+        this._q = p.catch(function () {});
+        return p;
     }
 
     detectBackend() {
@@ -39,12 +48,14 @@ class LTAXDB {
                 const db = event.target.result;
                 const stores = LTAXDB.STORE_NAMES;
                 stores.forEach((storeName) => {
-                    // ลบ store เก่าทิ้งก่อนถ้ามี (กันสคีมาเก่า v1 ที่ใช้ keyPath ผิด — ไม่สามารถแก้ keyPath
-                    // ของ store เดิมได้ ต้องลบแล้วสร้างใหม่เท่านั้น)
-                    if (db.objectStoreNames.contains(storeName)) {
+                    // ลบ store เก่าทิ้ง "เฉพาะตอนอัปเกรดจาก v1" (สคีมา v1 ใช้ keyPath ผิด — แก้ keyPath ของ store เดิมไม่ได้
+                    // ต้องลบแล้วสร้างใหม่) การอัปเกรดครั้งต่อไป (v2 → v3 ...) ต้องไม่ลบข้อมูลผู้ใช้
+                    if (event.oldVersion > 0 && event.oldVersion < 2 && db.objectStoreNames.contains(storeName)) {
                         db.deleteObjectStore(storeName);
                     }
-                    db.createObjectStore(storeName); // out-of-line key — เก็บด้วย put(value, key) เอง
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        db.createObjectStore(storeName); // out-of-line key — เก็บด้วย put(value, key) เอง
+                    }
                 });
             };
 
@@ -130,22 +141,26 @@ class LTAXDB {
 
     // ===== เมธอดระดับสูง: ทำงานกับ store แบบอาเรย์ของ record =====
 
-    async saveSurvey(storeName, record) {
-        const list = await this.get(storeName);
-        list.push(record);
-        await this.set(storeName, list);
-        return list.length - 1;
+    saveSurvey(storeName, record) {
+        return this._serial(async () => {
+            const list = await this.get(storeName);
+            list.push(record);
+            await this.set(storeName, list);
+            return list.length - 1;
+        });
     }
 
-    async updateSurvey(storeName, index, record) {
-        const list = await this.get(storeName);
-        if (index >= 0 && index < list.length) {
-            list[index] = record;
-        } else {
-            list.push(record);
-        }
-        await this.set(storeName, list);
-        return record;
+    updateSurvey(storeName, index, record) {
+        return this._serial(async () => {
+            const list = await this.get(storeName);
+            if (index >= 0 && index < list.length) {
+                list[index] = record;
+            } else {
+                list.push(record);
+            }
+            await this.set(storeName, list);
+            return record;
+        });
     }
 
     async getAllSurveys(storeName) {
@@ -157,11 +172,13 @@ class LTAXDB {
         return (index >= 0 && index < list.length) ? list[index] : null;
     }
 
-    async deleteSurvey(storeName, index) {
-        const list = await this.get(storeName);
-        if (index >= 0 && index < list.length) list.splice(index, 1);
-        await this.set(storeName, list);
-        return list;
+    deleteSurvey(storeName, index) {
+        return this._serial(async () => {
+            const list = await this.get(storeName);
+            if (index >= 0 && index < list.length) list.splice(index, 1);
+            await this.set(storeName, list);
+            return list;
+        });
     }
 
     // ย้ายข้อมูลจาก localStorage มา LTAXDB (ใช้ครั้งเดียวตอนอัปเกรดจากเวอร์ชันเก่า)
@@ -204,7 +221,7 @@ window.LTAX_getAll = function (storeName) {
 
 // เขียนทับรายการทั้งหมดของ store (ใช้ตอนลบ/จัดเรียงใหม่)
 window.LTAX_setAll = function (storeName, arr) {
-    return window.LTAXDB.set(storeName, arr || []);
+    return window.LTAXDB._serial(function () { return window.LTAXDB.set(storeName, arr || []); });
 };
 
 // บันทึกฟอร์ม: เพิ่มใหม่ หรืออัปเดตของเดิมถ้าอยู่ในโหมดแก้ไข (window.__editKey/__editIdx)
@@ -214,10 +231,18 @@ window.LTAX_store = function (key, record) {
     var editKey = window.__editKey, editIdx = window.__editIdx;
     window.__editKey = null;
     window.__editIdx = -1;
-    if (editKey === key && editIdx >= 0) {
-        return window.LTAXDB.updateSurvey(key, editIdx, record);
+    var save = function (rec) {
+        if (editKey === key && editIdx >= 0) {
+            return window.LTAXDB.updateSurvey(key, editIdx, rec);
+        }
+        return window.LTAXDB.saveSurvey(key, rec);
+    };
+    // รูปที่เลือกจากคลังรูปในฟอร์ม (base64) → ย้ายไปเก็บที่ PhotoStore ก่อนบันทึก เพื่อไม่ให้เรคคอร์ดบวม
+    // ถ้าย้ายไม่สำเร็จด้วยเหตุใดก็ตาม บันทึกเรคคอร์ดตามเดิมทุกอย่าง (รูปไม่หาย)
+    if (window.PhotoStore && window.PhotoStore.absorbRecord) {
+        return window.PhotoStore.absorbRecord(key, record).then(save, function () { return save(record); });
     }
-    return window.LTAXDB.saveSurvey(key, record);
+    return save(record);
 };
 
 // โหลด record ที่เลือกจากหน้าแรก (ค้นหา/แก้ไข) กลับขึ้นฟอร์ม
